@@ -40,8 +40,7 @@ function(odb_compile outvar)
       STANDARD SLOC_LIMIT DEFAULT_POINTER
       HEADER_PROLOGUE INLINE_PROLOGUE SOURCE_PROLOGUE
       HEADER_EPILOGUE INLINE_EPILOGUE SOURCE_EPILOGUE
-      MULTI_DATABASE
-      X_CPP_OPTION)
+      MULTI_DATABASE X_CPP_OPTION CHANGELOG_DIR)
   set(multiValueParams FILES INCLUDE DB PROFILE)
 
   cmake_parse_arguments(PARAM "${options}" "${oneValueParams}" "${multiValueParams}" ${ARGN})
@@ -70,7 +69,7 @@ function(odb_compile outvar)
   endif()
 
   if(PARAM_DEFAULT_POINTER)
-    list(APPEND ODB_ARGS --default-pointer "{DEFAULT_POINTER}")
+    list(APPEND ODB_ARGS --default-pointer "${DEFAULT_POINTER}")
   endif()
 
   if(PARAM_GENERATE_SESSION)
@@ -131,6 +130,10 @@ function(odb_compile outvar)
 
   if(PARAM_SOURCE_EPILOGUE)
     list(APPEND ODB_ARGS --cxx-epilogue-file "${PARAM_SOURCE_EPILOGUE}")
+  endif()
+
+  if(PARAM_CHANGELOG_DIR)
+    list(APPEND ODB_ARGS --changelog-dir "${PARAM_CHANGELOG_DIR}")
   endif()
 
   foreach(profile ${PARAM_PROFILE})

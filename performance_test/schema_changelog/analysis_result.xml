@@ -1,0 +1,64 @@
+<changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="2">
+    <alter-table name="AnalysisResult">
+      <add-column name="cpu_info_cpu_cores" type="INT UNSIGNED" null="false" default="0"/>
+      <add-column name="cpu_info_cpu_usage" type="FLOAT" null="false" default="0"/>
+    </alter-table>
+  </changeset>
+
+  <model version="1">
+    <table name="AnalysisResult" options="ENGINE=InnoDB" kind="object">
+      <column name="configuration" type="BINARY(16)" null="false"/>
+      <column name="id" type="BIGINT UNSIGNED" null="false"/>
+      <column name="experiment_start" type="BIGINT" null="false"/>
+      <column name="loop_start" type="BIGINT" null="false"/>
+      <column name="num_samples_received" type="BIGINT UNSIGNED" null="false"/>
+      <column name="num_samples_sent" type="BIGINT UNSIGNED" null="false"/>
+      <column name="num_samples_lost" type="BIGINT UNSIGNED" null="false"/>
+      <column name="total_data_received" type="BIGINT UNSIGNED" null="false"/>
+      <column name="latency_min" type="DOUBLE" null="false"/>
+      <column name="latency_max" type="DOUBLE" null="false"/>
+      <column name="latency_n" type="DOUBLE" null="false"/>
+      <column name="latency_mean" type="DOUBLE" null="false"/>
+      <column name="latency_M2" type="DOUBLE" null="false"/>
+      <column name="latency_variance" type="DOUBLE" null="false"/>
+      <column name="pub_loop_time_reserve_min" type="DOUBLE" null="false"/>
+      <column name="pub_loop_time_reserve_max" type="DOUBLE" null="false"/>
+      <column name="pub_loop_time_reserve_n" type="DOUBLE" null="false"/>
+      <column name="pub_loop_time_reserve_mean" type="DOUBLE" null="false"/>
+      <column name="pub_loop_time_reserve_M2" type="DOUBLE" null="false"/>
+      <column name="pub_loop_time_reserve_variance" type="DOUBLE" null="false"/>
+      <column name="sub_loop_time_reserve_min" type="DOUBLE" null="false"/>
+      <column name="sub_loop_time_reserve_max" type="DOUBLE" null="false"/>
+      <column name="sub_loop_time_reserve_n" type="DOUBLE" null="false"/>
+      <column name="sub_loop_time_reserve_mean" type="DOUBLE" null="false"/>
+      <column name="sub_loop_time_reserve_M2" type="DOUBLE" null="false"/>
+      <column name="sub_loop_time_reserve_variance" type="DOUBLE" null="false"/>
+      <column name="sys_tracker_ru_utime" type="BIGINT" null="false"/>
+      <column name="sys_tracker_ru_stime" type="BIGINT" null="false"/>
+      <column name="sys_tracker_ru_maxrss" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_ixrss" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_idrss" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_isrss" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_minflt" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_majflt" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_nswap" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_inblock" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_oublock" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_msgsnd" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_msgrcv" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_nsignals" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_nvcsw" type="BIGINT UNSIGNED" null="false"/>
+      <column name="sys_tracker_ru_nivcsw" type="BIGINT UNSIGNED" null="false"/>
+      <primary-key auto="true">
+        <column name="id"/>
+      </primary-key>
+      <foreign-key name="AnalysisResult_configuration_fk" deferrable="DEFERRED">
+        <column name="configuration"/>
+        <references table="ExperimentConfiguration">
+          <column name="id"/>
+        </references>
+      </foreign-key>
+    </table>
+  </model>
+</changelog>

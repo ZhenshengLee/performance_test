@@ -1,0 +1,35 @@
+<changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="2"/>
+
+  <model version="1">
+    <table name="ExperimentConfiguration" options="ENGINE=InnoDB" kind="object">
+      <column name="id" type="BINARY(16)" null="false"/>
+      <column name="final_logfile_name" type="TEXT" null="false"/>
+      <column name="com_mean" type="ENUM('ROS2')" null="false"/>
+      <column name="dds_domain_id" type="INT UNSIGNED" null="false"/>
+      <column name="qos_reliability" type="ENUM('BEST_EFFORT', 'RELIABLE')" null="false"/>
+      <column name="qos_durability" type="ENUM('VOLATILE', 'TRANSIENT_LOCAL')" null="false"/>
+      <column name="qos_history_kind" type="ENUM('KEEP_ALL', 'KEEP_LAST')" null="false"/>
+      <column name="qos_history_depth" type="INT UNSIGNED" null="false"/>
+      <column name="qos_sync_pubsub" type="TINYINT(1)" null="false"/>
+      <column name="rate" type="INT UNSIGNED" null="false"/>
+      <column name="topic_name" type="TEXT" null="false"/>
+      <column name="max_runtime" type="BIGINT UNSIGNED" null="false"/>
+      <column name="number_of_publishers" type="INT UNSIGNED" null="false"/>
+      <column name="number_of_subscribers" type="INT UNSIGNED" null="false"/>
+      <column name="check_memory" type="TINYINT(1)" null="false"/>
+      <column name="use_ros_shm" type="TINYINT(1)" null="false"/>
+      <column name="use_single_participant" type="TINYINT(1)" null="false"/>
+      <column name="no_waitset" type="TINYINT(1)" null="false"/>
+      <column name="no_micro_intra" type="TINYINT(1)" null="false"/>
+      <column name="is_drivepx_rt" type="TINYINT(1)" null="false"/>
+      <column name="with_security" type="TINYINT(1)" null="false"/>
+      <column name="roundtrip_mode" type="ENUM('NONE', 'MAIN', 'RELAY')" null="false"/>
+      <column name="rmw_implementation" type="TEXT" null="false"/>
+      <column name="perf_test_version" type="TEXT" null="false"/>
+      <primary-key>
+        <column name="id"/>
+      </primary-key>
+    </table>
+  </model>
+</changelog>

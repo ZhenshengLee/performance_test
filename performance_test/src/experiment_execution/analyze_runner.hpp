@@ -73,6 +73,7 @@ private:
   CPUsageTracker cpu_usage_tracker;
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  void apply_schema_migration();
   std::unique_ptr<odb::core::database> m_db;
 #endif
 };

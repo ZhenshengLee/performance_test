@@ -50,7 +50,7 @@ mkdir -p perf_test_ws/src
 cd perf_test_ws/src
 git clone https://github.com/ApexAI/performance_test.git
 cd ..
-colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -PERFORMANCE_TEST_ODB_SQLITE=ON
+colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_ODB_SQLITE=ON
 source install/setup.bash
 ros2 run performance_test perf_test -c ROS2 -l log -t Array1k --max_runtime 10
 ```
@@ -62,6 +62,11 @@ argument in `ros2 run`. For MySQL or PostgreSQL databases, you can also specify 
 In order to run the performance test with MySQL or PostgreSQL support, you can use
 `-DPERFORMANCE_TEST_ODB_MYSQL=ON` or `-DPERFORMANCE_TEST_ODB_PGSQL=ON` instead of
 `-DPERFORMANCE_TEST_ODB_SQLITE=ON` option.
+
+The project supports [schema evolution](https://www.codesynthesis.com/products/odb/doc/manual.xhtml#13).
+Every time you make a change in C++ code base which requires a schema evolution you need to:
+1. Update the model version (`#pragma db model version`).
+2. Commit the xml files with schema changes (`schema_changelog` folder).
 
 > All the necessary changes to add SQL database support to the performance_test tool were made by
 following instructions from [ODB platform](https://www.codesynthesis.com/products/odb/). Please
