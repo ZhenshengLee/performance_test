@@ -93,6 +93,19 @@ build_fastrtps:
       - opt.tar.gz
 
 
+build_ros1:
+  stage: build
+  image: osrf/ros:melodic-desktop
+  script:
+    - source /opt/ros/melodic/setup.bash
+    - apt-get update
+    - apt-get install -y python3-colcon-common-extensions
+    - touch performance_test/COLCON_IGNORE  # Don't build the ROS2 package
+    - rm performance_test_ros1_msgs/COLCON_IGNORE  # ROS1 packages are ignored by default
+    - rm performance_test_ros1_publisher/COLCON_IGNORE  # ROS1 packages are ignored by default
+    - colcon build  # Should build msgs and publisher
+
+ 
 test:
   stage: test
   image: osrf/ros:dashing-desktop
