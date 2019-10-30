@@ -233,9 +233,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     }
 
     m_dds_domain_id = vm["dds_domain_id"].as<uint32_t>();
-    if (m_com_mean == CommunicationMean::ROS2 && m_dds_domain_id != 0) {
-      throw std::invalid_argument("ROS 2 does not support setting the domain ID.");
-    }
 
     if (vm.count("reliable")) {
       m_qos.reliability = QOSAbstraction::Reliability::RELIABLE;

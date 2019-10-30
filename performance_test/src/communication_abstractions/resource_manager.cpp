@@ -18,6 +18,7 @@
   #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
 #endif
 
+#include <cstdlib>
 #include <memory>
 #include <string>
 
@@ -46,8 +47,15 @@ std::shared_ptr<rclcpp::Node> ResourceManager::ros2_node() const
     rand_str = std::to_string(std::rand());
   }
 
-  auto options = rclcpp::NodeOptions()
-    .use_intra_process_comms(m_ec.use_ros_shm());
+  auto options = rclcpp::NodeOptions().use_intra_process_comms(m_ec.use_ros_shm());
+
+  auto env_name = "ROS_DOMAIN_ID";
+  auto env_value = std::to_string(m_ec.dds_domain_id()).c_str();
+#ifdef _WIN32
+  _putenv_s(env_name, env_value);
+#else
+  setenv(env_name, env_value, true);
+#endif
 
   return rclcpp::Node::make_shared("performance_test" + rand_str, options);
 }
