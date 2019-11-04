@@ -54,6 +54,12 @@ if(${osrf_testing_tools_cpp_FOUND})
     add_definitions(-DPERFORMANCE_TEST_MEMORYTOOLS_ENABLED)
 endif()
 
+# Dashing version looks like 0.7.X.
+if(${rclcpp_VERSION_MINOR} LESS 8)
+  message(STATUS "ROS Dashing detected")
+  add_definitions(-DUSE_LEGACY_QOS_API)
+endif()
+
 ament_export_include_directories(include)
 ament_export_dependencies(rosidl_default_runtime)
 

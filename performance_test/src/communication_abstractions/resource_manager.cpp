@@ -14,6 +14,10 @@
 
 #include "resource_manager.hpp"
 
+#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) && !defined(USE_LEGACY_QOS_API)
+  #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
+#endif
+
 #include <memory>
 #include <string>
 
@@ -60,12 +64,20 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
   eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
   PParam.rtps.sendSocketBufferSize = 1048576;
   PParam.rtps.listenSocketBufferSize = 4194304;
+#ifdef USE_LEGACY_QOS_API
   PParam.rtps.builtin.use_SIMPLE_RTPSParticipantDiscoveryProtocol = true;
   PParam.rtps.builtin.use_SIMPLE_EndpointDiscoveryProtocol = true;
   PParam.rtps.builtin.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
   PParam.rtps.builtin.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-  PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
   PParam.rtps.builtin.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+#else
+  eprosima::fastrtps::rtps::DiscoverySettings & disc_config = PParam.rtps.builtin.discovery_config;
+  disc_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
+  disc_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+  disc_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+  disc_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+#endif
+  PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
   PParam.rtps.setName("performance_test_fastRTPS");
 
   if (!m_ec.use_single_participant()) {
