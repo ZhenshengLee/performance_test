@@ -96,6 +96,7 @@ set(ODB_LIBRARY_PATH "" CACHE STRING "Common library search hint for all ODB lib
 find_path(libodb_INCLUDE_DIR
     NAMES odb/version.hxx
     HINTS
+    ${ODB_LIBRARY_PATH}/../include
     ${PC_LIBODB_INCLUDE_DIRS})
 
 find_library(libodb_LIBRARY
