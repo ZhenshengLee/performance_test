@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<policy version="0.1.0"
+  xmlns:xi="http://www.w3.org/2001/XInclude">
+  <profiles>
+    <profile ns="/" node="performance_test0">
+      <topics publish="ALLOW" subscribe="ALLOW">
+        <topic>Array1k</topic>
+        <topic>Array4k</topic>
+        <topic>Array16k</topic>
+        <topic>Array32k</topic>
+        <topic>Array60k</topic>
+        <topic>Array1m</topic>
+        <topic>Array2m</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="performance_test1">
+      <topics publish="ALLOW" subscribe="ALLOW">
+        <topic>Array1k</topic>
+        <topic>Array4k</topic>
+        <topic>Array16k</topic>
+        <topic>Array32k</topic>
+        <topic>Array60k</topic>
+        <topic>Array1m</topic>
+        <topic>Array2m</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="performance_test2">
+      <topics publish="ALLOW" subscribe="ALLOW">
+        <topic>Array1k</topic>
+        <topic>Array4k</topic>
+        <topic>Array16k</topic>
+        <topic>Array32k</topic>
+        <topic>Array60k</topic>
+        <topic>Array1m</topic>
+        <topic>Array2m</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="performance_test3">
+      <topics publish="ALLOW" subscribe="ALLOW">
+        <topic>Array1k</topic>
+        <topic>Array4k</topic>
+        <topic>Array16k</topic>
+        <topic>Array32k</topic>
+        <topic>Array60k</topic>
+        <topic>Array1m</topic>
+        <topic>Array2m</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="performance_test4">
+      <topics publish="ALLOW" subscribe="ALLOW">
+        <topic>Array1k</topic>
+        <topic>Array4k</topic>
+        <topic>Array16k</topic>
+        <topic>Array32k</topic>
+        <topic>Array60k</topic>
+        <topic>Array1m</topic>
+        <topic>Array2m</topic>
+      </topics>
+    </profile>
+    <profile ns="/" node="performance_test5">
+      <topics publish="ALLOW" subscribe="ALLOW">
+        <topic>Array1k</topic>
+        <topic>Array4k</topic>
+        <topic>Array16k</topic>
+        <topic>Array32k</topic>
+        <topic>Array60k</topic>
+        <topic>Array1m</topic>
+        <topic>Array2m</topic>
+      </topics>
+    </profile>
+
+  </profiles>
+</policy>

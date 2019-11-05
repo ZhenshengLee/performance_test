@@ -110,7 +110,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Uses only one participant per process. By default every thread has its own.")("no_waitset",
     "Disables the wait set for new data. The subscriber takes as fast as possible.")(
     "no_micro_intra", "Disables the Connext DDS Micro INTRA transport.")(
-    "with_security", "Enables the security with ROS2")("roundtrip_mode",
+    "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
     po::value<std::string>()->default_value("None"),
     "Selects the round trip mode (None, Main, Relay).")
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
