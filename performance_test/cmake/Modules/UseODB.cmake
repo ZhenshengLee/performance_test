@@ -192,7 +192,7 @@ function(odb_compile outvar)
     endif()
 
     add_custom_command(OUTPUT ${outputs}
-        COMMAND ${ODB_EXECUTABLE} ${ODB_ARGS} "${input}"
+        COMMAND "LD_LIBRARY_PATH=${ODB_LIBRARY_PATH}:${LD_LIBRARY_PATH}" ${ODB_EXECUTABLE} ${ODB_ARGS} "${input}"
         DEPENDS "${input}"
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM)
