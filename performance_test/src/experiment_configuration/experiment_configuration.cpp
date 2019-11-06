@@ -116,7 +116,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   ("db_name", po::value<std::string>()->default_value("db_name"),
   "Name of the SQL database.")
-#if defined PERFORMANCE_TEST_ODB_MYSQL || defined PERFORMANCE_TEST_ODB_PGSQL
+#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
   ("db_user", po::value<std::string>()->required(),
   "User name to login to the SQL database.")("db_password",
     po::value<std::string>()->required(),
@@ -306,7 +306,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     if (vm.count("db_name")) {
       m_db_name = vm["db_name"].as<std::string>();
     }
-#if defined PERFORMANCE_TEST_ODB_MYSQL || defined PERFORMANCE_TEST_ODB_PGSQL
+#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
     if (vm.count("db_user")) {
       m_db_user = vm["db_user"].as<std::string>();
     }
@@ -384,7 +384,7 @@ bool ExperimentConfiguration::use_odb() const
 {
   return m_use_odb;
 }
-#if defined PERFORMANCE_TEST_ODB_MYSQL || defined PERFORMANCE_TEST_ODB_PGSQL
+#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
 std::string ExperimentConfiguration::db_user() const
 {
   return m_db_user;

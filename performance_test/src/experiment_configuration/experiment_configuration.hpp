@@ -151,8 +151,8 @@ public:
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   std::string db_name() const;
-#if defined PERFORMANCE_TEST_ODB_MYSQL || defined PERFORMANCE_TEST_ODB_PGSQL
   bool use_odb() const;
+#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
   std::string db_user() const;
   std::string db_password() const;
   std::string db_host() const;
@@ -244,7 +244,7 @@ private:
   bool m_use_odb = true;
   #pragma db transient
   std::string m_db_name;
-#if defined PERFORMANCE_TEST_ODB_MYSQL || defined PERFORMANCE_TEST_ODB_PGSQL
+#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
   #pragma db transient
   std::string m_db_user;
   #pragma db transient

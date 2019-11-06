@@ -35,28 +35,6 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
 endif()
 
-# Use ODB support to create SQL database
-option(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED "Enable ODB for SQL" OFF)
-
-if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-  add_definitions(-DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-  option(PERFORMANCE_TEST_ODB_SQLITE "Select DB type" ON)
-  option(PERFORMANCE_TEST_ODB_MYSQL "Select DB type" OFF)
-  option(PERFORMANCE_TEST_ODB_PGSQL "Select DB type" OFF)
-  if(PERFORMANCE_TEST_ODB_SQLITE)
-    add_definitions(-DPERFORMANCE_TEST_ODB_SQLITE)
-    set(DB_TYPE sqlite)
-  endif()
-  if(PERFORMANCE_TEST_ODB_MYSQL)
-    add_definitions(-DPERFORMANCE_TEST_ODB_MYSQL)
-    set(DB_TYPE mysql)
-  endif()
-  if(PERFORMANCE_TEST_ODB_PGSQL)
-    add_definitions(-DPERFORMANCE_TEST_ODB_PGSQL)
-    set(DB_TYPE pgsql)
-  endif()
-endif()
-
 find_package(rclcpp REQUIRED)
 find_package(rmw REQUIRED)
 find_package(builtin_interfaces REQUIRED)
@@ -116,16 +94,6 @@ if(CycloneDDS_FOUND)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
 endif()
 
-if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
-  find_package(ODB REQUIRED COMPONENTS sqlite OPTIONAL_COMPONENTS mysql pgsql)
-  include(${ODB_USE_FILE})
-
-  # Get the setup.sh to update the LD_LIBRARY_PATH
-  get_filename_component(ODB_LIBRARY_DIRECTORY ${ODB_LIBODB_LIBRARIES} DIRECTORY)
-  ament_environment_hooks(env_hook/odb_library_path.sh.in)
-endif()
-
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
 
@@ -168,13 +136,6 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
     DEPENDENCIES builtin_interfaces std_msgs sensor_msgs)
 
-if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-  odb_compile(${PROJECT_NAME}_SOURCES FILES ${${PROJECT_NAME}_HEADERS} DB "${DB_TYPE}"
-      GENERATE_QUERY GENERATE_SESSION GENERATE_SCHEMA SCHEMA_FORMAT embedded INCLUDE
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
-      STANDARD c++11 PROFILE boost/uuid X_CPP_OPTION -DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-endif()
-
 set(sources
     src/main.cpp
     src/communication_abstractions/communicator.hpp
@@ -200,6 +161,41 @@ set(sources
     src/utilities/cpu_usage_tracker.hpp
 )
 
+# Use ODB support to create SQL database
+option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)
+option(PERFORMANCE_TEST_ODB_MYSQL "Enable ODB with MYSQL" OFF)
+option(PERFORMANCE_TEST_ODB_PGSQL "Enable ODB with PGSQL" OFF)
+if(PERFORMANCE_TEST_ODB_SQLITE OR PERFORMANCE_TEST_ODB_MYSQL OR PERFORMANCE_TEST_ODB_PGSQL)
+  if(PERFORMANCE_TEST_ODB_SQLITE)
+    set(DB_TYPE sqlite)
+  elseif(PERFORMANCE_TEST_ODB_MYSQL)
+    set(DB_TYPE mysql)
+  elseif(PERFORMANCE_TEST_ODB_PGSQL)
+    set(DB_TYPE pgsql)
+  endif()
+
+  set(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED ON)
+  add_definitions(-DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
+
+  list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/Modules")
+  find_package(ODB REQUIRED COMPONENTS sqlite OPTIONAL_COMPONENTS mysql pgsql)
+  include(${ODB_USE_FILE})
+
+  # Get the setup.sh to update the LD_LIBRARY_PATH
+  get_filename_component(ODB_LIBRARY_DIRECTORY ${ODB_LIBODB_LIBRARIES} DIRECTORY)
+  ament_environment_hooks(env_hook/odb_library_path.sh.in)
+
+  odb_compile(${PROJECT_NAME}_SOURCES FILES ${${PROJECT_NAME}_HEADERS} DB "${DB_TYPE}"
+      GENERATE_QUERY GENERATE_SESSION GENERATE_SCHEMA SCHEMA_FORMAT embedded INCLUDE
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
+      STANDARD c++11 PROFILE boost/uuid X_CPP_OPTION -DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
+
+  include_directories(${CMAKE_CURRENT_BINARY_DIR}
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration
+      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
+      ${ODB_INCLUDE_DIRS})
+endif()
+
 # ROS2 Waitset
 option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
   The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
@@ -221,13 +217,6 @@ if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
     set(sources ${sources}
         src/communication_abstractions/cyclonedds_communicator.hpp
     )
-endif()
-
-if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-    include_directories(${CMAKE_CURRENT_BINARY_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration
-        ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
-        ${ODB_INCLUDE_DIRS})
 endif()
 
 set(EXE_NAME perf_test)
@@ -257,22 +246,20 @@ if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
   target_link_libraries(${EXE_NAME} ${ODB_LIBRARIES})
   target_include_directories(${EXE_NAME}
       PRIVATE
-        ${ODB_INCLUDE_DIRS}
-        ${ODB_COMPILE_OUTPUT_DIR})
+      ${ODB_INCLUDE_DIRS}
+      ${ODB_COMPILE_OUTPUT_DIR})
   if(PERFORMANCE_TEST_ODB_SQLITE)
-  target_compile_definitions(${EXE_NAME}
-      PRIVATE
-        DATABASE_SQLITE)
-  endif()
-  if(PERFORMANCE_TEST_ODB_MYSQL)
-  target_compile_definitions(${EXE_NAME}
-      PRIVATE
-        DATABASE_MYSQL)
-  endif()
-  if(PERFORMANCE_TEST_ODB_PGSQL)
     target_compile_definitions(${EXE_NAME}
       PRIVATE
-        DATABASE_PGSQL)
+      DATABASE_SQLITE)
+  elseif(PERFORMANCE_TEST_ODB_MYSQL)
+    target_compile_definitions(${EXE_NAME}
+      PRIVATE
+      DATABASE_MYSQL)
+  elseif(PERFORMANCE_TEST_ODB_PGSQL)
+    target_compile_definitions(${EXE_NAME}
+      PRIVATE
+      DATABASE_PGSQL)
   endif()
 endif()
 

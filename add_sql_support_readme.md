@@ -50,7 +50,7 @@ mkdir -p perf_test_ws/src
 cd perf_test_ws/src
 git clone https://github.com/ApexAI/performance_test.git
 cd ..
-colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED=ON
+colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -PERFORMANCE_TEST_ODB_SQLITE=ON
 source install/setup.bash
 ros2 run performance_test perf_test -c ROS2 -l log -t Array1k --max_runtime 10
 ```
@@ -59,9 +59,9 @@ The default name of the resulting database is "db_name", you can change it by us
 argument in `ros2 run`. For MySQL or PostgreSQL databases, you can also specify `--db_user`,
 `--db_password`, `--db_host` and `--db_port` to connect to your database.
 
-The default database is SQLite but if you want to use MySQL or PostgreSQL instead, use
-`-DPERFORMANCE_TEST_ODB_MYSQL=ON` or `-DPERFORMANCE_TEST_ODB_PGSQL=ON` and
-disable the SQLite by adding `-DPERFORMANCE_TEST_ODB_SQLITE=OFF` option.
+In order to run the performance test with MySQL or PostgreSQL support, you can use
+`-DPERFORMANCE_TEST_ODB_MYSQL=ON` or `-DPERFORMANCE_TEST_ODB_PGSQL=ON` instead of
+`-DPERFORMANCE_TEST_ODB_SQLITE=ON` option.
 
 > All the necessary changes to add SQL database support to the performance_test tool were made by
 following instructions from [ODB platform](https://www.codesynthesis.com/products/odb/). Please
