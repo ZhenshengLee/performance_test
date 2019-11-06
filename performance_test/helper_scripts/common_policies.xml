@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+  <topics publish="ALLOW" >
+    <topic>rosout</topic>
+  </topics>
+  <topics subscribe="ALLOW" >
+    <topic>/clock</topic>
+  </topics>
+  <topics publish="ALLOW" subscribe="ALLOW" >
+    <topic>parameter_events</topic>
+  </topics>
+  <topics publish="ALLOW" subscribe="ALLOW">
+    <topic>Array1k</topic>
+    <topic>Array4k</topic>
+    <topic>Array16k</topic>
+    <topic>Array32k</topic>
+    <topic>Array60k</topic>
+    <topic>Array1m</topic>
+    <topic>Array2m</topic>
+  </topics>
+  <services reply="ALLOW" request="ALLOW" >
+    <service>~describe_parameters</service>
+    <service>~get_parameter_types</service>
+    <service>~get_parameters</service>
+    <service>~list_parameters</service>
+    <service>~set_parameters</service>
+    <service>~set_parameters_atomically</service>
+  </services>
+</profile>

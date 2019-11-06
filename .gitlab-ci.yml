@@ -64,6 +64,35 @@ build:
       - opt.tar.gz
 
 
+build_fastrtps:
+  stage: build
+  image: osrf/ros:dashing-desktop
+  script:
+    - apt-get update
+    - '
+      apt-get install -y
+          ros-dashing-osrf-testing-tools-cpp
+          default-jdk
+          maven
+      '
+    - '
+      colcon build
+          --install-base /opt/performance_test
+          --merge-install
+          --cmake-args
+            -DCMAKE_BUILD_TYPE=Release
+      '
+    - cp LICENSE /opt/performance_test
+    - tar cfz opt.tar.gz /opt/performance_test
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - log
+      - build
+      - opt.tar.gz
+
+
 test:
   stage: test
   image: osrf/ros:dashing-desktop
@@ -83,6 +112,33 @@ test:
     when: always
     paths:
       - log
+
+
+test_security:
+  stage: test
+  image: osrf/ros:dashing-desktop
+  dependencies:
+    - build_fastrtps
+  before_script:
+    - apt-get update
+    - apt-get install -y ros-dashing-osrf-testing-tools-cpp
+  script:
+    - tar xzf opt.tar.gz -C /
+    - source /opt/performance_test/setup.bash
+    # Enable security
+    - cd performance_test/helper_scripts
+    - source security_setup.bash enable ./demo_keys
+    # The below runs should fail:
+    # Unexpected node names:
+    - '! ros2 run performance_test perf_test -c ROS2 -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
+    # Unexpected topic names
+    - '! ros2 run performance_test perf_test -c ROS2 -t Struct16 --max_runtime 10 --rate 2 --keep_last --history_depth 10 --with_security'
+    # This should pass (time-out)
+    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 -t Array1k --rate 2 --keep_last --history_depth 10 --with_security ||
+       if [ $? -eq 124 ]; then echo "OK";
+       else exit 1;
+       fi
+      '
 
 volume:
   stage: deploy
