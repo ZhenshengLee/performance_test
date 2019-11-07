@@ -161,6 +161,8 @@ set(sources
     src/experiment_configuration/qos_abstraction.cpp
     src/experiment_configuration/qos_abstraction.hpp
     src/experiment_configuration/experiment_configuration.cpp
+    src/experiment_configuration/external_info_storage.hpp
+    src/experiment_configuration/external_info_storage.cpp
     src/utilities/rt_enabler.hpp
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp

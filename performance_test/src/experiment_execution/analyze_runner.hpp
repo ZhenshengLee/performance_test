@@ -18,6 +18,7 @@
 #include <chrono>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "analysis_result.hpp"
 #include "../data_running/data_runner_factory.hpp"
@@ -27,10 +28,8 @@
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #include <odb/database.hxx>
 #endif
-
 namespace performance_test
 {
-
 /**
  * \brief Sets up and runs an experiment.
  */

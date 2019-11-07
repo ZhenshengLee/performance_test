@@ -58,16 +58,8 @@ AnalyzeRunner::AnalyzeRunner()
   std::stringstream os;
   os << m_ec;
   m_ec.log(os.str());
+  m_ec.log(m_ec.get_external_info().m_to_log);
 
-  // Reading optional environment variable for additional information.
-  {
-    const auto ptr = std::getenv("APEX_PERFORMANCE_TEST");
-    if (ptr) {
-      std::string env(ptr);
-      boost::trim(env);
-      m_ec.log(env);
-    }
-  }
   for (uint32_t i = 0; i < m_ec.number_of_publishers(); ++i) {
     m_pub_runners.push_back(DataRunnerFactory::get(m_ec.topic_name(), m_ec.com_mean(),
       RunType::PUBLISHER));

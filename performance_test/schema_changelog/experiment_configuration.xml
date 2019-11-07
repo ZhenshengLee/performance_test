@@ -1,4 +1,13 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="3">
+    <alter-table name="ExperimentConfiguration">
+      <add-column name="external_info_githash" type="TEXT" null="false"/>
+      <add-column name="external_info_platform" type="TEXT" null="false"/>
+      <add-column name="external_info_branch" type="TEXT" null="false"/>
+      <add-column name="external_info_architecture" type="TEXT" null="false"/>
+    </alter-table>
+  </changeset>
+
   <changeset version="2"/>
 
   <model version="1">

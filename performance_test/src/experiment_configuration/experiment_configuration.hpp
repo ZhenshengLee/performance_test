@@ -26,6 +26,7 @@
 #include "qos_abstraction.hpp"
 #include "communication_mean.hpp"
 #include "../utilities/rt_enabler.hpp"
+#include "external_info_storage.hpp"
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #include <odb/core.hxx>
@@ -41,9 +42,10 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 2, closed)
+#pragma db model version(1, 3, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
+  #pragma db value(ExternalInfoStorage) definition
   #pragma db object
 #endif
 class ExperimentConfiguration
@@ -148,7 +150,10 @@ public:
   std::string logfile_name() const;
   /// \return Returns true if the user requested the application to exit.
   bool exit_requested() const;
-
+  ExternalInfoStorage get_external_info() const
+  {
+    return m_external_info;
+  }
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   std::string db_name() const;
   bool use_odb() const;
@@ -236,6 +241,8 @@ private:
 
   std::string m_rmw_implementation;
   std::string m_perf_test_version;
+
+  ExternalInfoStorage m_external_info;
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db value_not_null inverse(m_configuration)

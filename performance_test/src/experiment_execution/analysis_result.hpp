@@ -82,7 +82,6 @@ private:
 #pragma db value(rusage) definition
 #pragma db value(timeval) definition
 #pragma db value(CpuInfo) definition
-#pragma db model version(1, 2, closed)
 /// Represents the results of an experiment iteration.
 #pragma db object pointer(std::shared_ptr)
 #endif

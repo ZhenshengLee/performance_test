@@ -121,13 +121,16 @@ Note that enabling this feature will cause a huge performance impact.
 You can set the `APEX_PERFORMANCE_TEST` environment variable before running performance test
 to add custom data to the output CSV file.
 This information will then also be visible in the files outputted by the plotter script.
+Please use the JSON format to pass the values.
 
 Example:
 ```
 export APEX_PERFORMANCE_TEST="
-My Version: 1.0.4
-My Image Version: 5.2
-My OS Version: Ubuntu 16.04
+{
+\"My Version\": \"1.0.4\",
+\"My Image Version\": \"5.2\",
+\"My OS Version\": \"Ubuntu 16.04\"
+}
 "
 ros2 run performance_test -c ROS2 -t Array1k
 ```
