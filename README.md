@@ -38,7 +38,7 @@ pip install pandas
 source ros2_install_path/setup.bash
 mkdir -p perf_test_ws/src
 cd perf_test_ws/src
-git clone https://github.com/ApexAI/performance_test.git
+git clone https://gitlab.com/ApexAI/performance_test.git
 cd ..
 colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 source install/setup.bash
@@ -110,8 +110,8 @@ you need to do the following steps, assuming you already did compile performance
 
 1. Enter your work space: `cd perf_test_ws/src`
 1. Clone OSRF memory memory tools: `git clone https://github.com/osrf/osrf_testing_tools_cpp.git`
-1. Build everything `cd .. && ament build --parallel --build-tests --cmake-args -DCMAKE_BUILD_TYPE=Release`
-1. You need to preload the memory library to make diagnostics work: `export LD_PRELOAD=$(pwd)/install/lib/libmemory_tools_interpose.so`
+1. Build everything `cd .. && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release`
+1. You need to preload the memory library to make diagnostics work: `export LD_PRELOAD=$(pwd)/install/osrf_testing_tools_cpp/lib/libmemory_tools_interpose.so`
 1. Run with memory check enabled: `ros2 run performance_test perf_test -c ROS2 -l log -t Array1k --max_runtime 10 --check_memory`
 
 Note that enabling this feature will cause a huge performance impact.
