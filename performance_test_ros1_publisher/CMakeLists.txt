@@ -17,7 +17,12 @@ target_link_libraries(publisher
   ${Boost_LIBRARIES}
 )
 
-install(TARGETS publisher
+add_executable(check_master src/check_master.cpp)
+target_link_libraries(check_master
+  ${catkin_LIBRARIES}
+)
+
+install(TARGETS publisher check_master
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
