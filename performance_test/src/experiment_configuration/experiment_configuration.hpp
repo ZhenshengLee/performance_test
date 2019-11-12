@@ -25,7 +25,9 @@
 
 #include "qos_abstraction.hpp"
 #include "communication_mean.hpp"
+#if PERFORMANCE_TEST_RT_ENABLED
 #include "../utilities/rt_enabler.hpp"
+#endif
 #include "external_info_storage.hpp"
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED

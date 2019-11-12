@@ -39,6 +39,14 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
 endif()
 
+if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+  set(PERFORMANCE_TEST_RT_ENABLED_DEFAULT ON)
+else()
+  set(PERFORMANCE_TEST_RT_ENABLED_DEFAULT OFF)
+endif()
+option(PERFORMANCE_TEST_RT_ENABLED
+  "Enable options for thread and memory optimization. This may not build on all platforms"
+  ${PERFORMANCE_TEST_RT_ENABLED_DEFAULT})
 find_package(rclcpp REQUIRED)
 find_package(rmw REQUIRED)
 find_package(builtin_interfaces REQUIRED)
@@ -173,11 +181,15 @@ set(sources
     src/experiment_configuration/experiment_configuration.cpp
     src/experiment_configuration/external_info_storage.hpp
     src/experiment_configuration/external_info_storage.cpp
-    src/utilities/rt_enabler.hpp
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp
     src/utilities/cpu_usage_tracker.hpp
 )
+
+if(PERFORMANCE_TEST_RT_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_RT_ENABLED)
+  list(APPEND sources src/utilities/rt_enabler.hpp)
+endif()
 
 # Use ODB support to create SQL database
 option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)

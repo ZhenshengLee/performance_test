@@ -299,8 +299,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       cpus = 62;
     }
     if (prio != 0 || cpus != 0) {
+#if PERFORMANCE_TEST_RT_ENABLED
       pre_proc_rt_init(cpus, prio);
       m_is_drivepx_rt = true;
+#else
+      throw std::invalid_argument("Built with RT optimizations disabled");
+#endif
     }
     m_use_single_participant = false;
     if (vm.count("use_single_participant")) {
