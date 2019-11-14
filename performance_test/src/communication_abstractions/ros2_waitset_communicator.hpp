@@ -17,8 +17,10 @@
 
 #include <rclcpp/rclcpp.hpp>
 
-#include <memory>
 #include <atomic>
+#include <memory>
+#include <mutex>
+#include <thread>
 
 #include "../experiment_configuration/topics.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
@@ -52,22 +54,24 @@ public:
     }
     try {
       const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100));
-      this->lock();
       if (wait_ret.any()) {
-        auto received_sample = m_polling_subscription->take();
-        if (received_sample) {
-          this->template callback(received_sample.data());
+        const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
+        const std::lock_guard<std::mutex> lock(m_mutex);
+        for (const auto msg : loaned_msg) {
+          if (msg.info().valid()) {
+            this->template callback(msg.data());
+          }
         }
       }
     } catch (const rclcpp::TimeoutError &) {
       std::cerr << "Waitset timed out without receiving a sample." << std::endl;
     }
-    this->unlock();
   }
 
 private:
   std::shared_ptr<::rclcpp::PollingSubscription<DataType>> m_polling_subscription;
   std::unique_ptr<rclcpp::Waitset<>> m_waitset;
+  std::mutex m_mutex;
 };
 
 }  // namespace performance_test

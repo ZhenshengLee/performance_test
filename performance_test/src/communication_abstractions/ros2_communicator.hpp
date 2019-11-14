@@ -167,7 +167,7 @@ protected:
   }
 
   template<class T>
-  void callback(T & data)
+  void callback(const T & data)
   {
     static_assert(std::is_same<DataType,
       typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value,
