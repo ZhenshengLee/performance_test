@@ -132,7 +132,10 @@ public:
   std::string to_csv_string(const bool pretty_print = false, std::string st = ",") const;
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  void check_values();
+  /**
+   * \brief Checks if all the StatisticsTracker's objects have valid member variables.
+   */
+  void check_statistic_tracker();
 
   void set_configuration(const ExperimentConfiguration * ec)
   {

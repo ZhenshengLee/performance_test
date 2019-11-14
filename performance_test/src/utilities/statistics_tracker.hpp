@@ -91,16 +91,26 @@ public:
   }
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-// check if variables are not out of range or NaNs
-  void check_value()
+  /**
+   * \brief Check and correct the variables if they are out of range or NaNs
+   * \param value variable to be checked and corrected if needed
+   * \return double with a valid value
+   */
+  double correct_value(double value)
   {
-    if (m_variance > std::numeric_limits<double>::max()) {
-      m_variance = std::numeric_limits<double>::max();
-    } else if (m_variance < std::numeric_limits<double>::min()) {
-      m_variance = std::numeric_limits<double>::min();
-    } else if (std::isnan(std::abs(m_variance))) {
-      m_variance = std::numeric_limits<double>::max();
+    if (std::isinf(value) || std::isnan(std::abs(value))) {
+      value = std::numeric_limits<double>::max();
     }
+    return value;
+  }
+  void correct_statistics()
+  {
+    m_variance = correct_value(m_variance);
+    m_mean = correct_value(m_mean);
+    m_min = correct_value(m_min);
+    m_max = correct_value(m_max);
+    m_n = correct_value(m_n);
+    m_M2 = correct_value(m_M2);
   }
 #endif
 
