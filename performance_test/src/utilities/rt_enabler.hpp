@@ -34,7 +34,7 @@ namespace performance_test
 /// An estimate of physical memory the process might use
 /// NOTE: This is just a rough estimate for the lidar_detector process
 ///
-static const uint64_t PROCESS_MAX_DYN_MEM = (3U * 1024U * 1024U * 1024U);  // 3GB
+static const uint64_t PROCESS_MAX_DYN_MEM = (2U * 1024U * 1024U * 1024U);  // 2GB
 
 /// \brief Real time related info for the process
 typedef struct proc_rt_info_s
