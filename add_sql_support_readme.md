@@ -68,6 +68,11 @@ Every time you make a change in C++ code base which requires a schema evolution 
 1. Update the model version (`#pragma db model version`).
 2. Commit the xml files with schema changes (`schema_changelog` folder).
 
+> Note: The current `schema_changelog` is implemented for `MySQL` database. In order to use
+other database, you need to start a new schema evolution:
+    1. Remove the existing xml files (please do not commit these changes).
+    2. Run the performance test with db model version 1 (specified in `experiment_configuration.hpp` file).
+
 > All the necessary changes to add SQL database support to the performance_test tool were made by
 following instructions from [ODB platform](https://www.codesynthesis.com/products/odb/). Please
 refer to the [ODB manual](https://www.codesynthesis.com/products/odb/doc/odb-manual.pdf) for more information

@@ -126,6 +126,12 @@ void AnalyzeRunner::run()
   m_ec.log(AnalysisResult::csv_header(true));
 
   const auto experiment_start = std::chrono::steady_clock::now();
+  #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  odb::core::transaction t;
+  if (m_ec.use_odb()) {
+    t.reset(m_db->begin());
+  }
+  #endif
   while (!check_exit(experiment_start)) {
     const auto loop_start = std::chrono::steady_clock::now();
 
@@ -148,7 +154,6 @@ void AnalyzeRunner::run()
 
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   if (m_ec.use_odb()) {
-    odb::core::transaction t(m_db->begin());
     m_db->persist(m_ec);
     t.commit();
   }
@@ -208,12 +213,10 @@ void AnalyzeRunner::analyze(
 
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   if (m_ec.use_odb()) {
-    odb::core::transaction t(m_db->begin());
     result->set_configuration(&m_ec);
     m_ec.get_results().push_back(result);
     result->check_statistic_tracker();
     m_db->persist(result);
-    t.commit();
   }
   #endif
 }
