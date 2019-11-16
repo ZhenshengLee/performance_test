@@ -115,13 +115,13 @@ inline void post_proc_rt_init()
   // Since all the memory is not statically allocated yet, Allocate and free
   // the memory so all pages gets mapped and locked in the process addr space
   //
-  res = posix_memalign(&buf, static_cast<size_t>(pg_sz), PROCESS_MAX_DYN_MEM);
-  if (res != 0) {
-    std::cerr << "proc rt init mem aligning failed" << strerror(errno) << std::endl;
-    throw std::runtime_error("proc rt init mem aligning failed");
-  }
-  memset(buf, 0, PROCESS_MAX_DYN_MEM);
-  free(buf);
+//  res = posix_memalign(&buf, static_cast<size_t>(pg_sz), PROCESS_MAX_DYN_MEM);
+//  if (res != 0) {
+//    std::cerr << "proc rt init mem aligning failed" << strerror(errno) << std::endl;
+//    throw std::runtime_error("proc rt init mem aligning failed");
+//  }
+//  memset(buf, 0, PROCESS_MAX_DYN_MEM);
+//  free(buf);
 }
 
 ///
