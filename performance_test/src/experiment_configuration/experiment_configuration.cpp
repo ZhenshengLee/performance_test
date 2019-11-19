@@ -166,9 +166,15 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     if (vm["communication"].as<std::string>() == "ROS2") {
       m_com_mean = CommunicationMean::ROS2;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "ROS2";
+      #endif
     } else if (vm["communication"].as<std::string>() == "ROS2PollingSubscription") {
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       m_com_mean = CommunicationMean::ROS2PollingSubscription;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "ROS2PollingSubscription";
+      #endif
 #else
       throw std::invalid_argument(
               "You must compile with PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED flag as ON to "
@@ -177,6 +183,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     } else if (vm["communication"].as<std::string>() == "FastRTPS") {
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
       m_com_mean = CommunicationMean::FASTRTPS;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "FASTRTPS";
+      #endif
 #else
       throw std::invalid_argument(
               "You must compile with FastRTPS support to enable it as communication mean.");
@@ -184,6 +193,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     } else if (vm["communication"].as<std::string>() == "ConnextDDSMicro") {
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
       m_com_mean = CommunicationMean::CONNEXTDDSMICRO;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "CONNEXTDDSMICRO";
+      #endif
 #else
       throw std::invalid_argument(
               "You must compile with ConnextDDSMicro support to enable it as communication mean.");
@@ -191,6 +203,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     } else if (vm["communication"].as<std::string>() == "CycloneDDS") {
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
       m_com_mean = CommunicationMean::CYCLONEDDS;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "CYCLONEDDS";
+      #endif
 #else
       throw std::invalid_argument(
               "You must compile with CycloneDDS support to enable it as communication mean.");

@@ -42,7 +42,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 3, closed)
+#pragma db model version(1, 4, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition
@@ -219,6 +219,9 @@ private:
 #endif
   mutable std::ofstream m_os;
 
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  #pragma db transient
+#endif
   CommunicationMean m_com_mean;
   uint32_t m_dds_domain_id;
   QOSAbstraction m_qos;
@@ -251,6 +254,7 @@ private:
   bool m_use_odb = true;
   #pragma db transient
   std::string m_db_name;
+  std::string m_com_mean_str;
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
   #pragma db transient
   std::string m_db_user;
