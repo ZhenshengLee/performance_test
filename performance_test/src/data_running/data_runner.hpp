@@ -100,8 +100,9 @@ public:
   void sync_reset() override
   {
     namespace sc = std::chrono;
+    const auto now = sc::steady_clock::now();
     m_lock.lock();
-    sc::duration<double> iteration_duration = sc::steady_clock::now() - m_last_sync;
+    sc::duration<double> iteration_duration = now - m_last_sync;
 
     if (m_run_type == RunType::PUBLISHER) {
       m_sum_sent_samples = static_cast<decltype(m_sum_sent_samples)>(
@@ -121,7 +122,7 @@ public:
     m_time_reserve_statistics_store = m_time_reserve_statistics;
     m_time_reserve_statistics = StatisticsTracker();
     m_com.reset();
-    m_last_sync = sc::steady_clock::now();
+    m_last_sync = now;
 
     m_lock.unlock();
   }
@@ -132,10 +133,15 @@ private:
   {
     typename TCommunicator::DataType data;
 
-    while (m_run) {
-      const auto next_run = std::chrono::steady_clock::now() +
-        std::chrono::duration<double>(1.0 / m_ec.rate());
+    auto next_run = std::chrono::steady_clock::now() +
+      std::chrono::duration_cast<std::chrono::nanoseconds>(
+      std::chrono::duration<double>(1.0 / m_ec.rate()));
 
+    auto first_run = std::chrono::steady_clock::now();
+
+    std::size_t loop_counter = 1;
+
+    while (m_run) {
       if (m_run_type == RunType::PUBLISHER &&
         m_ec.roundtrip_mode() != ExperimentConfiguration::RoundTripMode::RELAY)
       {
@@ -146,12 +152,14 @@ private:
       if (m_run_type == RunType::SUBSCRIBER) {
         m_com.update_subscription();
       }
+      const std::chrono::nanoseconds reserve = next_run - std::chrono::steady_clock::now();
       {
         // We track here how much time (can also be negative) was left for the loop iteration given
         // the desired loop rate.
         m_lock.lock();
-        const std::chrono::duration<double> reserve = next_run - std::chrono::steady_clock::now();
-        m_time_reserve_statistics.add_sample(reserve.count());
+        if (m_run_type == RunType::PUBLISHER) {
+          m_time_reserve_statistics.add_sample(std::chrono::duration<double>(reserve).count());
+        }
         m_lock.unlock();
       }
       if (m_ec.rate() > 0 &&
@@ -159,9 +167,15 @@ private:
         // Relays should never sleep.
         m_ec.roundtrip_mode() != ExperimentConfiguration::RoundTripMode::RELAY)
       {
-        std::this_thread::sleep_until(next_run);
+        if (reserve.count() > 0) {
+          std::this_thread::sleep_until(next_run);
+        }
       }
+      next_run = first_run + loop_counter *
+        std::chrono::duration_cast<std::chrono::nanoseconds>(
+        std::chrono::duration<double>(1.0 / static_cast<double>(m_ec.rate())));
 
+      ++loop_counter;
       // Enabling memory checker after the first run:
       enable_memory_tools();
     }
