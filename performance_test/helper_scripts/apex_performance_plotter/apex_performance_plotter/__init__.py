@@ -49,10 +49,17 @@ def sanitize(val):
 def load_logfile(filename):
     """Load logfile into header dictionary and pandas dataframe."""
     with open(filename) as source:
-        header = {
-            item.split(':')[0].strip(): item.split(':', maxsplit=1)[1].strip()
-            for item in itertools.takewhile(lambda x: not x.startswith('---'), source)
-        }
+        header = {}
+        for item in itertools.takewhile(lambda x: not x.startswith('---'), source):
+            if not item.strip():  # Don't care about whitespace-only lines
+                continue
+            try:
+                key = item.split(':')[0].strip()
+                value = item.split(':', maxsplit=1)[1].strip()
+                header[key] = value
+            except Exception:
+                print('Error trying to parse header line "{}"'.format(item))
+                raise
         dataframe = pandas.read_csv(source, sep='[ \t]*,[ \t]*', engine='python')
         unnamed = [col for col in dataframe.keys() if col.startswith('Unnamed: ')]
         if unnamed:
