@@ -23,7 +23,7 @@ set(OPTIONAL_LIBRARIES)
 
 # Default to C++14
 set(CMAKE_CXX_STANDARD 14)
-find_package(Boost COMPONENTS program_options REQUIRED)
+find_package(Boost COMPONENTS program_options timer REQUIRED)
 find_package(ament_cmake REQUIRED)
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
