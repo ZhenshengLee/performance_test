@@ -215,7 +215,6 @@ void AnalyzeRunner::analyze(
   if (m_ec.use_odb()) {
     result->set_configuration(&m_ec);
     m_ec.get_results().push_back(result);
-    result->check_statistic_tracker();
     m_db->persist(result);
   }
   #endif

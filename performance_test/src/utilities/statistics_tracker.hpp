@@ -90,30 +90,6 @@ public:
     m_variance = m_M2 / m_n;
   }
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  /**
-   * \brief Check and correct the variables if they are out of range or NaNs
-   * \param value variable to be checked and corrected if needed
-   * \return double with a valid value
-   */
-  double correct_value(double value)
-  {
-    if (std::isinf(value) || std::isnan(std::abs(value))) {
-      value = std::numeric_limits<double>::max();
-    }
-    return value;
-  }
-  void correct_statistics()
-  {
-    m_variance = correct_value(m_variance);
-    m_mean = correct_value(m_mean);
-    m_min = correct_value(m_min);
-    m_max = correct_value(m_max);
-    m_n = correct_value(m_n);
-    m_M2 = correct_value(m_M2);
-  }
-#endif
-
   /// Adds a sample to consider in the metrics.
   void add_sample(const double x)
   {
@@ -170,7 +146,6 @@ public:
 private:
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   friend class odb::access;
-
 #endif
   double m_min;
   double m_max;

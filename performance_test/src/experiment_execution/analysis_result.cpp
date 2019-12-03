@@ -184,13 +184,4 @@ std::string AnalysisResult::to_csv_string(const bool pretty_print, std::string s
   return ss.str();
 }
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-void AnalysisResult::check_statistic_tracker()
-{
-  m_latency.correct_statistics();
-  m_pub_loop_time_reserve.correct_statistics();
-  m_sub_loop_time_reserve.correct_statistics();
-}
-#endif
-
 }  // namespace performance_test
