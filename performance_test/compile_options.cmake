@@ -28,7 +28,7 @@ function(set_compile_options target)
                 #-Wnon-virtual-dtor   # causes issues with ROS2 headers
                 -pedantic
                 -Wcast-align
-                -Wunused
+                #-Wunused
                 -Woverloaded-virtual
                 -Wconversion
                 -Wsign-conversion

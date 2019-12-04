@@ -1,3 +1,4 @@
+
 # Copyright 2017 Apex.AI, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -31,7 +32,7 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
 endif()
 
 # FastRTPS
-option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" ON)
+option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" OFF)
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   find_package(fastrtps_cmake_module QUIET REQUIRED)
@@ -89,19 +90,18 @@ endif()
 include_directories(${FastRTPS_INCLUDE_DIR} ${FastRTPS_INCLUDE_DIR}/fastrtps/include ${fastcdr_INCLUDE_DIR})
 include_directories(include ${FAST_RTPS_IDL_INCLUDE_DIR} ${osrf_testing_tools_cpp_INCLUDE_DIR})
 
-find_package(micro_dds_cmake_module QUIET)
-if(${micro_dds_cmake_module_FOUND})
-    find_package(MicroDDS MODULE)
-    if(MicroDDS_FOUND)
-        set(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED TRUE)
+find_package(connext_micro_cmake_module REQUIRED)
+find_package(ConnextMicro MODULE REQUIRED)
 
-        add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-        add_subdirectory(src/idlgen/micro)
+set(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED TRUE)
 
-        include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
-        ament_export_definitions(${MicroDDS_DEFINITIONS})
-    endif()
-endif()
+add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+add_subdirectory(src/idlgen/micro)
+
+include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
+MESSAGE(INFO "RIT IDL DIR" ${RTI_MICRO_IDL_INCLUDE_DIR})
+ament_export_definitions(${ConnextMicro_DEFINITIONS})
+
 
 # CycloneDDS
 option(PERFORMANCE_TEST_FORCE_CYCLONEDDS "Require Cyclone DDS to be available, fail otherwise" OFF)
@@ -230,7 +230,7 @@ endif()
 
 # ROS2 Waitset
 option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
-  The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
+  The plugin can only work if ApexOS is present, otherwise it will fail." ON)
 
 if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
     add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)

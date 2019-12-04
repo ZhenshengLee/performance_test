@@ -117,61 +117,62 @@ DDSDomainParticipant * ResourceManager::connext_DDS_micro_participant() const
 
     factory = DDSDomainParticipantFactory::get_instance();
     registry = factory->get_registry();
+//
+//    if (!registry->register_component("wh",
+//      WHSMHistoryFactory::get_interface(),
+//      nullptr, nullptr))
+//    {
+//      throw std::runtime_error("failed to register wh");
+//    }
+//
+//    if (!registry->register_component("rh",
+//      RHSMHistoryFactory::get_interface(),
+//      nullptr, nullptr))
+//    {
+//      throw std::runtime_error("failed to register rh");
+//    }
+//
+//    /* Configure UDP transport's allowed interfaces */
+//    if (!registry->unregister(NETIO_DEFAULT_UDP_NAME, nullptr, nullptr)) {
+//      throw std::runtime_error("failed to unregister udp");
+//    }
+//
+//    udp_property = new UDP_InterfaceFactoryProperty();
+//
+//    /* For additional allowed interface(s), increase maximum and length, and
+//       set interface below:
+//    */
+//    udp_property->allow_interface.maximum(2);
+//    udp_property->allow_interface.length(2);
+//
+//    /* loopback interface */
+//    *udp_property->allow_interface.get_reference(0) = DDS_String_dup("lo");
+//
+//    *udp_property->allow_interface.get_reference(1) = DDS_String_dup("eth0");
+//
+//    if (!registry->register_component(NETIO_DEFAULT_UDP_NAME,
+//      UDPInterfaceFactory::get_interface(),
+//      &udp_property->_parent._parent,
+//      nullptr))
+//    {
+//      throw std::runtime_error("failed to register udp");
+//    }
+//
+//    factory->get_qos(dpf_qos);
+//    dpf_qos.entity_factory.autoenable_created_entities = DDS_BOOLEAN_FALSE;
+//    factory->set_qos(dpf_qos);
+//
+ auto peer = "127.0.0.1"; /* default to loopback */
+//
+//    if (!registry->register_component(
+//        "dpde",
+//        DPDEDiscoveryFactory::get_interface(),
+//        &dpde_properties._parent,
+//        nullptr))
+//    {
+//      throw std::runtime_error("failed to register dpde");
+//    }
 
-    if (!registry->register_component("wh",
-      WHSMHistoryFactory::get_interface(),
-      nullptr, nullptr))
-    {
-      throw std::runtime_error("failed to register wh");
-    }
-
-    if (!registry->register_component("rh",
-      RHSMHistoryFactory::get_interface(),
-      nullptr, nullptr))
-    {
-      throw std::runtime_error("failed to register rh");
-    }
-
-    /* Configure UDP transport's allowed interfaces */
-    if (!registry->unregister(NETIO_DEFAULT_UDP_NAME, nullptr, nullptr)) {
-      throw std::runtime_error("failed to unregister udp");
-    }
-
-    udp_property = new UDP_InterfaceFactoryProperty();
-
-    /* For additional allowed interface(s), increase maximum and length, and
-       set interface below:
-    */
-    udp_property->allow_interface.maximum(2);
-    udp_property->allow_interface.length(2);
-
-    /* loopback interface */
-    *udp_property->allow_interface.get_reference(0) = DDS_String_dup("lo");
-
-    *udp_property->allow_interface.get_reference(1) = DDS_String_dup("eth0");
-
-    if (!registry->register_component(NETIO_DEFAULT_UDP_NAME,
-      UDPInterfaceFactory::get_interface(),
-      &udp_property->_parent._parent,
-      nullptr))
-    {
-      throw std::runtime_error("failed to register udp");
-    }
-
-    factory->get_qos(dpf_qos);
-    dpf_qos.entity_factory.autoenable_created_entities = DDS_BOOLEAN_FALSE;
-    factory->set_qos(dpf_qos);
-
-    auto peer = "127.0.0.1"; /* default to loopback */
-
-    if (!registry->register_component(
-        "dpde",
-        DPDEDiscoveryFactory::get_interface(),
-        &dpde_properties._parent,
-        nullptr))
-    {
-      throw std::runtime_error("failed to register dpde");
-    }
 
     if (!dp_qos.discovery.discovery.name.set_name("dpde")) {
       throw std::runtime_error("failed to set discovery plugin name");
@@ -199,32 +200,18 @@ DDSDomainParticipant * ResourceManager::connext_DDS_micro_participant() const
       static_cast<decltype(dp_qos.resource_limits.local_publisher_allocation)>(m_ec.
       number_of_publishers());
 
-    if (m_ec.no_micro_intra()) {
-      REDA_StringSeq_set_maximum(&dp_qos.transports.enabled_transports, 1);
-      REDA_StringSeq_set_length(&dp_qos.transports.enabled_transports, 1);
-      *REDA_StringSeq_get_reference(&dp_qos.transports.enabled_transports, 0) = REDA_String_dup(
-        NETIO_DEFAULT_UDP_NAME);
-      /* Use only unicast for user-data traffic. */
-      REDA_StringSeq_set_maximum(&dp_qos.user_traffic.enabled_transports, 1);
-      REDA_StringSeq_set_length(&dp_qos.user_traffic.enabled_transports, 1);
-      *REDA_StringSeq_get_reference(&dp_qos.user_traffic.enabled_transports, 0) = REDA_String_dup(
-        "_udp://");
-    }
 
-    m_connext_dds_micro_participant = factory->create_participant(
-      m_ec.dds_domain_id(),
-      dp_qos,
-      nullptr,
-      DDS_STATUS_MASK_NONE);
 
+
+    m_connext_dds_micro_participant = &apex::ConnextMicroContext::get_domain_participant();
     if (m_connext_dds_micro_participant == nullptr) {
       throw std::runtime_error("failed to create participant");
     }
-
-    auto ret = m_connext_dds_micro_participant->enable();
-    if (ret != DDS_RETCODE_OK) {
-      throw std::runtime_error("Could not enable participant.");
-    }
+//
+//    auto ret = m_connext_dds_micro_participant->enable();
+//    if (ret != DDS_RETCODE_OK) {
+//      throw std::runtime_error("Could not enable participant.");
+//    }
   }
   return m_connext_dds_micro_participant;
 }

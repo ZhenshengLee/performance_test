@@ -106,6 +106,8 @@ foreach(idl ${IDL_SOURCE_C})
   list(APPEND IDL_GEN_H_LIST ${IDL_GEN_H})
   list(APPEND IDL_GEN_C_LIST ${IDL_GEN_C})
 
+  message(INFO "Generating: "  ${IDL_GEN_C})
+
 endforeach()
 
 add_library(rti_micro_idl
