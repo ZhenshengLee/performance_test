@@ -19,10 +19,10 @@
 
 int main(int argc, char ** argv)
 {
-  rclcpp::init(argc, argv);
-
   auto & ec = performance_test::ExperimentConfiguration::get();
   ec.setup(argc, argv);
+
+  rclcpp::init(argc, argv);
 
   performance_test::AnalyzeRunner ar;
   ar.run();
