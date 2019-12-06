@@ -103,14 +103,6 @@ public:
   {
     if (!m_publisher) {
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
-      // Workaround for bug where RMW/FastRPS keeps history of volatile publisher.
-      if (ros2QOSAdapter.get_rmw_qos_profile().durability ==
-        rmw_qos_durability_policy_t::RMW_QOS_POLICY_DURABILITY_VOLATILE)
-      {
-        ros2QOSAdapter.keep_last(std::size_t(10));  // Setting depth to 10 as a safety net.
-      }
-      // End of workaround.
-
       m_publisher = m_node->create_publisher<DataType>(
         Topic::topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
     }

@@ -52,19 +52,15 @@ public:
         Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
       m_waitset = std::make_unique<rclcpp::Waitset<>>(m_polling_subscription);
     }
-    try {
-      const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100));
-      if (wait_ret.any()) {
-        const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
-        const std::lock_guard<std::mutex> lock(m_mutex);
-        for (const auto msg : loaned_msg) {
-          if (msg.info().valid()) {
-            this->template callback(msg.data());
-          }
+    const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100), false);
+    if (wait_ret.any()) {
+      const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
+      const std::lock_guard<std::mutex> lock(m_mutex);
+      for (const auto msg : loaned_msg) {
+        if (msg.info().valid()) {
+          this->template callback(msg.data());
         }
       }
-    } catch (const rclcpp::TimeoutError &) {
-      std::cerr << "Waitset timed out without receiving a sample." << std::endl;
     }
   }
 
