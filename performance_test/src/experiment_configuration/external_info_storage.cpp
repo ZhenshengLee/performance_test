@@ -58,6 +58,11 @@ void ExternalInfoStorage::save_to_db(boost::property_tree::ptree pt)
   } catch (boost::property_tree::ptree_error & e) {
     std::cout << e.what() << std::endl;
   }
+  try {
+    m_ci = pt.get<std::string>("CI");
+  } catch (boost::property_tree::ptree_error & e) {
+    std::cout << e.what() << std::endl;
+  }
 }
 #endif
 

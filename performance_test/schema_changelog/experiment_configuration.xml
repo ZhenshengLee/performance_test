@@ -1,4 +1,10 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="5">
+    <alter-table name="ExperimentConfiguration">
+      <add-column name="external_info_ci" type="TEXT" null="false"/>
+    </alter-table>
+  </changeset>
+
   <changeset version="4">
     <alter-table name="ExperimentConfiguration">
       <add-column name="com_mean_str" type="TEXT" null="false"/>

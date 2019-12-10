@@ -159,6 +159,8 @@ private:
         m_lock.lock();
         if (m_run_type == RunType::PUBLISHER) {
           m_time_reserve_statistics.add_sample(std::chrono::duration<double>(reserve).count());
+        } else {
+          m_time_reserve_statistics.add_sample(0.0);
         }
         m_lock.unlock();
       }

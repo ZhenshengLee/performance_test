@@ -42,7 +42,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 4, closed)
+#pragma db model version(1, 5, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition

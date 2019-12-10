@@ -57,6 +57,8 @@ private:
   std::string m_branch;
   #pragma db default()
   std::string m_architecture;
+  #pragma db default()
+  std::string m_ci;
 #endif
 };
 }  // namespace performance_test
