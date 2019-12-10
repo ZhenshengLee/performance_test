@@ -208,16 +208,18 @@ void AnalyzeRunner::analyze(
     StatisticsTracker(ltr_sub_vec),
     cpu_usage_tracker.get_cpu_usage()
   );
-
-  m_ec.log(result->to_csv_string(true));
-
+  if (std::chrono::duration_cast<std::chrono::seconds>(experiment_diff_start).count() >
+    m_ec.rows_to_ignore())
+  {
+    m_ec.log(result->to_csv_string(true));
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  if (m_ec.use_odb()) {
-    result->set_configuration(&m_ec);
-    m_ec.get_results().push_back(result);
-    m_db->persist(result);
-  }
+    if (m_ec.use_odb()) {
+      result->set_configuration(&m_ec);
+      m_ec.get_results().push_back(result);
+      m_db->persist(result);
+    }
   #endif
+  }
 }
 
 bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_start) const

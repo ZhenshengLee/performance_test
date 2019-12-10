@@ -102,6 +102,9 @@ public:
   /// \returns Returns the time the application should run until it terminates [s]. This will
   /// throw if the experiment configuration is not set up.
   uint64_t max_runtime() const;
+  /// \returns Returns the number of seconds to be ignored at the beginning of the experiment.
+  /// This will throw if the experiment configuration is not set up.
+  uint32_t rows_to_ignore() const;
   /// \returns Returns the configured number of publishers. This will throw if the experiment
   /// configuration is not set up.
   uint32_t number_of_publishers() const;
@@ -185,7 +188,8 @@ private:
     m_no_waitset(false),
     m_no_micro_intra(false),
     m_is_drivepx_rt(false),
-    m_roundtrip_mode(RoundTripMode::NONE)
+    m_roundtrip_mode(RoundTripMode::NONE),
+    m_rows_to_ignore()
   {}
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -229,7 +233,10 @@ private:
   std::string m_topic_name;
 
   uint64_t m_max_runtime;
-
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  #pragma db transient
+#endif
+  uint32_t m_rows_to_ignore;
   uint32_t m_number_of_publishers;
   uint32_t m_number_of_subscribers;
   bool m_check_memory;

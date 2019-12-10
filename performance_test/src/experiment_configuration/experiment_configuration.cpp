@@ -63,7 +63,8 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nNot using waitset: " << e.no_waitset() <<
            "\nNot using Connext DDS Micro INTRA: " << e.no_micro_intra() <<
            "\nWith security: " << e.is_with_security() <<
-           "\nRoundtrip Mode: " << e.roundtrip_mode();
+           "\nRoundtrip Mode: " << e.roundtrip_mode() <<
+           "\nIgnore first " << e.rows_to_ignore() << " seconds of the experiment";
   } else {
     return stream << "ERROR: Experiment is not yet setup!";
   }
@@ -112,7 +113,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "no_micro_intra", "Disables the Connext DDS Micro INTRA transport.")(
     "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
     po::value<std::string>()->default_value("None"),
-    "Selects the round trip mode (None, Main, Relay).")
+    "Selects the round trip mode (None, Main, Relay).")("ignore",
+    po::value<uint32_t>()->default_value(0), "Ignores first n seconds of the experiment.")
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   ("db_name", po::value<std::string>()->default_value("db_name"),
   "Name of the SQL database.")
@@ -245,6 +247,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     }
 
     m_max_runtime = vm["max_runtime"].as<uint64_t>();
+    m_rows_to_ignore = vm["ignore"].as<uint32_t>();
 
     m_number_of_publishers = vm["num_pub_threads"].as<uint32_t>();
     m_number_of_subscribers = vm["num_sub_threads"].as<uint32_t>();
@@ -429,7 +432,11 @@ uint64_t ExperimentConfiguration::max_runtime() const
   check_setup();
   return m_max_runtime;
 }
-
+uint32_t ExperimentConfiguration::rows_to_ignore() const
+{
+  check_setup();
+  return m_rows_to_ignore;
+}
 uint32_t ExperimentConfiguration::number_of_publishers() const
 {
   check_setup();
