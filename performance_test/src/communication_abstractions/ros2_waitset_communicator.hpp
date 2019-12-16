@@ -55,7 +55,7 @@ public:
     const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100), false);
     if (wait_ret.any()) {
       const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
-      const std::lock_guard<std::mutex> lock(m_mutex);
+      const std::lock_guard<decltype(this->get_lock())> lock(this->get_lock());
       for (const auto msg : loaned_msg) {
         if (msg.info().valid()) {
           this->template callback(msg.data());
@@ -67,7 +67,6 @@ public:
 private:
   std::shared_ptr<::rclcpp::PollingSubscription<DataType>> m_polling_subscription;
   std::unique_ptr<rclcpp::Waitset<>> m_waitset;
-  std::mutex m_mutex;
 };
 
 }  // namespace performance_test

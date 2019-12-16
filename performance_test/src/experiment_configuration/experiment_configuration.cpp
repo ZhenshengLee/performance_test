@@ -212,6 +212,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       throw std::invalid_argument(
               "You must compile with CycloneDDS support to enable it as communication mean.");
 #endif
+    } else {
+      throw std::invalid_argument("Selected communication mean not supported!");
     }
 
     if (vm.count("dds_domain_id")) {

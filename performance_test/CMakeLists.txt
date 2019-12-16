@@ -27,9 +27,9 @@ find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(ament_cmake REQUIRED)
 
 # FastRTPS
-option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" ON)
+find_package(fastrtps_cmake_module QUIET)
 
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
   find_package(fastrtps_cmake_module QUIET REQUIRED)
   find_package(FastRTPS QUIET REQUIRED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
@@ -63,7 +63,7 @@ endif()
 ament_export_include_directories(include)
 ament_export_dependencies(rosidl_default_runtime)
 
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
   add_subdirectory(src/idlgen/fast_rtps)
 endif()
 
@@ -217,7 +217,7 @@ if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
     )
 endif()
 
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
     set(sources ${sources}
         src/communication_abstractions/fast_rtps_communicator.hpp
     )
@@ -273,7 +273,7 @@ if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
   endif()
 endif()
 
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
   target_link_libraries(${EXE_NAME}
       ${FastRTPS_LIBRARIES}
       fast_rtps_idl

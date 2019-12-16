@@ -81,6 +81,12 @@ protected:
   /// Unlock the spinlock.
   void unlock();
 
+  /// Returns the lock.
+  auto & get_lock()
+  {
+    return m_lock;
+  }
+
 private:
   std::uint64_t m_prev_sample_id;
   std::uint64_t m_num_lost_samples;
