@@ -130,6 +130,9 @@ public:
   /// \returns Returns if Drivepx RT is set or not. This will throw if the experiment configuration
   /// is not set up.
   bool is_drivepx_rt() const;
+  /// \returns Returns if logging of performance_test results is disabled for stdout.
+  /// This will throw if the experiment configuration is not setup
+  bool disable_logging() const;
   bool is_with_security() const;
   /// \returns Returns the roundtrip mode.
   RoundTripMode roundtrip_mode() const;
@@ -189,7 +192,8 @@ private:
     m_no_micro_intra(false),
     m_is_drivepx_rt(false),
     m_roundtrip_mode(RoundTripMode::NONE),
-    m_rows_to_ignore()
+    m_rows_to_ignore(),
+    m_disable_logging(false)
   {}
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -246,6 +250,7 @@ private:
   bool m_no_micro_intra;
   bool m_is_drivepx_rt;
   bool m_with_security;
+  bool m_disable_logging;
 
   RoundTripMode m_roundtrip_mode;
 

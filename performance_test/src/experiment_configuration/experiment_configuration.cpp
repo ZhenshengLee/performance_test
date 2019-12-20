@@ -114,7 +114,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
     po::value<std::string>()->default_value("None"),
     "Selects the round trip mode (None, Main, Relay).")("ignore",
-    po::value<uint32_t>()->default_value(0), "Ignores first n seconds of the experiment.")
+    po::value<uint32_t>()->default_value(0),
+    "Ignores first n seconds of the experiment.")("disable_logging",
+    "Disables experiment logging to stdout.")
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   ("db_name", po::value<std::string>()->default_value("db_name"),
   "Name of the SQL database.")
@@ -362,6 +364,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_logfile = vm["logfile"].as<std::string>();
       open_file();
     }
+
+    // If we need to disable logging to stdout
+    if (vm.count("disable_logging")) {
+      m_disable_logging = true;
+    }
   } catch (const std::exception & e) {
     std::cerr << "ERROR: ";
     std::cerr << e.what() << std::endl;
@@ -492,6 +499,12 @@ bool ExperimentConfiguration::is_with_security() const
   return m_with_security;
 }
 
+bool ExperimentConfiguration::disable_logging() const
+{
+  check_setup();
+  return m_disable_logging;
+}
+
 ExperimentConfiguration::RoundTripMode ExperimentConfiguration::roundtrip_mode() const
 {
   check_setup();
@@ -540,7 +553,7 @@ boost::uuids::uuid ExperimentConfiguration::id() const
 
 void ExperimentConfiguration::log(const std::string & msg) const
 {
-  if (false == m_is_drivepx_rt) {
+  if (!m_disable_logging) {
     std::cout << msg << std::endl;
   }
   if (m_os.is_open()) {
