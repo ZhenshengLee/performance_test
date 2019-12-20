@@ -250,6 +250,9 @@ private:
   bool m_no_micro_intra;
   bool m_is_drivepx_rt;
   bool m_with_security;
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  #pragma db transient
+#endif
   bool m_disable_logging;
 
   RoundTripMode m_roundtrip_mode;
