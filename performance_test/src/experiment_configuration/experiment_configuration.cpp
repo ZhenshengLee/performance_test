@@ -116,7 +116,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Selects the round trip mode (None, Main, Relay).")("ignore",
     po::value<uint32_t>()->default_value(0),
     "Ignores first n seconds of the experiment.")("disable_logging",
-    "Disables experiment logging to stdout.")
+    "Disables experiment logging to stdout.")("expected_num_pubs",
+    po::value<uint32_t>()->default_value(0), "Expected number of publishers for "
+    "wait_for_matched")("expected_num_subs",
+    po::value<uint32_t>()->default_value(0), "Expected number of subscribers for "
+    "wait_for_matched")
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   ("db_name", po::value<std::string>()->default_value("db_name"),
   "Name of the SQL database.")
@@ -260,6 +264,13 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       throw std::invalid_argument("More than one publisher is not supported at the moment");
     }
 
+    m_expected_num_pubs = vm["expected_num_pubs"].as<uint32_t>();
+    m_expected_num_subs = vm["expected_num_subs"].as<uint32_t>();
+
+    if (m_expected_num_pubs > 1) {
+      throw std::invalid_argument("More than one publisher is not supported at the moment");
+    }
+
     m_use_ros_shm = false;
     if (vm.count("use_ros_shm")) {
       if (m_com_mean != CommunicationMean::ROS2) {
@@ -364,7 +375,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_logfile = vm["logfile"].as<std::string>();
       open_file();
     }
-
     // If we need to disable logging to stdout
     if (vm.count("disable_logging")) {
       m_disable_logging = true;
@@ -455,6 +465,17 @@ uint32_t ExperimentConfiguration::number_of_subscribers() const
 {
   check_setup();
   return m_number_of_subscribers;
+}
+
+uint32_t ExperimentConfiguration::expected_num_pubs() const
+{
+  check_setup();
+  return m_expected_num_pubs;
+}
+uint32_t ExperimentConfiguration::expected_num_subs() const
+{
+  check_setup();
+  return m_expected_num_subs;
 }
 
 bool ExperimentConfiguration::check_memory() const

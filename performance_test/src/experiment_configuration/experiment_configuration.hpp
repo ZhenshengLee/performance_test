@@ -111,6 +111,12 @@ public:
   /// \returns Returns the configured number of subscribers. This will throw if the experiment
   /// configuration is not set up.
   uint32_t number_of_subscribers() const;
+  /// \returns Returns the expected number of publishers for wait_for_matched if enabled. This
+  /// will throw if the experiment configuration is not set up.
+  uint32_t expected_num_pubs() const;
+  /// \returns Returns the expected number of subscribers for wait_for_matched if enabled. This
+  /// will throw if the experiment configuration is not set up.
+  uint32_t expected_num_subs() const;
   /// \returns Returns if memory operations should be logged.
   bool check_memory() const;
   /// \returns Returns if ROS shm should be used. This will throw if the experiment
@@ -193,7 +199,9 @@ private:
     m_is_drivepx_rt(false),
     m_roundtrip_mode(RoundTripMode::NONE),
     m_rows_to_ignore(),
-    m_disable_logging(false)
+    m_disable_logging(false),
+    m_expected_num_pubs(),
+    m_expected_num_subs()
   {}
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -243,6 +251,14 @@ private:
   uint32_t m_rows_to_ignore;
   uint32_t m_number_of_publishers;
   uint32_t m_number_of_subscribers;
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  #pragma db transient
+#endif
+  uint32_t m_expected_num_pubs;
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  #pragma db transient
+#endif
+  uint32_t m_expected_num_subs;
   bool m_check_memory;
   bool m_use_ros_shm;
   bool m_use_single_participant;

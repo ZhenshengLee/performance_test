@@ -50,6 +50,19 @@ public:
       m_subscription = this->m_node->template create_subscription<DataType>(
         Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter,
         [this](const typename DataType::SharedPtr data) {this->callback(data);});
+#ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
+      if (this->m_ec.expected_num_pubs() > 0) {
+        const auto expected_num_pubs = this->m_ec.expected_num_pubs();
+        try {
+          m_subscription->wait_for_matched(expected_num_pubs, std::chrono::seconds(5));
+        } catch (rclcpp::TimeoutError &) {
+          std::cerr << "Not found match for a publisher, waiting for another 30 seconds" <<
+            std::endl;
+          m_subscription->wait_for_matched(expected_num_pubs, std::chrono::seconds(30));
+          throw std::runtime_error("Not found match for a subscriber. Exiting");
+        }
+      }
+#endif
     }
     this->lock();
     m_executor.spin_once(std::chrono::milliseconds(100));

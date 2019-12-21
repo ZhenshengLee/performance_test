@@ -50,6 +50,17 @@ public:
     if (!m_polling_subscription) {
       m_polling_subscription = this->m_node->template create_polling_subscription<DataType>(
         Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
+      if (this->m_ec.expected_num_pubs() > 0) {
+        const auto expected_num_pubs = this->m_ec.expected_num_pubs();
+        try {
+          m_polling_subscription->wait_for_matched(expected_num_pubs, std::chrono::seconds(5));
+        } catch (rclcpp::TimeoutError &) {
+          std::cerr << "Not found match for a publisher, waiting for another 30 seconds" <<
+            std::endl;
+          m_polling_subscription->wait_for_matched(expected_num_pubs, std::chrono::seconds(30));
+          throw std::runtime_error("Not found match for a subscriber. Exiting");
+        }
+      }
       m_waitset = std::make_unique<rclcpp::Waitset<>>(m_polling_subscription);
     }
     const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100), false);
