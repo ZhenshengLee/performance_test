@@ -31,6 +31,7 @@
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #include <odb/core.hxx>
 #endif
+#include <chrono>
 
 namespace performance_test
 {
@@ -117,6 +118,9 @@ public:
   /// \returns Returns the expected number of subscribers for wait_for_matched if enabled. This
   /// will throw if the experiment configuration is not set up.
   uint32_t expected_num_subs() const;
+  /// \returns Returns the expected timeout for wait_for_matched if enabled. This
+  /// will throw if the experiment configuration is not set up.
+  std::chrono::seconds expected_wait_for_matched_timeout() const;
   /// \returns Returns if memory operations should be logged.
   bool check_memory() const;
   /// \returns Returns if ROS shm should be used. This will throw if the experiment
@@ -189,19 +193,20 @@ private:
     m_dds_domain_id(),
     m_rate(),
     m_max_runtime(),
+    m_rows_to_ignore(),
     m_number_of_publishers(),
     m_number_of_subscribers(),
+    m_expected_num_pubs(),
+    m_expected_num_subs(),
+    m_wait_for_matched_timeout(),
     m_check_memory(false),
     m_use_ros_shm(false),
     m_use_single_participant(false),
     m_no_waitset(false),
     m_no_micro_intra(false),
     m_is_drivepx_rt(false),
-    m_roundtrip_mode(RoundTripMode::NONE),
-    m_rows_to_ignore(),
     m_disable_logging(false),
-    m_expected_num_pubs(),
-    m_expected_num_subs()
+    m_roundtrip_mode(RoundTripMode::NONE)
   {}
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -259,6 +264,10 @@ private:
   #pragma db transient
 #endif
   uint32_t m_expected_num_subs;
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+#pragma db transient
+#endif
+  uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
   bool m_use_ros_shm;
   bool m_use_single_participant;
