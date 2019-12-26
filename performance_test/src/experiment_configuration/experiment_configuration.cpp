@@ -120,7 +120,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     po::value<uint32_t>()->default_value(0), "Expected number of publishers for "
     "wait_for_matched")("expected_num_subs",
     po::value<uint32_t>()->default_value(0), "Expected number of subscribers for "
-    "wait_for_matched")
+    "wait_for_matched")("wait_for_matched_timeout",
+    po::value<uint32_t>()->default_value(30),
+    "Maximum time[s] to wait for matching publishers/subscribers. Defaults to 30s")
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   ("db_name", po::value<std::string>()->default_value("db_name"),
   "Name of the SQL database.")
@@ -266,6 +268,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     m_expected_num_pubs = vm["expected_num_pubs"].as<uint32_t>();
     m_expected_num_subs = vm["expected_num_subs"].as<uint32_t>();
+    m_wait_for_matched_timeout = vm["wait_for_matched_timeout"].as<uint32_t>();
 
     if (m_expected_num_pubs > 1) {
       throw std::invalid_argument("More than one publisher is not supported at the moment");
@@ -476,6 +479,12 @@ uint32_t ExperimentConfiguration::expected_num_subs() const
 {
   check_setup();
   return m_expected_num_subs;
+}
+
+std::chrono::seconds ExperimentConfiguration::expected_wait_for_matched_timeout() const
+{
+  check_setup();
+  return std::chrono::seconds(m_wait_for_matched_timeout);
 }
 
 bool ExperimentConfiguration::check_memory() const
