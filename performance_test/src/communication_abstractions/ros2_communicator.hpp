@@ -107,15 +107,8 @@ public:
         Topic::topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       if (m_ec.expected_num_subs() > 0) {
-        const auto expected_num_subs = m_ec.expected_num_subs();
-        try {
-          m_publisher->wait_for_matched(expected_num_subs, std::chrono::seconds(5));
-        } catch (rclcpp::TimeoutError &) {
-          std::cerr << "Not found match for a subscriber, waiting for another 30 seconds" <<
-            std::endl;
-          m_publisher->wait_for_matched(expected_num_subs, std::chrono::seconds(30));
-          throw std::runtime_error("Not found match for a subscriber. Exiting");
-        }
+        m_publisher->wait_for_matched(m_ec.expected_num_subs(),
+          m_ec.expected_wait_for_matched_timeout());
       }
 #endif
     }
