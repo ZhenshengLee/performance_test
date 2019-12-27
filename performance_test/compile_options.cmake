@@ -36,6 +36,7 @@ function(set_compile_options target)
                 -Wuseless-cast
                 -Wdouble-promotion
                 -Wold-style-cast
+                -Wno-unknown-pragmas
                 #-Wnull-dereference    # gcc6
                 #-Wduplicated-branches # gcc7
                 #-Wduplicated-cond     # gcc6

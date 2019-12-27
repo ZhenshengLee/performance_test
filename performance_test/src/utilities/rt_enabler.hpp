@@ -69,7 +69,7 @@ inline void post_proc_rt_init()
 {
   int32_t res = 0;
 
-  void * buf = nullptr;
+  // void * buf = nullptr;
   const int64_t pg_sz = sysconf(_SC_PAGESIZE);
 
 
