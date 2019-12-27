@@ -214,9 +214,13 @@ void AnalyzeRunner::analyze(
     m_ec.log(result->to_csv_string(true));
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
     if (m_ec.use_odb()) {
-      result->set_configuration(&m_ec);
-      m_ec.get_results().push_back(result);
-      m_db->persist(result);
+      try {
+        result->set_configuration(&m_ec);
+        m_ec.get_results().push_back(result);
+        m_db->persist(result);
+      } catch (odb::exception & e) {
+        std::cerr << "Skipping storing to database: " << e.what() << std::endl;
+      }
     }
   #endif
   }
