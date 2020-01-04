@@ -64,7 +64,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nNot using Connext DDS Micro INTRA: " << e.no_micro_intra() <<
            "\nWith security: " << e.is_with_security() <<
            "\nRoundtrip Mode: " << e.roundtrip_mode() <<
-           "\nIgnore first " << e.rows_to_ignore() << " seconds of the experiment";
+           "\nIgnore seconds from beginning: " << e.rows_to_ignore();
   } else {
     return stream << "ERROR: Experiment is not yet setup!";
   }
