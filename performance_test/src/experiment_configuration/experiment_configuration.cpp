@@ -607,7 +607,7 @@ void ExperimentConfiguration::open_file()
 {
   check_setup();
   auto t = std::time(nullptr);
-  auto tm = *std::localtime(&t);
+  auto tm = *std::gmtime(&t);
   std::ostringstream oss;
   oss << m_logfile.c_str() << "_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S");
   m_final_logfile_name = oss.str();
