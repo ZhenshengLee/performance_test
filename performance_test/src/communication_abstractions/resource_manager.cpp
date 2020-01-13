@@ -275,4 +275,100 @@ dds_entity_t ResourceManager::cyclonedds_participant() const
   return result;
 }
 #endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+DDS::DomainParticipant_ptr
+ResourceManager::opendds_participant() const
+{
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  if (CORBA::is_nil(m_opendds_participant)) {
+    DDS::DomainParticipantFactory_var dpf = TheParticipantFactory;
+
+    OpenDDS::DCPS::TransportConfig_rch config =
+      OpenDDS::DCPS::TransportRegistry::instance()->create_config("ApexAiConfig");
+    OpenDDS::DCPS::TransportInst_rch inst =
+      OpenDDS::DCPS::TransportRegistry::instance()->create_inst("rtps_tran", "rtps_udp");
+    OpenDDS::DCPS::RtpsUdpInst_rch rui =
+      OpenDDS::DCPS::static_rchandle_cast<OpenDDS::DCPS::RtpsUdpInst>(inst);
+    rui->handshake_timeout_ = 1;
+
+    config->instances_.push_back(inst);
+    OpenDDS::DCPS::TransportRegistry::instance()->global_config(config);
+
+    int domain = m_ec.dds_domain_id();
+    bool multicast = true;
+    unsigned int resend = 1;
+    std::string partition, governance, permissions;
+    int defaultSize = 0;
+
+    OpenDDS::RTPS::RtpsDiscovery_rch disc;
+    disc = OpenDDS::DCPS::make_rch<OpenDDS::RTPS::RtpsDiscovery>("RtpsDiscovery");
+    rui->use_multicast_ = true;
+    rui->local_address("127.0.0.1:");
+    rui->multicast_interface_ = "lo";
+    disc->sedp_multicast(true);
+
+    TheServiceParticipant->add_discovery(
+      OpenDDS::DCPS::static_rchandle_cast<OpenDDS::DCPS::Discovery>(disc));
+    TheServiceParticipant->set_repo_domain(domain, disc->key());
+    DDS::DomainParticipantQos dp_qos;
+    dpf->get_default_participant_qos(dp_qos);
+    m_opendds_participant = dpf->create_participant(
+      m_ec.dds_domain_id(),
+      PARTICIPANT_QOS_DEFAULT,
+      nullptr,
+      OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+  }
+  return m_opendds_participant;
+}
+
+void
+ResourceManager::opendds_publisher(
+  DDS::Publisher_ptr & publisher,
+  DDS::DataWriterQos & dw_qos) const
+{
+  DDS::DomainParticipant_ptr participant = opendds_participant();
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  publisher = participant->create_publisher(
+    PUBLISHER_QOS_DEFAULT,
+    nullptr,
+    OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+
+  if (CORBA::is_nil(publisher)) {
+    throw std::runtime_error("Failed to create publisher");
+  }
+
+  DDS::ReturnCode_t ret;
+  ret = publisher->get_default_datawriter_qos(dw_qos);
+  if (ret != DDS::RETCODE_OK) {
+    throw std::runtime_error("Failed to get default datawriter qos");
+  }
+}
+
+void
+ResourceManager::opendds_subscriber(
+  DDS::Subscriber_ptr & subscriber,
+  DDS::DataReaderQos & dr_qos) const
+{
+  DDS::DomainParticipant_ptr participant = opendds_participant();
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  subscriber = participant->create_subscriber(
+    SUBSCRIBER_QOS_DEFAULT,
+    nullptr,
+    OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+
+  if (CORBA::is_nil(subscriber)) {
+    throw std::runtime_error("Failed to create subscriber");
+  }
+
+  DDS::ReturnCode_t ret;
+  ret = subscriber->get_default_datareader_qos(dr_qos);
+  if (ret != DDS::RETCODE_OK) {
+    throw std::runtime_error("Failed to get default datareader qos");
+  }
+}
+#endif
 }  // namespace performance_test

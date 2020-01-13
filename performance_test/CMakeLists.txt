@@ -26,10 +26,14 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS program_options REQUIRED)
 find_package(ament_cmake REQUIRED)
 
-# FastRTPS
-find_package(fastrtps_cmake_module QUIET)
+if(PERFORMANCE_TEST_OPENDDS_ENABLED)
+    add_definitions(-DPERFORMANCE_TEST_OPENDDS_ENABLED)
+endif()
 
-if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
+# FastRTPS
+option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" ON)
+
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   find_package(fastrtps_cmake_module QUIET REQUIRED)
   find_package(FastRTPS QUIET REQUIRED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
@@ -63,8 +67,14 @@ endif()
 ament_export_include_directories(include)
 ament_export_dependencies(rosidl_default_runtime)
 
-if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_subdirectory(src/idlgen/fast_rtps)
+endif()
+
+if(PERFORMANCE_TEST_OPENDDS_ENABLED)
+    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+    add_subdirectory(src/idlgen/opendds)
+    include_directories(${OPENDDS_IDL_INCLUDE_DIR} ${PARENT_DDS_ROOT_INCLUDE})
 endif()
 
 # This is a workaround for broken include paths on some systems.
@@ -72,7 +82,7 @@ include_directories(${FastRTPS_INCLUDE_DIR} ${FastRTPS_INCLUDE_DIR}/fastrtps/inc
 include_directories(include ${FAST_RTPS_IDL_INCLUDE_DIR} ${osrf_testing_tools_cpp_INCLUDE_DIR})
 
 find_package(micro_dds_cmake_module QUIET)
-if(${micro_dds_cmake_module_FOUND_AMENT_PACKAGE})
+if(${micro_dds_cmake_module_FOUND})
     find_package(MicroDDS MODULE)
     if(MicroDDS_FOUND)
         set(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED TRUE)
@@ -217,7 +227,7 @@ if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
     )
 endif()
 
-if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
     set(sources ${sources}
         src/communication_abstractions/fast_rtps_communicator.hpp
     )
@@ -226,6 +236,12 @@ endif()
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
     set(sources ${sources}
         src/communication_abstractions/cyclonedds_communicator.hpp
+    )
+endif()
+
+if(PERFORMANCE_TEST_OPENDDS_ENABLED)
+    set(sources ${sources}
+        src/communication_abstractions/opendds_communicator.hpp
     )
 endif()
 
@@ -273,17 +289,33 @@ if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
   endif()
 endif()
 
-if(${fastrtps_cmake_module_FOUND_AMENT_PACKAGE})
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   target_link_libraries(${EXE_NAME}
       ${FastRTPS_LIBRARIES}
       fast_rtps_idl
       fastcdr)
 endif()
 
+
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   target_link_libraries(${EXE_NAME}
       cyclonedds_idl
       CycloneDDS::ddsc)
+endif()
+if(PERFORMANCE_TEST_OPENDDS_ENABLED)
+    set(DDS_DYN_LIBS  ${PARENT_DDS_ROOT_LIBS}/libACE.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO.so
+                      ${PARENT_DDS_ROOT_LIBS}/libOpenDDS_Dcps.so
+                      ${PARENT_DDS_ROOT_LIBS}/libOpenDDS_Rtps.so
+                      ${PARENT_DDS_ROOT_LIBS}/libOpenDDS_Rtps_Udp.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO_PortableServer.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO_PortableServer.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO_PI.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO_CodecFactory.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO_AnyTypeCode.so
+                      ${PARENT_DDS_ROOT_LIBS}/libTAO_BiDirGIOP.so)
+
+    target_link_libraries(${EXE_NAME} opendds_idl ${DDS_DYN_LIBS})
 endif()
 
 if(BUILD_TESTING)

@@ -31,7 +31,21 @@ The script which generates the graphical plots needs matplotlib and pandas:
 sudo apt-get install python-matplotlib python-pip
 pip install pandas
 ```
+# How to build OpenDDS
+```
+Download and untar OpendDDS-3.13.2
+cd OpendDDS-3.13.2
+./configure --std=c++14 --prefix=/opt/opendds  --optimize --inline
+make
+sudo make install
 
+After this OpenDDS binaries will be installed under /opt/opendds
+```
+# How to build against OpenDDS
+```
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_OPENDDS_ENABLED=ON -DPERFORMANCE_TEST_FASTRTPS_ENABLED=OFF
+
+```
 # How to build and run
 
 ```
@@ -44,6 +58,12 @@ colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
 source install/setup.bash
 ros2 run performance_test perf_test --help
 ```
+
+# How to run with OpenDDS
+```
+ros2 run performance_test perf_test -c OpenDDS -l log -t Array1k --max_runtime 10
+```
+
 # Plot results
 
 To plot the results, you will need to install the perfplot tool from the apex_performance_plotter python module.

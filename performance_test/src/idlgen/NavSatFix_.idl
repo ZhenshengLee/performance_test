@@ -24,6 +24,7 @@ module dds_
   const octet NavSatFix__COVARIANCE_TYPE_KNOWN =
     3;
 
+#pragma DCPS_DATA_TYPE "performance_test_msgs::msg::dds_::NavSatFix_"
 
 typedef double performance_test_msgs__NavSatFix__double_array_9[9];
 

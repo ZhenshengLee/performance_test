@@ -15,8 +15,7 @@ module msg
 module dds_
 {
 
-
-
+#pragma DCPS_DATA_TYPE "performance_test_msgs::msg::dds_::RadarDetection_"
 
 struct RadarDetection_
 {

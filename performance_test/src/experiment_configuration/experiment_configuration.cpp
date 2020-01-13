@@ -15,7 +15,6 @@
 #include "experiment_configuration.hpp"
 
 #include <boost/program_options.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <rmw/rmw.h>
 
 #include <iostream>
@@ -26,6 +25,7 @@
 #include "topics.hpp"
 
 #include "performance_test/version.h"
+#include <rclcpp/rclcpp.hpp> // NOLINT - This include order is required when using OpenDDS
 
 namespace performance_test
 {
@@ -79,7 +79,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Optionally specify a logfile.")("rate,r", po::value<uint32_t>()->default_value(1000),
     "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
     "communication,c", po::value<std::string>()->required(),
-    "Communication plugin to use (ROS2, FastRTPS, ConnextDDSMicro, CycloneDDS, "
+    "Communication plugin to use (ROS2, FastRTPS, ConnextDDSMicro, CycloneDDS, OpenDDS, "
     "ROS2PollingSubscription)")(
     "topic,t",
     po::value<std::string>()->required(),
@@ -219,6 +219,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #else
       throw std::invalid_argument(
               "You must compile with CycloneDDS support to enable it as communication mean.");
+#endif
+    } else if (vm["communication"].as<std::string>() == "OpenDDS") {
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+      m_com_mean = CommunicationMean::OPENDDS;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "OPENDDS";
+      #endif
+#else
+      throw std::invalid_argument(
+              "You must compile with OpenDDS support to enable it as communication mean");
 #endif
     } else {
       throw std::invalid_argument("Selected communication mean not supported!");

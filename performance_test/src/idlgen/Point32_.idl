@@ -13,9 +13,6 @@ module msg
 module dds_
 {
 
-
-
-
 struct Point32_
 {
 

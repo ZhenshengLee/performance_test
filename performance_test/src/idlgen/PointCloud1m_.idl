@@ -15,7 +15,7 @@ module msg
 module dds_
 {
 
-
+#pragma DCPS_DATA_TYPE "performance_test_msgs::msg::dds_::PointCloud1m_"
 
 typedef sensor_msgs::msg::dds_::PointField_ performance_test_msgs__PointCloud1m__sensor_msgs__msg__dds___PointField__array_8[8];
 typedef octet performance_test_msgs__PointCloud1m__octet_array_1048576[1048576];

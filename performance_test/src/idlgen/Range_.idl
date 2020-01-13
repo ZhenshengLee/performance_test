@@ -19,7 +19,7 @@ module dds_
   const octet Range__INFRARED =
     1;
 
-
+#pragma DCPS_DATA_TYPE "performance_test_msgs::msg::dds_::Range_"
 
 struct Range_
 {

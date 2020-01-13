@@ -14,8 +14,7 @@ module msg
 module dds_
 {
 
-
-
+#pragma DCPS_DATA_TYPE "performance_test_msgs::msg::dds_::Struct32k_"
 
 struct Struct32k_
 {

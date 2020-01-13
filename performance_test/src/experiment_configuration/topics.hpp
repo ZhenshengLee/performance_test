@@ -133,6 +133,30 @@
   #include <cyclonedds/RadarTrack_.h>
 #endif
 
+// OpenDDS Types
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  #include <dds/DdsDcpsTopicC.h>
+  #include <opendds/Array1k_TypeSupportImpl.h>
+  #include <opendds/Array4k_TypeSupportImpl.h>
+  #include <opendds/Array16k_TypeSupportImpl.h>
+  #include <opendds/Array32k_TypeSupportImpl.h>
+  #include <opendds/Array60k_TypeSupportImpl.h>
+  #include <opendds/Array1m_TypeSupportImpl.h>
+  #include <opendds/Array2m_TypeSupportImpl.h>
+  #include <opendds/Struct16_TypeSupportImpl.h>
+  #include <opendds/Struct256_TypeSupportImpl.h>
+  #include <opendds/Struct4k_TypeSupportImpl.h>
+  #include <opendds/Struct32k_TypeSupportImpl.h>
+  #include <opendds/PointCloud512k_TypeSupportImpl.h>
+  #include <opendds/PointCloud1m_TypeSupportImpl.h>
+  #include <opendds/PointCloud2m_TypeSupportImpl.h>
+  #include <opendds/PointCloud4m_TypeSupportImpl.h>
+  #include <opendds/Range_TypeSupportImpl.h>
+  #include <opendds/NavSatFix_TypeSupportImpl.h>
+  #include <opendds/RadarDetection_TypeSupportImpl.h>
+  #include <opendds/RadarTrack_TypeSupportImpl.h>
+#endif
+
 #include <algorithm>
 #include <string>
 #include <vector>
@@ -170,6 +194,17 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array1k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array1k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array1k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array1k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array1k_TypeSupportImpl();
+  }
+#endif
   static std::string topic_name()
   {
     return std::string("Array1k");
@@ -199,6 +234,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__Array4k__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array4k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array4k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array4k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array4k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array4k_TypeSupportImpl();
   }
 #endif
 
@@ -234,6 +281,18 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array16k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array16k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array16k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array16k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array16k_TypeSupportImpl();
+  }
+#endif
+
   static std::string topic_name()
   {
     return std::string("Array16k");
@@ -266,6 +325,17 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array32k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array32k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array32k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array32k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array32k_TypeSupportImpl();
+  }
+#endif
   static std::string topic_name()
   {
     return std::string("Array32k");
@@ -298,6 +368,17 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array60k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array60k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array60k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array60k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array60k_TypeSupportImpl();
+  }
+#endif
   static std::string topic_name()
   {
     return std::string("Array60k");
@@ -330,6 +411,17 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array1m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array1m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array1m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array1m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array1m_TypeSupportImpl();
+  }
+#endif
   static std::string topic_name()
   {
     return std::string("Array1m");
@@ -362,6 +454,17 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array2m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array2m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array2m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array2m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array2m_TypeSupportImpl();
+  }
+#endif
   static std::string topic_name()
   {
     return std::string("Array2m");
@@ -390,6 +493,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__Struct16__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Struct16_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Struct16_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Struct16_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Struct16_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Struct16_TypeSupportImpl();
   }
 #endif
 
@@ -424,6 +539,18 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Struct256_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Struct256_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Struct256_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Struct256_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Struct256_TypeSupportImpl();
+  }
+#endif
+
   static std::string topic_name()
   {
     return std::string("Struct256");
@@ -455,6 +582,17 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Struct4k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Struct4k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Struct4k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Struct4k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Struct4k_TypeSupportImpl();
+  }
+#endif
   static std::string topic_name()
   {
     return std::string("Struct4k");
@@ -483,6 +621,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__Struct32k__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Struct32k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Struct32k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Struct32k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Struct32k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Struct32k_TypeSupportImpl();
   }
 #endif
 
@@ -517,6 +667,18 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::PointCloud512k_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::PointCloud512k_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::PointCloud512k_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::PointCloud512k_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::PointCloud512k_TypeSupportImpl();
+  }
+#endif
+
   static std::string topic_name()
   {
     return std::string("PointCloud512k");
@@ -545,6 +707,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__PointCloud1m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::PointCloud1m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::PointCloud1m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::PointCloud1m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::PointCloud1m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::PointCloud1m_TypeSupportImpl();
   }
 #endif
 
@@ -579,6 +753,18 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::PointCloud2m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::PointCloud2m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::PointCloud2m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::PointCloud2m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::PointCloud2m_TypeSupportImpl();
+  }
+#endif
+
   static std::string topic_name()
   {
     return std::string("PointCloud2m");
@@ -607,6 +793,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__PointCloud4m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::PointCloud4m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::PointCloud4m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::PointCloud4m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::PointCloud4m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::PointCloud4m_TypeSupportImpl();
   }
 #endif
 
@@ -641,6 +839,18 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Range_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Range_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Range_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Range_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Range_TypeSupportImpl();
+  }
+#endif
+
   static std::string topic_name()
   {
     return std::string("Range");
@@ -669,6 +879,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__NavSatFix__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::NavSatFix_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::NavSatFix_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::NavSatFix_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::NavSatFix_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::NavSatFix_TypeSupportImpl();
   }
 #endif
 
@@ -703,6 +925,18 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::RadarDetection_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::RadarDetection_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::RadarDetection_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::RadarDetection_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::RadarDetection_TypeSupportImpl();
+  }
+#endif
+
   static std::string topic_name()
   {
     return std::string("RadarDetection");
@@ -731,6 +965,18 @@ public:
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
     return &performance_test_msgs_msg_dds__RadarTrack__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::RadarTrack_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::RadarTrack_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::RadarTrack_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::RadarTrack_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::RadarTrack_TypeSupportImpl();
   }
 #endif
 

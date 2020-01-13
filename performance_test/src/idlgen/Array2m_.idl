@@ -13,7 +13,7 @@ module msg
 module dds_
 {
 
-
+#pragma DCPS_DATA_TYPE "performance_test_msgs::msg::dds_::Array2m_"
 
 typedef octet performance_test_msgs__Array2m__octet_array_2097152[2097152];
 

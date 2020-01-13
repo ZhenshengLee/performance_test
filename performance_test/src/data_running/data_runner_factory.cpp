@@ -19,7 +19,6 @@
 #include <string>
 #include <memory>
 
-#include "../communication_abstractions/ros2_callback_communicator.hpp"
 
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
   #include "../communication_abstractions/ros2_waitset_communicator.hpp"
@@ -33,10 +32,14 @@
   #include "../communication_abstractions/connext_dds_micro_communicator.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  #include "../communication_abstractions/opendds_communicator.hpp"
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   #include "../communication_abstractions/cyclonedds_communicator.hpp"
 #endif
-
+#include "../communication_abstractions/ros2_callback_communicator.hpp"
 #include "data_runner.hpp"
 #include "../experiment_configuration/topics.hpp"
 
@@ -70,9 +73,14 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         } else if (com_mean == CommunicationMean::CONNEXTDDSMICRO) {
           ptr = std::make_shared<DataRunner<RTIMicroDDSCommunicator<T>>>(run_type);
 #endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
         } else if (com_mean == CommunicationMean::CYCLONEDDS) {
           ptr = std::make_shared<DataRunner<CycloneDDSCommunicator<T>>>(run_type);
+#endif
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+        } else if (com_mean == CommunicationMean::OPENDDS) {
+          ptr = std::make_shared<DataRunner<OpenDDSCommunicator<T>>>(run_type);
 #endif
         }
       }

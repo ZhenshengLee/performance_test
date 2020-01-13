@@ -20,7 +20,7 @@ build_cross_image:
           sh -c "colcon build --merge-install --cmake-args -DCMAKE_TOOLCHAIN_FILE=`pwd`/tools/toolchain.cmake -DBUILD_TESTING=OFF"
       '
 
-build:
+build_cyclonedds:
   stage: build
   image: osrf/ros:dashing-desktop
   script:
@@ -63,6 +63,45 @@ build:
       - build
       - opt.tar.gz
 
+build_opendds:
+  stage: build
+  image: osrf/ros:dashing-desktop
+  script:
+    - source /opt/ros/dashing/setup.bash
+    - apt-get update
+    - '
+      apt-get install -y
+          ros-dashing-osrf-testing-tools-cpp
+          default-jdk
+          wget
+      '
+    - pip3 install -U colcon-common-extensions pytest
+    - cd /opt
+    - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opendds.tar.gz
+    - tar -xzf opendds.tar.gz
+    - find /opt/opendds
+    - cd $CI_PROJECT_DIR
+    - mkdir -p /opt/performance_test
+    - '
+      colcon build
+          --install-base /opt/performance_test
+          --merge-install
+          --cmake-args
+            -DCMAKE_BUILD_TYPE=Release
+            -DPERFORMANCE_TEST_OPENDDS_ENABLED=ON
+            -DPERFORMANCE_TEST_FASTRTPS_ENABLED=OFF
+          --base-path performance_test
+          --event-handlers console_stderr-
+      '
+    - cp LICENSE /opt/performance_test
+    - tar cfz opt.tar.gz /opt/performance_test
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+    - log
+    - build
+    - opt.tar.gz
 
 build_fastrtps:
   stage: build
@@ -105,12 +144,12 @@ build_ros1:
     - rm performance_test_ros1_publisher/COLCON_IGNORE  # ROS1 packages are ignored by default
     - colcon build  # Should build msgs and publisher
 
- 
+
 test:
   stage: test
   image: osrf/ros:dashing-desktop
   dependencies:
-    - build
+    - build_cyclonedds
   script:
     - tar xf opt.tar.gz -C /
     - '
@@ -159,7 +198,7 @@ volume:
   services:
     - docker:dind
   dependencies:
-    - build
+    - build_cyclonedds
   before_script:
     - ''
   script:

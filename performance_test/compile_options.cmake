@@ -33,10 +33,11 @@ function(set_compile_options target)
                 -Wconversion
                 -Wsign-conversion
                 -Wlogical-op
-                -Wuseless-cast
+                #-Wuseless-cast
                 -Wdouble-promotion
-                -Wold-style-cast
+                -Wno-old-style-cast
                 -Wno-unknown-pragmas
+                -Wno-deprecated-declarations
                 #-Wnull-dereference    # gcc6
                 #-Wduplicated-branches # gcc7
                 #-Wduplicated-cond     # gcc6
