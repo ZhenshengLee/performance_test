@@ -14,6 +14,8 @@
   <build_depend>builtin_interfaces</build_depend>
   <build_depend>boost</build_depend>
   <build_depend>fastrtps_cmake_module</build_depend>
+  <build_depend>java</build_depend>
+  <build_depend>maven</build_depend>
   <build_depend>osrf_testing_tools_cpp</build_depend>
   <build_depend>rclcpp</build_depend>
   <build_depend>rmw_fastrtps_cpp</build_depend>
@@ -34,6 +36,7 @@
   <test_depend>launch</test_depend>
   <test_depend>launch_testing</test_depend>
   <test_depend>rmw_implementation_cmake</test_depend>
+  <test_depend>test_osrf_testing_tools_cpp</test_depend>
 
   <member_of_group>rosidl_interface_packages</member_of_group>
 

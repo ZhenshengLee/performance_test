@@ -25,13 +25,9 @@ build_cyclonedds:
   image: osrf/ros:dashing-desktop
   script:
     - source /opt/ros/dashing/setup.bash
+    - rosdep update
     - apt-get update
-    - '
-      apt-get install -y
-          ros-dashing-osrf-testing-tools-cpp
-          default-jdk
-          maven
-      '
+    - rosdep install --from performance_test --ignore-src -y
     - pip3 install -U colcon-common-extensions pytest
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
     - cd cyclonedds
