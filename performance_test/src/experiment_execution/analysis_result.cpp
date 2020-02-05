@@ -58,7 +58,7 @@ AnalysisResult::AnalysisResult(
   if (ret != 0) {
     throw std::runtime_error("Could not get system resource usage.");
   }
-  if (m_num_samples_received != m_latency.n()) {
+  if (m_num_samples_received != static_cast<uint64_t>(m_latency.n())) {
     // TODO(andreas.pasternak): Commented out flaky assertion. Need to check if it actually a bug.
     /*throw std::runtime_error("Statistics result sample size does not match: "
                              + std::to_string(m_num_samples_received) + " / "

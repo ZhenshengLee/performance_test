@@ -241,7 +241,7 @@ bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_
   const double runtime_sec =
     std::chrono::duration<double>(std::chrono::steady_clock::now() - experiment_start).count();
 
-  if (runtime_sec > m_ec.max_runtime()) {
+  if (runtime_sec > static_cast<double>(m_ec.max_runtime())) {
     std::cout << "Maximum runtime reached. Exiting." << std::endl;
     return true;
   } else {
