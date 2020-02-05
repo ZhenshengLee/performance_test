@@ -22,10 +22,10 @@
 TEST(performance_test, StatisticsTracker_init) {
   performance_test::StatisticsTracker st;
 
-  ASSERT_FLOAT_EQ(st.mean(), 0.0);
-  ASSERT_FLOAT_EQ(st.n(), 0.0);
-  ASSERT_FLOAT_EQ(st.max(), std::numeric_limits<double>::lowest());
-  ASSERT_FLOAT_EQ(st.min(), std::numeric_limits<double>::max());
+  ASSERT_DOUBLE_EQ(st.mean(), 0.0);
+  ASSERT_DOUBLE_EQ(st.n(), 0.0);
+  ASSERT_DOUBLE_EQ(st.max(), std::numeric_limits<double>::lowest());
+  ASSERT_DOUBLE_EQ(st.min(), std::numeric_limits<double>::max());
 }
 
 TEST(performance_test, StatisticsTracker_single_sample) {
@@ -33,10 +33,10 @@ TEST(performance_test, StatisticsTracker_single_sample) {
   const auto sample = 5.345345;
   st.add_sample(sample);
 
-  ASSERT_FLOAT_EQ(st.n(), 1.0);
-  ASSERT_FLOAT_EQ(st.mean(), sample);
-  ASSERT_FLOAT_EQ(st.max(), sample);
-  ASSERT_FLOAT_EQ(st.min(), sample);
+  ASSERT_DOUBLE_EQ(st.n(), 1.0);
+  ASSERT_DOUBLE_EQ(st.mean(), sample);
+  ASSERT_DOUBLE_EQ(st.max(), sample);
+  ASSERT_DOUBLE_EQ(st.min(), sample);
 }
 
 
@@ -52,11 +52,11 @@ TEST(performance_test, StatisticsTracker_two_samples) {
   const auto mean = (small + big) / 2.0;
   const auto variance = ((mean - small) * (mean - small) + (mean - big) * (mean - big)) / 2.0;
 
-  ASSERT_FLOAT_EQ(st.min(), small);
-  ASSERT_FLOAT_EQ(st.max(), big);
-  ASSERT_FLOAT_EQ(st.n(), 2.0);
-  ASSERT_FLOAT_EQ(st.mean(), mean);
-  ASSERT_FLOAT_EQ(st.variance(), variance);
+  ASSERT_DOUBLE_EQ(st.min(), small);
+  ASSERT_DOUBLE_EQ(st.max(), big);
+  ASSERT_DOUBLE_EQ(st.n(), 2.0);
+  ASSERT_DOUBLE_EQ(st.mean(), mean);
+  ASSERT_DOUBLE_EQ(st.variance(), variance);
 }
 
 TEST(performance_test, StatisticsTracker_three_samples) {
@@ -75,11 +75,11 @@ TEST(performance_test, StatisticsTracker_three_samples) {
     ((mean - small) * (mean - small) + (mean - big) * (mean - big) + (mean - mid) * (mean - mid)) /
     3.0;
 
-  ASSERT_FLOAT_EQ(st.min(), small);
-  ASSERT_FLOAT_EQ(st.max(), big);
-  ASSERT_FLOAT_EQ(st.n(), 3.0);
-  ASSERT_FLOAT_EQ(st.mean(), mean);
-  ASSERT_FLOAT_EQ(st.variance(), variance);
+  ASSERT_DOUBLE_EQ(st.min(), small);
+  ASSERT_DOUBLE_EQ(st.max(), big);
+  ASSERT_DOUBLE_EQ(st.n(), 3.0);
+  ASSERT_DOUBLE_EQ(st.mean(), mean);
+  ASSERT_DOUBLE_EQ(st.variance(), variance);
 }
 
 #endif  // TEST_STATISTICS_TRACKER_HPP_
