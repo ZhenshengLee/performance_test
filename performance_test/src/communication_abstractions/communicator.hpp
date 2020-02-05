@@ -23,6 +23,12 @@
 #include "../utilities/statistics_tracker.hpp"
 #include "../experiment_configuration/experiment_configuration.hpp"
 
+#if defined(QNX)
+#include <sys/neutrino.h>
+#include <inttypes.h>
+#include <sys/syspage.h>
+#endif
+
 namespace performance_test
 {
 
@@ -92,6 +98,9 @@ private:
   std::uint64_t m_num_lost_samples;
   std::uint64_t m_received_sample_counter;
   std::uint64_t m_sent_sample_counter;
+#if defined(QNX)
+  std::uint64_t m_cps;
+#endif
 
   StatisticsTracker m_latency;
 
