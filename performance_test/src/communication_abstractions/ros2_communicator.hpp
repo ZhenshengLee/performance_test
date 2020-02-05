@@ -114,7 +114,9 @@ public:
 #endif
     }
     lock();
+#if !defined(QNX)
     data.time = time.count();
+#endif
     data.id = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
