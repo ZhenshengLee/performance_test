@@ -22,6 +22,7 @@
 #include <atomic>
 #include <memory>
 #include <thread>
+#include <memory>
 
 #include "../utilities/spin_lock.hpp"
 
@@ -148,7 +149,7 @@ private:
       {
 #if defined(QNX)
         std::uint64_t clk_cyc = ClockCycles();
-        data.time = static_cast<std::int64_t>(clk_cyc);
+        data->time = static_cast<std::int64_t>(clk_cyc);
 #endif
         std::chrono::nanoseconds epoc_time =
           std::chrono::steady_clock::now().time_since_epoch();
