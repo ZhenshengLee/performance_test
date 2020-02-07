@@ -73,9 +73,10 @@ public:
     auto times = m_cpu_timer.elapsed();
     m_cpu_timer.start();
 
+    auto cpu_cores = std::thread::hardware_concurrency();
     return CpuInfo(
-      std::thread::hardware_concurrency(),
-      100.0F * (times.user + times.system) / times.wall
+      cpu_cores,
+      100.0F * (times.user + times.system) / (times.wall * cpu_cores)
     );
   }
 };
