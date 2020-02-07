@@ -21,6 +21,7 @@
 #endif
 #include <atomic>
 #include <thread>
+#include <memory>
 
 #include "../utilities/spin_lock.hpp"
 
@@ -131,7 +132,8 @@ private:
   /// The function running inside the thread doing all the work.
   void thread_function()
   {
-    typename TCommunicator::DataType data;
+    std::unique_ptr<typename TCommunicator::DataType>
+    data(new typename TCommunicator::DataType());
 
     auto next_run = std::chrono::steady_clock::now() +
       std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -147,11 +149,11 @@ private:
       {
 #if defined(QNX)
         std::uint64_t clk_cyc = ClockCycles();
-        data.time = static_cast<std::int64_t>(clk_cyc);
+        data->time = static_cast<std::int64_t>(clk_cyc);
 #endif
         std::chrono::nanoseconds epoc_time =
           std::chrono::steady_clock::now().time_since_epoch();
-        m_com.publish(data, epoc_time);
+        m_com.publish(*data, epoc_time);
       }
       if (m_run_type == RunType::SUBSCRIBER) {
         m_com.update_subscription();
