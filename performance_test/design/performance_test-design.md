@@ -37,7 +37,11 @@ perfplot NAME_OF_LOG_FILE
 * `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED` Enable Connext DDS Micro support. Enabled by default.
 * `-DPERFORMANCE_TEST_FASTRTPS_ENABLED` Enables FastRTPS support. Enabled by default.
 * `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED` Enables CycloneDDS support. Enabled by default.
-* `-DODB_FOR_SQL_ENABLED` Enables saving results to SQL database format. Disabled by default.
+* `-DPERFORMANCE_TEST_ODB_SQLITE=ON` Enables saving results to SQL database format. Disabled by default.
+* `-DPERFORMANCE_TEST_ODB_MYSQL=ON` Enables saving results to MySQL database format. Disabled by
+default. 
+* `-DPERFORMANCE_TEST_ODB_PGSQL=ON` Enables saving results to PostgreSQL database format. Disabled by
+default.
 * `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED` Enables ROS2 Waitset support. Disabled by default.
 
 > ROS 2 support is always enabled.
