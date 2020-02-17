@@ -127,12 +127,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   ("db_name", po::value<std::string>()->default_value("db_name"),
   "Name of the SQL database.")
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-  ("db_user", po::value<std::string>()->required(),
+  ("db_user", po::value<std::string>(),
   "User name to login to the SQL database.")("db_password",
-    po::value<std::string>()->required(),
+    po::value<std::string>(),
     "Password to login to the SQL database.")("db_host",
-    po::value<std::string>()->required(), "IP address of SQL server.")("db_port",
-    po::value<unsigned int>()->required(), "Port for SQL protocol.")
+    po::value<std::string>(), "IP address of SQL server.")("db_port",
+    po::value<unsigned int>(), "Port for SQL protocol.")
 #endif
 #endif
   ;
@@ -161,14 +161,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       exit(0);
     }
 
-    if (!vm.count("topic")) {
-      throw std::invalid_argument("--topic is required!");
-    }
+    // validate arguments and raise an error if invalid
+    po::notify(vm);
+
     m_topic_name = vm["topic"].as<std::string>();
 
-    if (vm.count("rate")) {
-      m_rate = vm["rate"].as<uint32_t>();
-    }
+    m_rate = vm["rate"].as<uint32_t>();
 
     if (vm.count("check_memory")) {
       m_check_memory = true;
@@ -234,11 +232,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       throw std::invalid_argument("Selected communication mean not supported!");
     }
 
-    if (vm.count("dds_domain_id")) {
-      m_dds_domain_id = vm["dds_domain_id"].as<uint32_t>();
-      if (m_com_mean == CommunicationMean::ROS2 && m_dds_domain_id != 0) {
-        throw std::invalid_argument("ROS 2 does not support setting the domain ID.");
-      }
+    m_dds_domain_id = vm["dds_domain_id"].as<uint32_t>();
+    if (m_com_mean == CommunicationMean::ROS2 && m_dds_domain_id != 0) {
+      throw std::invalid_argument("ROS 2 does not support setting the domain ID.");
     }
 
     if (vm.count("reliable")) {
@@ -256,9 +252,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     } else {
       m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_ALL;
     }
-    if (vm.count("history_depth")) {
-      m_qos.history_depth = vm["history_depth"].as<uint32_t>();
-    }
+    m_qos.history_depth = vm["history_depth"].as<uint32_t>();
     if (vm.count("disable_async")) {
       if (m_com_mean == CommunicationMean::ROS2) {
         throw std::invalid_argument("ROS 2 does not support disabling async. publishing.");
@@ -337,31 +331,26 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_with_security = false;
     if (vm.count("with_security")) {
       if (m_com_mean != CommunicationMean::ROS2) {
-        throw std::invalid_argument(
-                "Only ROS2 supports security!");
+        throw std::invalid_argument("Only ROS2 supports security!");
       } else {
         m_with_security = true;
       }
     }
     m_roundtrip_mode = RoundTripMode::NONE;
-    if (vm.count("roundtrip_mode")) {
-      const auto mode = vm["roundtrip_mode"].as<std::string>();
-      if (mode == "None") {
-        m_roundtrip_mode = RoundTripMode::NONE;
-      } else if (mode == "Main") {
-        m_roundtrip_mode = RoundTripMode::MAIN;
-      } else if (mode == "Relay") {
-        m_roundtrip_mode = RoundTripMode::RELAY;
-      } else {
-        throw std::invalid_argument("Invalid roundtrip mode: " + mode);
-      }
+    const auto mode = vm["roundtrip_mode"].as<std::string>();
+    if (mode == "None") {
+      m_roundtrip_mode = RoundTripMode::NONE;
+    } else if (mode == "Main") {
+      m_roundtrip_mode = RoundTripMode::MAIN;
+    } else if (mode == "Relay") {
+      m_roundtrip_mode = RoundTripMode::RELAY;
+    } else {
+      throw std::invalid_argument("Invalid roundtrip mode: " + mode);
     }
     m_rmw_implementation = rmw_get_implementation_identifier();
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    if (vm.count("db_name")) {
-      m_db_name = vm["db_name"].as<std::string>();
-    }
+    m_db_name = vm["db_name"].as<std::string>();
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
     if (vm.count("db_user")) {
       m_db_user = vm["db_user"].as<std::string>();
