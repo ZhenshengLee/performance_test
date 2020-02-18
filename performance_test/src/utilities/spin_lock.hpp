@@ -26,7 +26,9 @@ class SpinLock
 {
 public:
   SpinLock()
-  : m_lock(ATOMIC_FLAG_INIT) {}
+  {
+    m_lock.clear();
+  }
 
   /// Locks the spinlock.
   inline void lock()
