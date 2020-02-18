@@ -27,7 +27,7 @@ namespace performance_test
 
 struct CpuInfo
 {
-  CpuInfo(uint32_t cpu_cores, float_t cpu_usage)
+  CpuInfo(uint32_t cpu_cores, float cpu_usage)
   : m_cpu_cores(cpu_cores), m_cpu_usage(cpu_usage) {}
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -39,7 +39,7 @@ struct CpuInfo
     return m_cpu_cores;
   }
 
-  float_t cpu_usage() const
+  float cpu_usage() const
   {
     return m_cpu_usage;
   }
@@ -51,7 +51,7 @@ private:
 #pragma db default(0)
   uint32_t m_cpu_cores;
 #pragma db default(0.0)
-  float_t m_cpu_usage;
+  float m_cpu_usage;
 };
 
 ///  Calculate the CPU usage for the running experiment in the performance test
@@ -76,7 +76,8 @@ public:
     auto cpu_cores = std::thread::hardware_concurrency();
     return CpuInfo(
       cpu_cores,
-      100.0F * (times.user + times.system) / (times.wall * cpu_cores)
+      100.0F * static_cast<float>(times.user + times.system) /
+      static_cast<float>(times.wall * cpu_cores)
     );
   }
 };
