@@ -90,8 +90,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Enable transient QOS. Default is volatile.")("keep_last",
     "Enable keep last QOS. Default is keep all.")("history_depth",
     po::value<uint32_t>()->default_value(1000),
-    "Set history depth QOS. Defaults to 1000.")("disable_async.",
-    "Disables asyc. pub/sub.")("max_runtime",
+    "Set history depth QOS. Defaults to 1000.")("disable_async",
+    "Disables async. pub/sub.")("max_runtime",
     po::value<uint64_t>()->default_value(0),
     "Maximum number of seconds to run before exiting. Default (0) is to run forever.")(
     "num_pub_threads,p", po::value<uint32_t>()->default_value(1),
@@ -254,7 +254,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       if (m_com_mean == CommunicationMean::ROS2) {
         throw std::invalid_argument("ROS 2 does not support disabling async. publishing.");
       }
-      m_qos.sync_pubsub = vm["disable_async"].as<uint32_t>();
+      m_qos.sync_pubsub = true;
     }
 
     m_max_runtime = vm["max_runtime"].as<uint64_t>();
