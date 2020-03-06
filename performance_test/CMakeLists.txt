@@ -48,7 +48,7 @@ find_package(builtin_interfaces REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 
-find_package(osrf_testing_tools_cpp)
+find_package(osrf_testing_tools_cpp QUIET)
 if(${osrf_testing_tools_cpp_FOUND})
     list(APPEND OPTIONAL_AMENT_DEPENDENCES "osrf_testing_tools_cpp")
     list(APPEND OPTIONAL_LIBRARIES osrf_testing_tools_cpp::memory_tools)
@@ -66,16 +66,17 @@ ament_export_dependencies(rosidl_default_runtime)
 
 # This is a workaround for broken include paths on some systems.
 include_directories(${FastRTPS_INCLUDE_DIR} ${FastRTPS_INCLUDE_DIR}/fastrtps/include ${fastcdr_INCLUDE_DIR})
-include_directories(include ${FAST_RTPS_IDL_INCLUDE_DIR} ${osrf_testing_tools_cpp_INCLUDE_DIR})
+include_directories(include ${osrf_testing_tools_cpp_INCLUDE_DIR})
 
 # FastRTPS
-option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" ON)
+option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" OFF)
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   find_package(fastrtps_cmake_module QUIET REQUIRED)
   find_package(FastRTPS QUIET REQUIRED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_subdirectory(src/idlgen/fast_rtps)
+  include_directories(${FAST_RTPS_IDL_INCLUDE_DIR})
 endif()
 
 # RTI Connext Micro
