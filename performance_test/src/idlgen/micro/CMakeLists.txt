@@ -105,9 +105,6 @@ foreach(idl ${IDL_SOURCE_C})
   set_source_files_properties(${IDL_GEN_C} ${IDL_GEN_H} PROPERTIES GENERATED 1)
   list(APPEND IDL_GEN_H_LIST ${IDL_GEN_H})
   list(APPEND IDL_GEN_C_LIST ${IDL_GEN_C})
-
-  message(INFO "Generating: "  ${IDL_GEN_C})
-
 endforeach()
 
 add_library(rti_micro_idl

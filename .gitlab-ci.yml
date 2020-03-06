@@ -85,9 +85,7 @@ build_opendds:
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
             -DPERFORMANCE_TEST_OPENDDS_ENABLED=ON
-            -DPERFORMANCE_TEST_FASTRTPS_ENABLED=OFF
           --base-path performance_test
-          --event-handlers console_stderr-
       '
     - cp LICENSE /opt/performance_test
     - tar cfz opt.tar.gz /opt/performance_test
@@ -116,6 +114,7 @@ build_fastrtps:
           --merge-install
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
+            -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON
       '
     - cp LICENSE /opt/performance_test
     - tar cfz opt.tar.gz /opt/performance_test

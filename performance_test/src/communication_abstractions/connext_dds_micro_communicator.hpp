@@ -120,8 +120,8 @@ public:
   }
 
   /// Overloaded method to initialize the frame_id field in message header if present
-  template <typename T>
-  auto init_data(T& data)-> decltype (data.header_.frame_id_, void()) {
+  template<typename T>
+  auto init_data(T & data)->decltype (data.header_.frame_id_, void ()) {
     data.header_.frame_id_ = DDS_String_dup("frame_id");
     init_fields(data);
   }
@@ -130,17 +130,16 @@ public:
   void init_data(...) {}
 
   /// Overloaded helper method to initialize the PointField array name field in message if present
-  template <typename T>
-  auto init_fields(T& data)-> decltype (data.fields_, void()) {
+  template<typename T>
+  auto init_fields(T & data)->decltype (data.fields_, void ()) {
     auto size = sizeof(data.fields_) / sizeof(data.fields_[0]);
-    for(uint8_t i = 0 ; i < size; i++)
-    {
+    for (uint8_t i = 0; i < size; i++) {
       data.fields_[i].name_ = DDS_String_dup("name");
     }
   }
 
   /// Do nothing if PointField not present
-  void init_fields(...){}
+  void init_fields(...) {}
 
   /**
    * \brief Publishes the provided data.
@@ -289,8 +288,8 @@ private:
   void register_topic()
   {
     if (m_topic == nullptr) {
-      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type
-          (m_participant, Topic::topic_name().c_str());
+      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(m_participant,
+          Topic::topic_name().c_str());
       if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }

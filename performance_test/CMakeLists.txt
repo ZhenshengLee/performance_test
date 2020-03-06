@@ -90,7 +90,6 @@ if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
     add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
     add_subdirectory(src/idlgen/micro)
     include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
-    MESSAGE(INFO "RTI IDL DIR" ${RTI_MICRO_IDL_INCLUDE_DIR})
     ament_export_definitions(${ConnextMicro_DEFINITIONS})
   endif()
 endif()
@@ -200,32 +199,27 @@ endif()
 if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
   set(sources ${sources}
-      src/communication_abstractions/ros2_waitset_communicator.hpp
-      )
+      src/communication_abstractions/ros2_waitset_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   set(sources ${sources}
-      src/communication_abstractions/fast_rtps_communicator.hpp
-      )
+      src/communication_abstractions/fast_rtps_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
   set(sources ${sources}
-      src/communication_abstractions/connext_dds_micro_communicator.hpp
-      )
+      src/communication_abstractions/connext_dds_micro_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   set(sources ${sources}
-      src/communication_abstractions/cyclonedds_communicator.hpp
-      )
+      src/communication_abstractions/cyclonedds_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   set(sources ${sources}
-      src/communication_abstractions/opendds_communicator.hpp
-      )
+      src/communication_abstractions/opendds_communicator.hpp)
 endif()
 
 # Use ODB support to create SQL database
