@@ -32,17 +32,20 @@ pip3 install performance_test/helper_scripts/apex_performance_plotter
 perfplot NAME_OF_LOG_FILE
 ```
 
-##### CMAKE options
+##### CMAKE plugin options
 
-* `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED` Enable Connext DDS Micro support. Enabled by default.
+* `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED` Enable Connext DDS Micro support. Disabled by
+default.The plugin can only work if ApexOS is present with RTI Connext Micro.
 * `-DPERFORMANCE_TEST_FASTRTPS_ENABLED` Enables FastRTPS support. Enabled by default.
-* `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED` Enables CycloneDDS support. Enabled by default.
-* `-DPERFORMANCE_TEST_ODB_SQLITE=ON` Enables saving results to SQL database format. Disabled by default.
-* `-DPERFORMANCE_TEST_ODB_MYSQL=ON` Enables saving results to MySQL database format. Disabled by
-default. 
-* `-DPERFORMANCE_TEST_ODB_PGSQL=ON` Enables saving results to PostgreSQL database format. Disabled by
-default.
+* `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED` Enables CycloneDDS support. Disabled by default.
 * `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED` Enables ROS2 Waitset support. Disabled by default.
+
+#### CMAKE DB options
+* `-DPERFORMANCE_TEST_ODB_SQLITE` Enables saving results to SQL database format. Disabled by default.
+* `-DPERFORMANCE_TEST_ODB_MYSQL` Enables saving results to MySQL database format. Disabled by
+default. 
+* `-DPERFORMANCE_TEST_ODB_PGSQL` Enables saving results to PostgreSQL database format. Disabled by
+default.
 
 > ROS 2 support is always enabled.
 
