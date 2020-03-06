@@ -97,7 +97,7 @@ foreach(idl ${IDL_SOURCE_C})
       ${IDL_GEN_ROOT}/${basename}Support.h)
 
   add_custom_command(OUTPUT ${IDL_GEN_C} ${IDL_GEN_H}
-      COMMAND ${RTIDDSGEN} -verbosity 1 -language MicroC++ -micro
+      COMMAND ${RTIDDSGEN} -namespace -verbosity 1 -language MicroC++ -micro
       -replace
       -d ${IDL_GEN_ROOT}/. ${CMAKE_CURRENT_SOURCE_DIR}/${idl}
       DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${idl}

@@ -79,7 +79,30 @@
 
 // Connext DDS Micro Types:
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  #include <micro/Array1k_Support.h>
+  #include <micro/Array4k_Support.h>
+  #include <micro/Array16k_Support.h>
+  #include <micro/Array32k_Support.h>
+  #include <micro/Array60k_Support.h>
+  #include <micro/Array1m_Support.h>
+  #include <micro/Array2m_Support.h>
+  #include <micro/Array4m_Support.h>
 
+  #include <micro/Struct16_Support.h>
+  #include <micro/Struct256_Support.h>
+  #include <micro/Struct4k_Support.h>
+  #include <micro/Struct32k_Support.h>
+
+  #include <micro/PointCloud512k_Support.h>
+  #include <micro/PointCloud1m_Support.h>
+  #include <micro/PointCloud2m_Support.h>
+  #include <micro/PointCloud4m_Support.h>
+
+  #include <micro/Range_Support.h>
+  #include <micro/NavSatFix_Support.h>
+
+  #include <micro/RadarDetection_Support.h>
+  #include <micro/RadarTrack_Support.h>
 #endif
 
 // Cyclone DDS Types:
@@ -156,18 +179,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array1k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array1k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array1k_TypePlugin_get();
+    return performance_test_msgs::msg::dds_::Array1k_TypePlugin_get()
+    ;
   }
+#endif
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array1k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array1k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array1k__desc;
+    return &performance_test_msgs_msg_dds__Array1k__desc;
   }
 #endif
 
@@ -199,18 +225,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array4k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array4k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array4k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Array1k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array4k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array4k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array4k__desc;
+    return &performance_test_msgs_msg_dds__Array4k__desc;
   }
 #endif
 
@@ -243,18 +272,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array16k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array16k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array16k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Array16k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array16k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array16k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array16k__desc;
+    return &performance_test_msgs_msg_dds__Array16k__desc;
   }
 #endif
 
@@ -287,18 +319,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array32k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array32k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array32k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Array32k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array32k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array32k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array32k__desc;
+    return &performance_test_msgs_msg_dds__Array32k__desc;
   }
 #endif
 
@@ -330,18 +365,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array60k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array60k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array60k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Array60k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array60k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array60k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array60k__desc;
+    return &performance_test_msgs_msg_dds__Array60k__desc;
   }
 #endif
 
@@ -373,18 +411,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array1m_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array1m_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array1m_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Array1m_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array1m_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array1m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array1m__desc;
+    return &performance_test_msgs_msg_dds__Array1m__desc;
   }
 #endif
 
@@ -416,18 +457,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Array2m_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array2m_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Array2m_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Array2m_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Array2m_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array2m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Array2m__desc;
+    return &performance_test_msgs_msg_dds__Array2m__desc;
   }
 #endif
 
@@ -458,18 +502,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Struct16_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct16_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Struct16_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Struct16_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Struct16_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Struct16_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Struct16__desc;
+    return &performance_test_msgs_msg_dds__Struct16__desc;
   }
 #endif
 
@@ -501,18 +548,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Struct256_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct256_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Struct256_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Struct256_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Struct256_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Struct256_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Struct256__desc;
+    return &performance_test_msgs_msg_dds__Struct256__desc;
   }
 #endif
 
@@ -544,18 +594,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Struct4k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct4k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Struct4k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Struct4k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Struct4k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Struct4k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Struct4k__desc;
+    return &performance_test_msgs_msg_dds__Struct4k__desc;
   }
 #endif
 
@@ -586,18 +639,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Struct32k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct32k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Struct32k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Struct32k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Struct32k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Struct32k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Struct32k__desc;
+    return &performance_test_msgs_msg_dds__Struct32k__desc;
   }
 #endif
 
@@ -629,18 +685,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud512k_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud512k_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__PointCloud512k_TypePlugin_get();
+    return performance_test_msgs_msg_dds__PointCloud512k_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__PointCloud512k_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud512k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__PointCloud512k__desc;
+    return &performance_test_msgs_msg_dds__PointCloud512k__desc;
   }
 #endif
 
@@ -672,18 +731,22 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud1m_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud1m_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__PointCloud1m_TypePlugin_get();
+    return performance_test_msgs_msg_dds__PointCloud1m_TypePlugin_get();
   }
 #endif
 
+
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__PointCloud1m_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud1m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__PointCloud1m__desc;
+    return &performance_test_msgs_msg_dds__PointCloud1m__desc;
   }
 #endif
 
@@ -715,18 +778,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud2m_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud2m_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__PointCloud2m_TypePlugin_get();
+    return performance_test_msgs_msg_dds__PointCloud2m_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__PointCloud2m_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud2m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__PointCloud2m__desc;
+    return &performance_test_msgs_msg_dds__PointCloud2m__desc;
   }
 #endif
 
@@ -758,18 +824,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud4m_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud4m_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__PointCloud4m_TypePlugin_get();
+    return performance_test_msgs_msg_dds__PointCloud4m_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__PointCloud4m_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud4m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__PointCloud4m__desc;
+    return &performance_test_msgs_msg_dds__PointCloud4m__desc;
   }
 #endif
 
@@ -801,18 +870,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__Range_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Range_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__Range_TypePlugin_get();
+    return performance_test_msgs_msg_dds__Range_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__Range_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__Range_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__Range__desc;
+    return &performance_test_msgs_msg_dds__Range__desc;
   }
 #endif
 
@@ -844,18 +916,21 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__NavSatFix_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::NavSatFix_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__NavSatFix_TypePlugin_get();
+    return performance_test_msgs_msg_dds__NavSatFix_TypePlugin_get();
   }
 #endif
 
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__NavSatFix_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__NavSatFix_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__NavSatFix__desc;
+    return &performance_test_msgs_msg_dds__NavSatFix__desc;
   }
 #endif
 
@@ -887,18 +962,20 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__RadarDetection_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::RadarDetection_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__RadarDetection_TypePlugin_get();
+    return performance_test_msgs_msg_dds__RadarDetection__TypePlugin_get();
   }
+#endif
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__RadarDetection_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__RadarDetection_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__RadarDetection__desc;
+    return &performance_test_msgs_msg_dds__RadarDetection__desc;
   }
 #endif
 
@@ -930,18 +1007,20 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msg_dds__RadarTrack_;
-  static auto * ConnextDDSMicroTypePlugin()
+  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::RadarTrack_;
+#if 0
+  static NDDS_Type_Plugin * ConnextDDSMicroTypePlugin()
   {
-    return performance_test_msg_dds__RadarTrack_TypePlugin_get();
+    return performance_test_msgs_msg_dds__RadarTrack_TypePlugin_get();
   }
+#endif
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  using CycloneDDSType = performance_test_msg_dds__RadarTrack_;
+  using CycloneDDSType = performance_test_msgs_msg_dds__RadarTrack_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
   {
-    return &performance_test_msg_dds__RadarTrack__desc;
+    return &performance_test_msgs_msg_dds__RadarTrack__desc;
   }
 #endif
 

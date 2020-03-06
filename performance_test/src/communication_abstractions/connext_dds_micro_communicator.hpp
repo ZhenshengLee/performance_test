@@ -24,6 +24,7 @@
 #include "communicator.hpp"
 #include "resource_manager.hpp"
 
+
 namespace performance_test
 {
 
@@ -118,6 +119,29 @@ public:
     register_topic();
   }
 
+  /// Overloaded method to initialize the frame_id field in message header if present
+  template <typename T>
+  auto init_data(T& data)-> decltype (data.header_.frame_id_, void()) {
+    data.header_.frame_id_ = DDS_String_dup("frame_id");
+    init_fields(data);
+  }
+
+  /// Do nothing if frame_id not present
+  void init_data(...) {}
+
+  /// Overloaded helper method to initialize the PointField array name field in message if present
+  template <typename T>
+  auto init_fields(T& data)-> decltype (data.fields_, void()) {
+    auto size = sizeof(data.fields_) / sizeof(data.fields_[0]);
+    for(uint8_t i = 0 ; i < size; i++)
+    {
+      data.fields_[i].name_ = DDS_String_dup("name");
+    }
+  }
+
+  /// Do nothing if PointField not present
+  void init_fields(...){}
+
   /**
    * \brief Publishes the provided data.
    *
@@ -150,6 +174,8 @@ public:
       if (m_typed_datawriter == nullptr) {
         throw std::runtime_error("failed datawriter narrow");
       }
+
+      init_data(data);
     }
     lock();
     data.time_ = time.count();
@@ -263,8 +289,8 @@ private:
   void register_topic()
   {
     if (m_topic == nullptr) {
-      auto retcode = m_participant->register_type(
-        Topic::topic_name().c_str(), Topic::ConnextDDSMicroTypePlugin());
+      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type
+          (m_participant, Topic::topic_name().c_str());
       if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }

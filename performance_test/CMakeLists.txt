@@ -27,19 +27,6 @@ set(CMAKE_CXX_STANDARD 14)
 find_package(Boost COMPONENTS program_options timer REQUIRED)
 find_package(ament_cmake REQUIRED)
 
-if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-    add_definitions(-DPERFORMANCE_TEST_OPENDDS_ENABLED)
-endif()
-
-# FastRTPS
-option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" OFF)
-
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  find_package(fastrtps_cmake_module QUIET REQUIRED)
-  find_package(FastRTPS QUIET REQUIRED)
-  add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
-endif()
-
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(PERFORMANCE_TEST_RT_ENABLED_DEFAULT ON)
 else()
@@ -48,6 +35,7 @@ endif()
 option(PERFORMANCE_TEST_RT_ENABLED
   "Enable options for thread and memory optimization. This may not build on all platforms"
   ${PERFORMANCE_TEST_RT_ENABLED_DEFAULT})
+
 find_package(rclcpp REQUIRED)
 find_package(rmw REQUIRED)
 find_package(builtin_interfaces REQUIRED)
@@ -76,31 +64,35 @@ endif()
 ament_export_include_directories(include)
 ament_export_dependencies(rosidl_default_runtime)
 
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  add_subdirectory(src/idlgen/fast_rtps)
-endif()
-
-if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-    set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-    add_subdirectory(src/idlgen/opendds)
-    include_directories(${OPENDDS_IDL_INCLUDE_DIR} ${PARENT_DDS_ROOT_INCLUDE})
-endif()
-
 # This is a workaround for broken include paths on some systems.
 include_directories(${FastRTPS_INCLUDE_DIR} ${FastRTPS_INCLUDE_DIR}/fastrtps/include ${fastcdr_INCLUDE_DIR})
 include_directories(include ${FAST_RTPS_IDL_INCLUDE_DIR} ${osrf_testing_tools_cpp_INCLUDE_DIR})
 
-find_package(connext_micro_cmake_module REQUIRED)
-find_package(ConnextMicro MODULE REQUIRED)
+# FastRTPS
+option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" ON)
 
-set(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED TRUE)
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+  find_package(fastrtps_cmake_module QUIET REQUIRED)
+  find_package(FastRTPS QUIET REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
+  add_subdirectory(src/idlgen/fast_rtps)
+endif()
 
-add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-add_subdirectory(src/idlgen/micro)
+# RTI Connext Micro
+option(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED "Option to enable Connext DDS Micro plugin. The
+plugin can only work if ApexOS is present with RTI Connext Micro, otherwise it will fail." OFF)
 
-include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
-MESSAGE(INFO "RIT IDL DIR" ${RTI_MICRO_IDL_INCLUDE_DIR})
-ament_export_definitions(${ConnextMicro_DEFINITIONS})
+if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+  find_package(connext_micro_cmake_module REQUIRED)
+  find_package(ConnextMicro MODULE REQUIRED)
+  if(ConnextMicro_FOUND)
+    add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+    add_subdirectory(src/idlgen/micro)
+    include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
+    MESSAGE(INFO "RTI IDL DIR" ${RTI_MICRO_IDL_INCLUDE_DIR})
+    ament_export_definitions(${ConnextMicro_DEFINITIONS})
+  endif()
+endif()
 
 
 # CycloneDDS
@@ -116,6 +108,19 @@ if(CycloneDDS_FOUND)
   add_definitions(-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   add_subdirectory(src/idlgen/cyclonedds)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
+endif()
+
+# ROS2 Waitset
+option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
+  The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
+
+# OpenDDS
+option(PERFORMANCE_TEST_OPENDDS_ENABLED "Require Open DDS to be available, fail otherwise" OFF)
+if(PERFORMANCE_TEST_OPENDDS_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_OPENDDS_ENABLED)
+  set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  add_subdirectory(src/idlgen/opendds)
+  include_directories(${OPENDDS_IDL_INCLUDE_DIR} ${PARENT_DDS_ROOT_INCLUDE})
 endif()
 
 set(${PROJECT_NAME}_SOURCES
@@ -191,6 +196,37 @@ if(PERFORMANCE_TEST_RT_ENABLED)
   list(APPEND sources src/utilities/rt_enabler.hpp)
 endif()
 
+if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
+  set(sources ${sources}
+      src/communication_abstractions/ros2_waitset_communicator.hpp
+      )
+endif()
+
+if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+  set(sources ${sources}
+      src/communication_abstractions/fast_rtps_communicator.hpp
+      )
+endif()
+
+if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+  set(sources ${sources}
+      src/communication_abstractions/connext_dds_micro_communicator.hpp
+      )
+endif()
+
+if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
+  set(sources ${sources}
+      src/communication_abstractions/cyclonedds_communicator.hpp
+      )
+endif()
+
+if(PERFORMANCE_TEST_OPENDDS_ENABLED)
+  set(sources ${sources}
+      src/communication_abstractions/opendds_communicator.hpp
+      )
+endif()
+
 # Use ODB support to create SQL database
 option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)
 option(PERFORMANCE_TEST_ODB_MYSQL "Enable ODB with MYSQL" OFF)
@@ -226,35 +262,6 @@ if(PERFORMANCE_TEST_ODB_SQLITE OR PERFORMANCE_TEST_ODB_MYSQL OR PERFORMANCE_TEST
       ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration
       ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
       ${ODB_INCLUDE_DIRS})
-endif()
-
-# ROS2 Waitset
-option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
-  The plugin can only work if ApexOS is present, otherwise it will fail." ON)
-
-if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
-    add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
-    set(sources ${sources}
-      src/communication_abstractions/ros2_waitset_communicator.hpp
-    )
-endif()
-
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-    set(sources ${sources}
-        src/communication_abstractions/fast_rtps_communicator.hpp
-    )
-endif()
-
-if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-    set(sources ${sources}
-        src/communication_abstractions/cyclonedds_communicator.hpp
-    )
-endif()
-
-if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-    set(sources ${sources}
-        src/communication_abstractions/opendds_communicator.hpp
-    )
 endif()
 
 set(EXE_NAME perf_test)
@@ -308,7 +315,6 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
       fastcdr)
 endif()
 
-
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   target_link_libraries(${EXE_NAME}
       cyclonedds_idl
@@ -328,6 +334,10 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
                       ${PARENT_DDS_ROOT_LIBS}/libTAO_BiDirGIOP.so)
 
     target_link_libraries(${EXE_NAME} opendds_idl ${DDS_DYN_LIBS})
+endif()
+
+if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+  target_link_libraries(${EXE_NAME} rti_micro_idl)
 endif()
 
 if(BUILD_TESTING)
