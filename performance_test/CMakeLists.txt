@@ -185,6 +185,7 @@ set(sources
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp
     src/utilities/cpu_usage_tracker.hpp
+    src/utilities/qnx_res_usage.hpp
 )
 
 if(PERFORMANCE_TEST_RT_ENABLED)
