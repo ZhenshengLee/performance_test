@@ -119,28 +119,6 @@ public:
     register_topic();
   }
 
-  /// Overloaded method to initialize the frame_id field in message header if present
-  template<typename T>
-  auto init_data(T & data)->decltype (data.header_.frame_id_, void ()) {
-    data.header_.frame_id_ = DDS_String_dup("frame_id");
-    init_fields(data);
-  }
-
-  /// Do nothing if frame_id not present
-  void init_data(...) {}
-
-  /// Overloaded helper method to initialize the PointField array name field in message if present
-  template<typename T>
-  auto init_fields(T & data)->decltype (data.fields_, void ()) {
-    auto size = sizeof(data.fields_) / sizeof(data.fields_[0]);
-    for (uint8_t i = 0; i < size; i++) {
-      data.fields_[i].name_ = DDS_String_dup("name");
-    }
-  }
-
-  /// Do nothing if PointField not present
-  void init_fields(...) {}
-
   /**
    * \brief Publishes the provided data.
    *
@@ -305,6 +283,45 @@ private:
       m_topic->enable();
     }
   }
+
+  /**
+  * \brief Initializes the frame_id field in data header.
+  * This is the overloaded method which is called if data header has frame_id
+  * \param data The data to publish.
+  */
+  template<typename T>
+  static auto init_data(T & data)->decltype (data.header_.frame_id_, void ()) {
+    data.header_.frame_id_ = DDS_String_dup("frame_id");
+    init_fields(data);
+  }
+
+  /// Do nothing if frame_id not present
+  static void init_data(...) {}
+
+  /**
+  * \brief Returns the size of array passed to it.
+  * \param arr The array to compute the size of.
+  */
+  template<class T, size_t N>
+  static constexpr size_t size(T (&)[N]) {return N;}
+
+  /**
+  * \brief Initializes the PointField array name field in data header.
+  * This is the overloaded helper method which is called from init_data() if data has
+  * PointField array in the payload
+  * \param data The data to publish.
+  */
+  template<typename T>
+  static auto init_fields(T & data)->decltype (data.fields_, void ()) {
+    auto fields_size = size(data.fields_);
+    for (uint8_t i = 0; i < fields_size; i++) {
+      data.fields_[i].name_ = DDS_String_dup("name");
+    }
+  }
+
+  /// Do nothing if PointField not present
+  static void init_fields(...) {}
+
 
   DDSDomainParticipant * m_participant;
 
