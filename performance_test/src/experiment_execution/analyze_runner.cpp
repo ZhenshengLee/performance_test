@@ -156,8 +156,15 @@ void AnalyzeRunner::run()
 
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   if (m_ec.use_odb()) {
-    m_db->persist(m_ec);
-    t.commit();
+    try {
+      m_db->persist(m_ec);
+      t.commit();
+    } catch (odb::exception & e) {
+      std::cerr << "ODB exception when persisting and/or committing data: " << e.what() <<
+        std::endl;
+    } catch (...) {
+      std::cerr << "Error uploading data to database!" << std::endl;
+    }
   }
   #endif
 }
