@@ -88,7 +88,6 @@ if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
   find_package(ConnextMicro MODULE REQUIRED)
   if(ConnextMicro_FOUND)
     add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-    add_subdirectory(src/idlgen/micro)
     include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
     ament_export_definitions(${ConnextMicro_DEFINITIONS})
   endif()
@@ -329,10 +328,6 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
                       ${PARENT_DDS_ROOT_LIBS}/libTAO_BiDirGIOP.so)
 
     target_link_libraries(${EXE_NAME} opendds_idl ${DDS_DYN_LIBS})
-endif()
-
-if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-  target_link_libraries(${EXE_NAME} rti_micro_idl)
 endif()
 
 if(BUILD_TESTING)

@@ -79,30 +79,30 @@
 
 // Connext DDS Micro Types:
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  #include <micro/Array1k_Support.h>
-  #include <micro/Array4k_Support.h>
-  #include <micro/Array16k_Support.h>
-  #include <micro/Array32k_Support.h>
-  #include <micro/Array60k_Support.h>
-  #include <micro/Array1m_Support.h>
-  #include <micro/Array2m_Support.h>
-  #include <micro/Array4m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array1k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array4k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array16k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array32k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array60k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array1m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array2m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array4m_Support.h>
 
-  #include <micro/Struct16_Support.h>
-  #include <micro/Struct256_Support.h>
-  #include <micro/Struct4k_Support.h>
-  #include <micro/Struct32k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Struct16_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Struct256_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Struct4k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Struct32k_Support.h>
 
-  #include <micro/PointCloud512k_Support.h>
-  #include <micro/PointCloud1m_Support.h>
-  #include <micro/PointCloud2m_Support.h>
-  #include <micro/PointCloud4m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud512k_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud1m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud2m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud4m_Support.h>
 
-  #include <micro/Range_Support.h>
-  #include <micro/NavSatFix_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Range_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/NavSatFix_Support.h>
 
-  #include <micro/RadarDetection_Support.h>
-  #include <micro/RadarTrack_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/RadarDetection_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/RadarTrack_Support.h>
 #endif
 
 // Cyclone DDS Types:
@@ -179,7 +179,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array1k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array1k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -218,7 +218,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array4k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array4k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -258,7 +258,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array16k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array16k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -298,7 +298,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array32k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array32k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -337,7 +337,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array60k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array60k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -376,7 +376,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array1m_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array1m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -415,7 +415,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Array2m_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Array2m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -453,7 +453,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct16_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct16_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -492,7 +492,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct256_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct256_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -531,7 +531,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct4k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct4k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -569,7 +569,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Struct32k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct32k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -608,7 +608,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud512k_;
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud512k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -647,7 +647,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud1m_;
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud1m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -686,7 +686,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud2m_;
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud2m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -725,7 +725,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::PointCloud4m_;
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud4m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -764,7 +764,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::Range_;
+  using ConnextDDSMicroType = performance_test_msg_dds__Range_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -803,7 +803,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::NavSatFix_;
+  using ConnextDDSMicroType = performance_test_msg_dds__NavSatFix_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -842,7 +842,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::RadarDetection_;
+  using ConnextDDSMicroType = performance_test_msg_dds__RadarDetection_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -881,7 +881,7 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  using ConnextDDSMicroType = performance_test_msgs::msg::dds_::RadarTrack_;
+  using ConnextDDSMicroType = performance_test_msg_dds__RadarTrack_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
