@@ -1,16 +1,46 @@
 ## Performance Test Tool
 
-### Purpose / Use Cases (Why implement this feature?)
-This tool was designed to evaluate the performance of various means of communication
+### Purpose / Use Cases (Why is such a tool required?)
+
+The performance test tool was designed to evaluate the performance of various means of communication
 which either support the publish subscribe pattern directly or can be adapted to it.
 
 ### Design (How does it work?)
-It runs publishers and subscribers, each one in one independent thread or process and records how fast
-and with what latency data can be published and subscribed.
+
+The performance test tool runs at least one publisher and at least one subscriber, each one in one independent thread or process and records different performance metrics.
+Each metric value is recorded for every second of the experiment duration. For example if the total experiment runtime is 30 sec, all the metrics logged will have 30 values.
+
+### Measured metrics
+
+#### Latency
+
+The latency corresponds to the time a message takes to travel from a publisher to subscriber. The latency is measured by:
+
+1. Timestamping the sample when it's published.
+2. Subtracting the timestamp (from the sample) to the measured time when the sample arrived to the subscriber.
+
+#### CPU Usage
+
+It also measures the CPU usage of the performance test process as a percentage of the total systemwide CPU time.
+
+#### Resident Memory
+
+The performance test tool calculates the resident memory usage of each experiment. The resident memory value mostly comes from:
+
+1. Heap allocations done by DDS - mostly by DataReaders/Writers
+2. Shared memory segments (if using SHMEM transport, none otherwise) - can be large depending on the receive buffer size (queue size) and message sizes (payload)
+3. Stack (used for system's internal work) - minimal allocation size compared to two previous points
+
+The rough approximation of the resident memory consumption of an experiment can be done with the following formula: `message_size*(history_depth*2)` for every Apex.OS Subscription/DataReader. For example, an experiment publishing messages of type `Array` and size 2MB with history depth of 100 will incur approximately 2MB*(100*2) = 400MB allocation per subscriber thread. Note that this calculation excludes the shared memory segment allocation if SHMEM transport is being used.
+
+#### Sample Statistics
+
+The number of samples received, sent, and lost per experiment run are also logged.
 
 #### Assumptions / Known Limits
+
 * Communication frameworks like DDS have a huge amount of settings. These are at the moment
-hardcoded, aside form the common QOS settings which can be set on the command line.
+hardcoded, aside from the common QOS settings which can be set on the command line.
 * Only one publisher per topic is allowed, because the data verification logic does not support
 matching data to the different publishers.
 * Some communication plugins can get stuck in their internal loops if too much data is received.
@@ -18,66 +48,51 @@ But figuring out ways around such issues is one of the goals of this tool.
 * ROS 2 msg files are not automatically converted to IDL files used by
 the tool. But as ROS 2 will support IDL files in the near future, this issue
 will be resolved.
+* In Inter process composition the CPU and Resident Memory measurements are logged separately for the publisher and subscriber processes.
+* FastRTPS waitset does not support a timeout which can lead to the receiving not aborting. In that case the performance test must be manually killed.
+* Using Connext Micro INTRA transport with `reliable` QoS and history kind set to `keep_all` [is not supported with Connext Micro](https://community.rti.com/static/documentation/connext-micro/3.0.2/doc/html/usersmanual/transports/INTRA.html#reliability-and-durability). Set `keep_last` as QoS history kind always when using `reliable`, e.g:
 
-#### Inputs / Outputs / API (How to use it?)
-The tool has a fully documented command line interface which can be accessed by typing
-`performance_test --help`.
-
-To run more extensive tests, the following script can be used and adapted:
-`helper_scripts/run_experiment.py`
-
-The logfiles can be visualized using the apex_performance_plotter module:
 ```
-pip3 install performance_test/helper_scripts/apex_performance_plotter
-perfplot NAME_OF_LOG_FILE
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t PointCloud1m --max_runtime 30 --reliable --keep_last
 ```
 
-##### CMAKE plugin options
+#### Architecture
 
-* `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED` Enable Connext DDS Micro support. Disabled by
-default.The plugin can only work if ApexOS is present with RTI Connext Micro.
-* `-DPERFORMANCE_TEST_FASTRTPS_ENABLED` Enables FastRTPS support. Disabled by default.
-* `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED` Enables CycloneDDS support. Disabled by default.
-* `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED` Enables ROS2 Waitset support. Disabled by default.
-
-> ROS 2 support is always enabled.
-
-#### CMAKE DB options
-* `-DPERFORMANCE_TEST_ODB_SQLITE` Enables saving results to SQL database format. Disabled by default.
-* `-DPERFORMANCE_TEST_ODB_MYSQL` Enables saving results to MySQL database format. Disabled by
-default.
-* `-DPERFORMANCE_TEST_ODB_PGSQL` Enables saving results to PostgreSQL database format. Disabled by
-default.
-
-#### Inner-workings / Algorithms
 The tool consists of the following modules:
 
-##### Experiment configuration:
+##### Experiment configuration
+
 This modules is responsible for reading the experiment configuration like
 what mean of communication to use, what QOS to use and how fast data should
 be transferred.
 
-##### Experiment execution:
+##### Experiment execution
+
 Runs the experiment on the highest level. Responsible for setting up the experiment,
 collecting experiment results regularly and outputting it to the user in form of command line
 output and file output.
 
-##### Data running:
+##### Data running
+
 Responsible for starting the threads effectively running the experiment and synchronizing data between
 the experiment threads and the experiment execution.
 
 ##### Communication Abstractions
+
 Plugins for the various means of communications which do the actual publishing and subscribing of data.
 These are used by the data running module then.
 
 ##### Interface specification files and their generation
+
 The ROS 2 MSG and IDL files and the machinery to generate sources from
 them are located there.
 
 ##### Utilities
+
 General helper files for real time and statistics are located there.
 
 #### Error Detection and Handling
+
 All errors are translated to exceptions. But exception are not handled and will
 propagate up causing the application to terminate.
 
@@ -89,17 +104,9 @@ implementation in the plugins. Therefore this tool is not secure.
 If you run the tool with the `helper_scripts/run_experiment.py` script is ran as root to
 gain privileges to set real time priorities. If you are not in a secure network, you should not run this too,
 or at least not as root.
-#### References / External Links
-<!-- Optional -->
 
 #### Future Extensions / Unimplemented Parts
-Possible additional communication which could be implemented are:
-* ROS 1
-* ROS 2 with wait sets
-* Raw UDP communication
 
-#### Related Issues
-https://gitlab.apex.ai/ApexAI/grand_central/issues/957
-https://gitlab.apex.ai/ApexAI/grand_central/issues/1305
-https://gitlab.apex.ai/ApexAI/grand_central/issues/1382
-https://gitlab.apex.ai/ApexAI/grand_central/issues/1305
+Possible additional communication which could be implemented are:
+
+* Raw UDP communication

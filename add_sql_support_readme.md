@@ -1,6 +1,7 @@
 # Save results to a SQL database
 
 ## Requirements
+
 ***ODB 2.5.0***
 > Note: 2.5.0 is a beta version, but it is required if you are using Ubuntu 18.04 LTS and
 gcc 7.4.0, if you are using earlier ubuntu/gcc versions, proceed to the installation of ODB 2.4.0
@@ -35,6 +36,7 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 
 ***ODB 2.4.0:***
 All the downloads can be found [here](https://www.codesynthesis.com/products/odb/download.xhtml).
+
 * Odb compiler
 * Common Runtime Library: libodb-2.4.0
 * Database Runtime Library: libodb-sqlite-2.4.0/libodb-mysql-2.4.0/libodb-pgsql-2.4.0
@@ -44,6 +46,7 @@ Follow the [instructions](https://www.codesynthesis.com/products/odb/doc/install
 install all the components.
 
 ## How to build and run
+
 ```
 source ros2_install_path/setup.bash
 mkdir -p perf_test_ws/src
@@ -51,12 +54,11 @@ cd perf_test_ws/src
 git clone https://github.com/ApexAI/performance_test.git
 cd ..
 colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_ODB_SQLITE=ON
-source install/setup.bash
-ros2 run performance_test perf_test -c ROS2 -l log -t Array1k --max_runtime 10
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 10
 ```
 
 The default name of the resulting database is "db_name", you can change it by using `--db_name`
-argument in `ros2 run`. For MySQL or PostgreSQL databases, you can also specify `--db_user`,
+argument in when executing performance_test. For MySQL or PostgreSQL databases, you can also specify `--db_user`,
 `--db_password`, `--db_host` and `--db_port` to connect to your database.
 
 In order to run the performance test with MySQL or PostgreSQL support, you can use
@@ -65,6 +67,7 @@ In order to run the performance test with MySQL or PostgreSQL support, you can u
 
 The project supports [schema evolution](https://www.codesynthesis.com/products/odb/doc/manual.xhtml#13).
 Every time you make a change in C++ code base which requires a schema evolution you need to:
+
 1. Update the model version (`#pragma db model version`).
 2. Commit the xml files with schema changes (`schema_changelog` folder).
 
