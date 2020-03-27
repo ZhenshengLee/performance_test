@@ -49,10 +49,5 @@ function(set_compile_options target)
                     >
                 >
                 -fvisibility=hidden)
-        if(CMAKE_BUILD_TYPE EQUAL "Debug")
-            set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-Og")
-        else()
-            set_target_properties(${target} PROPERTIES COMPILE_FLAGS "-O3 -ftree-vectorize")
-        endif()
     endif()
 endfunction()
