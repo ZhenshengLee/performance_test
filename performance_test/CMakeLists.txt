@@ -95,15 +95,9 @@ endif()
 
 
 # CycloneDDS
-option(PERFORMANCE_TEST_FORCE_CYCLONEDDS "Require Cyclone DDS to be available, fail otherwise" OFF)
-
-if(PERFORMANCE_TEST_FORCE_CYCLONEDDS)
+option(PERFORMANCE_TEST_CYCLONEDDS_ENABLED "Enable CycloneDDS" OFF)
+if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   find_package(CycloneDDS REQUIRED)
-else()
-  find_package(CycloneDDS QUIET)
-endif()
-if(CycloneDDS_FOUND)
-  set(PERFORMANCE_TEST_CYCLONEDDS_ENABLED TRUE)
   add_definitions(-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   add_subdirectory(src/idlgen/cyclonedds)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
