@@ -56,7 +56,7 @@ if(${osrf_testing_tools_cpp_FOUND})
 endif()
 
 # Dashing version looks like 0.7.X.
-if(${rclcpp_VERSION_MINOR} LESS 8)
+if(${rclcpp_VERSION_MAJOR} LESS 1 AND ${rclcpp_VERSION_MINOR} LESS 8)
   message(STATUS "ROS Dashing detected")
   add_definitions(-DUSE_LEGACY_QOS_API)
 endif()
