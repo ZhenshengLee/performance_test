@@ -3,7 +3,7 @@
 **Default Version Support:** ROS2 Dashing, Fast-RTPS 1.8.0
 
 This performance test tool allows you to test performance and latency of various communication means
-like ROS 2, ROS 2 Waitset, FastRTPS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
+like ROS 2, ROS 2 Waitset, FastRTPS, RTI Connext DDS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
 
 It can be extended to other communication frameworks easily.
 
@@ -13,7 +13,7 @@ A detailed description can be found here: [Design Article](performance_test/desi
 
 ## Installing dependencies
 
-ROS 2: https://github.com/ros2/ros2/wiki/Installation
+ROS 2: https://index.ros.org/doc/ros2/Installation
 
 Additional dependencies are Java and others declared in the `package.xml` file
 ```
@@ -84,8 +84,9 @@ Allowed options:
                                        Defaults to 1000 Hz. 0 means publish as
                                        fast as possible.
   -c [ --communication ] arg           Communication plugin to use (ROS2,
-                                       FastRTPS, ConnextDDSMicro, CycloneDDS,
-                                       OpenDDS, ROS2PollingSubscription)
+                                       FastRTPS, ConnextDDSMicro, ConnextDDS,
+                                       CycloneDDS, OpenDDS,
+                                       ROS2PollingSubscription)
   -t [ --topic ] arg                   Topic to use. Use --topic_list to get a
                                        list.
   --topic_list                         Prints list of available topics and
@@ -149,9 +150,20 @@ The performance test tool can measure the performance of a variety of communicat
 | RAW DDS Plugin                                                                                                                    | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test    | Communication mean (-c) to pass when running experiments |
 |-----------------------------------------------------------------------------------------------------------------------------------|------------------------|----------------------|------------------------------------------|------------------------------------------------------|
 | [FastRTPS 1.8.0](https://github.com/eProsima/Fast-RTPS/tree/v1.8.0)    | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`        | FastRTPS                                             |
+| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)*                                                 | Native DDS Code        | SHMEM, UDP          | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS                                     |
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) (will only work if Apex.OS is present)                                                 | Native DDS Code        | INTRA,SHMEM          | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro                                      |
 | [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`      | CycloneDDS                                           |
 | [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)                                          | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON`        | OpenDDS                                              |
+
+> \*NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was installed with ROS 2 (Linux only):
+> ```
+> source /opt/rti.com/rti_connext_dds-5.3.1/setenv_ros2rti.bash
+> ```
+> If RTI Connext DDS is installed separately, you can source the following script to
+> set the environment:
+> ```
+> source <connextdds_install_path>/resource/scripts/rtisetenv_<arch>.bash
+> ```
 
 If you want to use any of these supported plugins, please refer to the table above for the CMAKE arguments to provide while building the tool and specify the appropriate Communication Mean (-c option) when running the experiment.
 
@@ -173,6 +185,7 @@ The following plugins with a ROS middleware interface are currently supported:
 |------------------------------------------------------------------------------------------|--------------------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
 | [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps)                                                                         | ROS 2 Callback(enabled by default),<br>Apex.OS WaitSet | UDP                  | Nothing for ROS 2 Callback<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets)         | ROS2 (enabled by default)<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
 | rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS 2 Callback(enabled by default),<br>Apex.OS WaitSet | INTRA,SHMEM          | Nothing for ROS 2 Callback<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets) | ROS2 (enabled by default)<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
+| rmw_connext_cpp                                                                       | ROS 2 Callback(enabled by default)<br><br>                     | SHMEM, UDP                  | Nothing for ROS 2 Callback                                                                               | ROS2 (enabled by default)|
 | rmw_cyclonedds_cpp                                                                       | ROS 2 Callback(enabled by default)                     | UDP                  | Nothing for ROS 2 Callback                                                                               | ROS2 (enabled by default)|
 
 Apart from the default ROS 2, you can use the Apex.OS WaitSets by building and running the tool with `ROS2PollingSubscription` as:

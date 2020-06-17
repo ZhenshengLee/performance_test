@@ -79,7 +79,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Optionally specify a logfile.")("rate,r", po::value<uint32_t>()->default_value(1000),
     "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
     "communication,c", po::value<std::string>()->required(),
-    "Communication plugin to use (ROS2, FastRTPS, ConnextDDSMicro, CycloneDDS, OpenDDS, "
+    "Communication plugin to use (ROS2, FastRTPS, ConnextDDSMicro, ConnextDDS, CycloneDDS, OpenDDS, "
     "ROS2PollingSubscription)")(
     "topic,t",
     po::value<std::string>()->required(),
@@ -203,6 +203,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean = CommunicationMean::CONNEXTDDSMICRO;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "CONNEXTDDSMICRO";
+      #endif
+#else
+      throw std::invalid_argument(
+              "You must compile with ConnextDDSMicro support to enable it as communication mean.");
+#endif
+    } else if (vm["communication"].as<std::string>() == "ConnextDDS") {
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+      m_com_mean = CommunicationMean::CONNEXTDDS;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "CONNEXTDDS";
       #endif
 #else
       throw std::invalid_argument(

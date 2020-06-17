@@ -105,6 +105,36 @@
   #include <performance_test/msg/dds_connext_micro_typefiles/RadarTrack_Support.h>
 #endif
 
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+#include <connextdds/Array1k_Support.h>
+#include <connextdds/Array4k_Support.h>
+#include <connextdds/Array16k_Support.h>
+#include <connextdds/Array32k_Support.h>
+#include <connextdds/Array60k_Support.h>
+#include <connextdds/Array1m_Support.h>
+#include <connextdds/Array2m_Support.h>
+#include <connextdds/Array4m_Support.h>
+
+#include <connextdds/Struct16_Support.h>
+#include <connextdds/Struct256_Support.h>
+#include <connextdds/Struct4k_Support.h>
+#include <connextdds/Struct32k_Support.h>
+
+#include <connextdds/PointCloud512k_Support.h>
+#include <connextdds/PointCloud1m_Support.h>
+#include <connextdds/PointCloud2m_Support.h>
+#include <connextdds/PointCloud4m_Support.h>
+
+#include <connextdds/Range_Support.h>
+#include <connextdds/NavSatFix_Support.h>
+
+#include <connextdds/RadarDetection_Support.h>
+#include <connextdds/RadarTrack_Support.h>
+#endif
+
+
+
 // Cyclone DDS Types:
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   #include <cyclonedds/Array1k_.h>
@@ -182,6 +212,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Array1k_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array1k_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Array1k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -219,6 +253,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__Array4k_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array4k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -261,6 +299,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Array16k_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array16k_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Array16k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -299,6 +341,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__Array32k_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array32k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -340,6 +386,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Array60k_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array60k_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Array60k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -379,6 +429,9 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Array1m_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array1m_;
+#endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Array1m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -416,6 +469,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__Array2m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array2m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -456,6 +513,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Struct16_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Struct16_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Struct16_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -493,6 +554,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__Struct256_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Struct256_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -542,6 +607,10 @@ public:
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Struct4k_;
+#endif
+
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   using OpenDDSTopicType = performance_test_msgs::msg::dds_::Struct4k_;
   using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Struct4k_DataWriter;
@@ -570,6 +639,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__Struct32k_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Struct32k_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -611,6 +684,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__PointCloud512k_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__PointCloud512k_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud512k_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -648,6 +725,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__PointCloud1m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__PointCloud1m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -689,6 +770,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__PointCloud2m_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__PointCloud2m_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud2m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -726,6 +811,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__PointCloud4m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__PointCloud4m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -767,6 +856,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Range_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Range_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Range_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -804,6 +897,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__NavSatFix_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__NavSatFix_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -845,6 +942,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__RadarDetection_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__RadarDetection_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__RadarDetection_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -882,6 +983,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__RadarTrack_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__RadarTrack_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
