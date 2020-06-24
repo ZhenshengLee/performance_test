@@ -26,7 +26,6 @@
 #include <fastrtps/publisher/Publisher.h>
 #include <fastrtps/subscriber/SampleInfo.h>
 #include <fastrtps/Domain.h>
-#include <fastrtps/utils/eClock.h>
 
 #include <atomic>
 

@@ -1,9 +1,9 @@
 # Introduction
 
-**Default Version Support:** ROS2 Dashing, Fast-RTPS 1.8.0
+**Default Version Support:** ROS2 Dashing, Fast-DDS 2.0.x
 
 This performance test tool allows you to test performance and latency of various communication means
-like ROS 2, ROS 2 Waitset, FastRTPS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
+like ROS 2, ROS 2 Waitset, FastDDS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
 
 It can be extended to other communication frameworks easily.
 
@@ -50,7 +50,7 @@ At the end of the experiment, a CSV log file will be generated in the experiment
 
 ## Plot results
 
-To plot the results, you will need to install the perfplot tool from the apex_performance_plotter python module. 
+To plot the results, you will need to install the perfplot tool from the apex_performance_plotter python module.
 See [apex_performance_plotter](https://gitlab.com/ApexAI/performance_test/-/tree/master/performance_test/helper_scripts/apex_performance_plotter)
 for the list of dependecies.
 
@@ -147,8 +147,8 @@ Some things to note:
 The performance test tool can measure the performance of a variety of communication middlewares from different vendors. In this case there is no [rclcpp or rmw layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview) overhead over the publisher and subscriber routines. The following plugins are currently implemented:
 
 | RAW DDS Plugin                                                                                                                    | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test    | Communication mean (-c) to pass when running experiments |
-|-----------------------------------------------------------------------------------------------------------------------------------|------------------------|----------------------|------------------------------------------|------------------------------------------------------|
-| [FastRTPS 1.8.0](https://github.com/eProsima/Fast-RTPS/tree/v1.8.0)    | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`        | FastRTPS                                             |
+|-----------------------------------------------------------------------------------------------------------------------------------|------------------------|----------------------|----------------------------------------------------------|----------------------------------------------------------|
+| [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x)                                                                 | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`                 | FastRTPS                                                 |
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) (will only work if Apex.OS is present)                                                 | Native DDS Code        | INTRA,SHMEM          | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro                                      |
 | [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`      | CycloneDDS                                           |
 | [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)                                          | Native DDS Code        | UDP                  | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON`        | OpenDDS                                              |
@@ -212,7 +212,7 @@ which is same as running by default:
 ```
 ./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 30
 ```
-This is example of running the experiments in Intraprocess composition. Connext Micro as per Apex.OS, is configured to use `Micro INTRA` in this setting. FastRTPS and other supported DDS implementations use `UDP` by default.
+This is example of running the experiments in Intraprocess composition. Connext Micro as per Apex.OS, is configured to use `Micro INTRA` in this setting. FastDDS and other supported DDS implementations use `UDP` by default.
 
 To run the experiments in different processes, the subscriber and publisher processes we can run the tool twice simultaneously. Run the first instance of the tool like :
 ```
@@ -225,7 +225,7 @@ This is the publisher process. Now to run the subscriber open a second window in
 ```
 This is the subscriber process. The tool supports multiple subscribers to be run at once. So you can configure the value of `--num_sub_threads` in the subscriber process to be more than one also.
 
-This is an example of running the experiments in Interprocess composition. Connext Micro as per Apex.OS, is configured to use `SHMEM` in this setting. FastRTPS and other supported DDS implementations use `UDP` by default.
+This is an example of running the experiments in Interprocess composition. Connext Micro as per Apex.OS, is configured to use `SHMEM` in this setting. FastDDS and other supported DDS implementations use `UDP` by default.
 
 > Note:
 In Inter process composition the CPU and Resident Memory measurements are logged separately for the publisher and subscriber processes.
@@ -281,9 +281,9 @@ export APEX_PERFORMANCE_TEST="
 # Troubleshooting
 
 1. When running performance test it prints for example the following error :
-`ERROR: You must compile with FastRTPS support to enable FastRTPS as communication mean.`
+`ERROR: You must compile with FastRTPS support to enable FastDDS as communication mean.`
 
-This means that the performance test needs to be compiled with `--cmake-args -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` to switch from ROS 2 to FastRTPS.
+This means that the performance test needs to be compiled with `--cmake-args -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` to switch from ROS 2 to FastDDS.
 
 # Literature
 
