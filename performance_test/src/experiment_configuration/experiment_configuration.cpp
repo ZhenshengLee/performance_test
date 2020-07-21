@@ -56,7 +56,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nTopic name: " << e.topic_name() <<
            "\nMaximum runtime (sec): " << e.max_runtime() <<
            "\nNumber of publishers: " << e.number_of_publishers() <<
-           "\nNumber of subscribers:" << e.number_of_subscribers() <<
+           "\nNumber of subscribers: " << e.number_of_subscribers() <<
            "\nMemory check enabled: " << e.check_memory() <<
            "\nUse ros SHM: " << e.use_ros_shm() <<
            "\nUse single participant: " << e.use_single_participant() <<
