@@ -28,6 +28,7 @@ build_cyclonedds:
     - rosdep update
     - apt-get update
     - rosdep install --from performance_test --ignore-src -y
+    - apt-get install -y python3-pip
     - pip3 install -U colcon-common-extensions pytest
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
     - cd cyclonedds
@@ -36,7 +37,7 @@ build_cyclonedds:
     - cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds ../src
     - cmake --build .
-    - sudo cmake --build . --target install
+    - cmake --build . --target install
     - find /opt/cyclonedds
     - cd $CI_PROJECT_DIR
     - mkdir -p /opt/performance_test
@@ -70,6 +71,7 @@ build_opendds:
           ros-dashing-osrf-testing-tools-cpp
           default-jdk
           wget
+          python3-pip
       '
     - pip3 install -U colcon-common-extensions pytest
     - cd /opt
