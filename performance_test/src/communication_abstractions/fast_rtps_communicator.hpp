@@ -162,8 +162,8 @@ public:
 
       eprosima::fastrtps::PublisherAttributes wparam;
       wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-      wparam.topic.topicDataType = m_topic_type->getName() + m_ec.pub_topic_postfix();
-      wparam.topic.topicName = Topic::topic_name();
+      wparam.topic.topicDataType = m_topic_type->getName();
+      wparam.topic.topicName = Topic::topic_name() + m_ec.pub_topic_postfix();
       wparam.topic.historyQos.kind = qos.history_kind();
       wparam.topic.historyQos.depth = qos.history_depth();
       wparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
@@ -198,8 +198,8 @@ public:
 
       eprosima::fastrtps::SubscriberAttributes rparam;
       rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-      rparam.topic.topicDataType = m_topic_type->getName() + m_ec.sub_topic_postfix();
-      rparam.topic.topicName = Topic::topic_name();
+      rparam.topic.topicDataType = m_topic_type->getName();
+      rparam.topic.topicName = Topic::topic_name() + m_ec.sub_topic_postfix();
       rparam.topic.historyQos.kind = qos.history_kind();
       rparam.topic.historyQos.depth = qos.history_depth();
       rparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
