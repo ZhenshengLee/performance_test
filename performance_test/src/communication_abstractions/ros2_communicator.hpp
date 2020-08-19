@@ -88,7 +88,8 @@ public:
   explicit ROS2Communicator(SpinLock & lock)
   : Communicator(lock),
     m_node(ResourceManager::get().ros2_node()),
-    m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()) {}
+    m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()),
+    m_data_copy(std::make_unique<DataType>()) {}
 
   /**
    * \brief Publishes the provided data.
@@ -134,8 +135,8 @@ public:
  */
   void publish(const DataType & data, const std::chrono::nanoseconds time)
   {
-    DataType copy = data;
-    publish(copy, time);
+    *m_data_copy = data;
+    publish(*m_data_copy, time);
   }
 
   /// Reads received data from ROS 2 using callbacks
@@ -189,6 +190,7 @@ protected:
 
 private:
   std::shared_ptr<::rclcpp::Publisher<DataType>> m_publisher;
+  std::unique_ptr<DataType> m_data_copy;
 };
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__ROS2_COMMUNICATOR_HPP_
