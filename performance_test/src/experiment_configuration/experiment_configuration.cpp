@@ -138,7 +138,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   ;
   po::variables_map vm;
 #if defined(USE_LEGACY_QOS_API)
-  po::store(parse_command_line(argc, argv, desc), vm);
+  po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
 #else
   // ROS eloquent adds by default --ros-args to ros2 launch and no value for that argument
   // is valid, so we allow unregistered options so boost doesn't complain about it.
