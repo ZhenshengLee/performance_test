@@ -47,7 +47,7 @@ build_cyclonedds:
           --merge-install
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
-            -DPERFORMANCE_TEST_FORCE_CYCLONEDDS=BOOL:ON
+            -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
