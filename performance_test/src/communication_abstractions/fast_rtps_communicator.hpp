@@ -208,9 +208,7 @@ public:
       m_subscriber = eprosima::fastrtps::Domain::createSubscriber(m_participant, rparam);
     }
 
-    if (!m_ec.no_waitset()) {
-      m_subscriber->waitForUnreadMessage();
-    }
+    m_subscriber->waitForUnreadMessage();
     lock();
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {

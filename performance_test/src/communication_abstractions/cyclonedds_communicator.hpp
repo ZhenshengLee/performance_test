@@ -161,9 +161,7 @@ public:
       }
     }
 
-    if (!m_ec.no_waitset()) {
-      dds_waitset_wait(m_waitset, nullptr, 0, DDS_SECS(15));
-    }
+    dds_waitset_wait(m_waitset, nullptr, 0, DDS_SECS(15));
 
     void * untyped = nullptr;
     dds_sample_info_t si;

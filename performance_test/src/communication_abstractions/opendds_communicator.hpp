@@ -233,10 +233,8 @@ public:
       }
     }
 
-    if (!m_ec.no_waitset()) {
-      DDS::Duration_t wait_timeout = {15, 0};
-      m_waitset.wait(m_condition_seq, wait_timeout);
-    }
+    DDS::Duration_t wait_timeout = {15, 0};
+    m_waitset.wait(m_condition_seq, wait_timeout);
 
     auto ret = m_typed_datareader->take(m_data_seq, m_sample_info_seq, DDS::LENGTH_UNLIMITED,
         DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,

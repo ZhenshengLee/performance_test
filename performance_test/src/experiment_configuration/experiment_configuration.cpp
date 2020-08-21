@@ -59,7 +59,6 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nNumber of subscribers: " << e.number_of_subscribers() <<
            "\nMemory check enabled: " << e.check_memory() <<
            "\nUse single participant: " << e.use_single_participant() <<
-           "\nNot using waitset: " << e.no_waitset() <<
            "\nNot using Connext DDS Micro INTRA: " << e.no_micro_intra() <<
            "\nWith security: " << e.is_with_security() <<
            "\nRoundtrip Mode: " << e.roundtrip_mode() <<
@@ -106,8 +105,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
     "use_drive_px_rt", "alias for --use_rt_prio 5 --use_rt_cpus 62")(
     "use_single_participant",
-    "Uses only one participant per process. By default every thread has its own.")("no_waitset",
-    "Disables the wait set for new data. The subscriber takes as fast as possible.")(
+    "Uses only one participant per process. By default every thread has its own.")(
     "no_micro_intra", "Disables the Connext DDS Micro INTRA transport.")(
     "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
     po::value<std::string>()->default_value("None"),
@@ -296,14 +294,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
         m_use_single_participant = true;
       }
     }
-    m_no_waitset = false;
-    if (vm.count("no_waitset")) {
-      if (m_com_mean == CommunicationMean::ROS2) {
-        throw std::invalid_argument("ROS2 does not support disabling the waitset!");
-      } else {
-        m_no_waitset = true;
-      }
-    }
 
     m_no_micro_intra = false;
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
@@ -488,12 +478,6 @@ bool ExperimentConfiguration::use_single_participant() const
 {
   check_setup();
   return m_use_single_participant;
-}
-
-bool ExperimentConfiguration::no_waitset() const
-{
-  check_setup();
-  return m_no_waitset;
 }
 
 bool ExperimentConfiguration::no_micro_intra() const

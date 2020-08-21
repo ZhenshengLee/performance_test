@@ -116,8 +116,6 @@ Allowed options:
                                        62
   --use_single_participant             Uses only one participant per process.
                                        By default every thread has its own.
-  --no_waitset                         Disables the wait set for new data. The
-                                       subscriber takes as fast as possible.
   --no_micro_intra                     Disables the Connext DDS Micro INTRA
                                        transport.
   --with_security                      Make nodes with deterministic names for
