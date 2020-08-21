@@ -45,7 +45,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 7, closed)
+#pragma db model version(1, 8, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition
@@ -128,9 +128,6 @@ public:
   /// \returns Returns if only a single participant should be used. This will throw if
   /// the experiment configuration is not set up.
   bool use_single_participant() const;
-  /// \returns Returns if Connext DSS Micro INTRA transport should be disabled. This will throw if
-  /// the experiment configuration is not set up.
-  bool no_micro_intra() const;
   /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
   ///  of communication is not ROS2
   /// \returns Returns if Drivepx RT is set or not. This will throw if the experiment configuration
@@ -197,7 +194,6 @@ private:
     m_wait_for_matched_timeout(),
     m_check_memory(false),
     m_use_single_participant(false),
-    m_no_micro_intra(false),
     m_is_drivepx_rt(false),
     m_disable_logging(false),
     m_roundtrip_mode(RoundTripMode::NONE)
@@ -264,7 +260,6 @@ private:
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
   bool m_use_single_participant;
-  bool m_no_micro_intra;
   bool m_is_drivepx_rt;
   bool m_with_security;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED

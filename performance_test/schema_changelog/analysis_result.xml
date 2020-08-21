@@ -1,4 +1,6 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="8"/>
+
   <changeset version="7"/>
 
   <changeset version="6"/>

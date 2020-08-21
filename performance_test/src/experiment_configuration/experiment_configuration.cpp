@@ -59,7 +59,6 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nNumber of subscribers: " << e.number_of_subscribers() <<
            "\nMemory check enabled: " << e.check_memory() <<
            "\nUse single participant: " << e.use_single_participant() <<
-           "\nNot using Connext DDS Micro INTRA: " << e.no_micro_intra() <<
            "\nWith security: " << e.is_with_security() <<
            "\nRoundtrip Mode: " << e.roundtrip_mode() <<
            "\nIgnore seconds from beginning: " << e.rows_to_ignore();
@@ -106,7 +105,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "use_drive_px_rt", "alias for --use_rt_prio 5 --use_rt_cpus 62")(
     "use_single_participant",
     "Uses only one participant per process. By default every thread has its own.")(
-    "no_micro_intra", "Disables the Connext DDS Micro INTRA transport.")(
     "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
     po::value<std::string>()->default_value("None"),
     "Selects the round trip mode (None, Main, Relay).")("ignore",
@@ -295,17 +293,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       }
     }
 
-    m_no_micro_intra = false;
-#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-    if (vm.count("no_micro_intra")) {
-      if (m_com_mean != CommunicationMean::CONNEXTDDSMICRO) {
-        throw std::invalid_argument(
-                "Only Connext DDS Micro supports INTRA Transport and can therefore disable it.");
-      } else {
-        m_no_micro_intra = true;
-      }
-    }
-#endif
     m_with_security = false;
     if (vm.count("with_security")) {
       if (m_com_mean != CommunicationMean::ROS2) {
@@ -478,12 +465,6 @@ bool ExperimentConfiguration::use_single_participant() const
 {
   check_setup();
   return m_use_single_participant;
-}
-
-bool ExperimentConfiguration::no_micro_intra() const
-{
-  check_setup();
-  return m_no_micro_intra;
 }
 
 bool ExperimentConfiguration::is_drivepx_rt() const

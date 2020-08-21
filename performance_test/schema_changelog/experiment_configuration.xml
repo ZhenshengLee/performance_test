@@ -1,4 +1,10 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="8">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="no_micro_intra"/>
+    </alter-table>
+  </changeset>
+
   <changeset version="7">
     <alter-table name="ExperimentConfiguration">
       <drop-column name="no_waitset"/>

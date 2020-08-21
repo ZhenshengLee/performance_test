@@ -116,8 +116,6 @@ Allowed options:
                                        62
   --use_single_participant             Uses only one participant per process.
                                        By default every thread has its own.
-  --no_micro_intra                     Disables the Connext DDS Micro INTRA
-                                       transport.
   --with_security                      Make nodes with deterministic names for
                                        use with security
   --roundtrip_mode arg (=None)         Selects the round trip mode (None, Main,
@@ -135,8 +133,7 @@ Allowed options:
 
 Some things to note:
 
-1. `--no_micro_intra` option is obsolete and will not work with the Connext Micro plugin.
-2. `--use_single_participant` option also should not be used as its obsolete and will be removed soon.
+1. `--use_single_participant` option also should not be used as its obsolete and will be removed soon.
 
 ## Implemented plugins
 
