@@ -278,6 +278,10 @@ target_link_libraries(${EXE_NAME}
     ${OPTIONAL_LIBRARIES})
 
 if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
+  foreach(header ${${PROJECT_NAME}_HEADERS})
+    get_filename_component(target_suffix ${header} NAME)
+    add_dependencies(${EXE_NAME} "generate_odb_${target_suffix}")
+  endforeach()
   target_link_libraries(${EXE_NAME} ${ODB_LIBRARIES})
   target_include_directories(${EXE_NAME}
       PRIVATE
