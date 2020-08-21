@@ -19,9 +19,7 @@
 #ifndef EXPERIMENT_CONFIGURATION__TOPICS_HPP_
 #define EXPERIMENT_CONFIGURATION__TOPICS_HPP_
 
-
-#include <boost/mpl/list.hpp>
-#include <boost/mpl/for_each.hpp>
+#include <performance_test/for_each.hpp>
 
 // ROS2 2 types:
 #include <performance_test/msg/array1k.hpp>
@@ -32,6 +30,7 @@
 #include <performance_test/msg/array1m.hpp>
 #include <performance_test/msg/array2m.hpp>
 #include <performance_test/msg/array4m.hpp>
+#include <performance_test/msg/array8m.hpp>
 
 #include <performance_test/msg/struct16.hpp>
 #include <performance_test/msg/struct256.hpp>
@@ -42,6 +41,7 @@
 #include <performance_test/msg/point_cloud1m.hpp>
 #include <performance_test/msg/point_cloud2m.hpp>
 #include <performance_test/msg/point_cloud4m.hpp>
+#include <performance_test/msg/point_cloud8m.hpp>
 
 #include <performance_test/msg/range.hpp>
 #include <performance_test/msg/nav_sat_fix.hpp>
@@ -59,6 +59,7 @@
   #include <fast_rtps/Array1m_PubSubTypes.h>
   #include <fast_rtps/Array2m_PubSubTypes.h>
   #include <fast_rtps/Array4m_PubSubTypes.h>
+  #include <fast_rtps/Array8m_PubSubTypes.h>
 
   #include <fast_rtps/Struct16_PubSubTypes.h>
   #include <fast_rtps/Struct256_PubSubTypes.h>
@@ -69,6 +70,7 @@
   #include <fast_rtps/PointCloud1m_PubSubTypes.h>
   #include <fast_rtps/PointCloud2m_PubSubTypes.h>
   #include <fast_rtps/PointCloud4m_PubSubTypes.h>
+  #include <fast_rtps/PointCloud8m_PubSubTypes.h>
 
   #include <fast_rtps/Range_PubSubTypes.h>
   #include <fast_rtps/NavSatFix_PubSubTypes.h>
@@ -87,6 +89,7 @@
   #include <performance_test/msg/dds_connext_micro_typefiles/Array1m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/Array2m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/Array4m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array8m_Support.h>
 
   #include <performance_test/msg/dds_connext_micro_typefiles/Struct16_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/Struct256_Support.h>
@@ -97,6 +100,7 @@
   #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud1m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud2m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud4m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud8m_Support.h>
 
   #include <performance_test/msg/dds_connext_micro_typefiles/Range_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/NavSatFix_Support.h>
@@ -115,6 +119,7 @@
   #include <cyclonedds/Array1m_.h>
   #include <cyclonedds/Array2m_.h>
   #include <cyclonedds/Array4m_.h>
+  #include <cyclonedds/Array8m_.h>
 
   #include <cyclonedds/Struct16_.h>
   #include <cyclonedds/Struct256_.h>
@@ -125,6 +130,7 @@
   #include <cyclonedds/PointCloud1m_.h>
   #include <cyclonedds/PointCloud2m_.h>
   #include <cyclonedds/PointCloud4m_.h>
+  #include <cyclonedds/PointCloud8m_.h>
 
   #include <cyclonedds/Range_.h>
   #include <cyclonedds/NavSatFix_.h>
@@ -143,6 +149,8 @@
   #include <opendds/Array60k_TypeSupportImpl.h>
   #include <opendds/Array1m_TypeSupportImpl.h>
   #include <opendds/Array2m_TypeSupportImpl.h>
+  #include <opendds/Array4m_TypeSupportImpl.h>
+  #include <opendds/Array8m_TypeSupportImpl.h>
   #include <opendds/Struct16_TypeSupportImpl.h>
   #include <opendds/Struct256_TypeSupportImpl.h>
   #include <opendds/Struct4k_TypeSupportImpl.h>
@@ -151,6 +159,7 @@
   #include <opendds/PointCloud1m_TypeSupportImpl.h>
   #include <opendds/PointCloud2m_TypeSupportImpl.h>
   #include <opendds/PointCloud4m_TypeSupportImpl.h>
+  #include <opendds/PointCloud8m_TypeSupportImpl.h>
   #include <opendds/Range_TypeSupportImpl.h>
   #include <opendds/NavSatFix_TypeSupportImpl.h>
   #include <opendds/RadarDetection_TypeSupportImpl.h>
@@ -159,6 +168,7 @@
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace performance_test
@@ -440,6 +450,84 @@ public:
   static std::string topic_name()
   {
     return std::string("Array2m");
+  }
+};
+
+class Array4m
+{
+public:
+  using RosType = performance_test::msg::Array4m;
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::Array4m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array4m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array4m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__Array4m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array4m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array4m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array4m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array4m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array4m_TypeSupportImpl();
+  }
+#endif
+  static std::string topic_name()
+  {
+    return std::string("Array4m");
+  }
+};
+
+class Array8m
+{
+public:
+  using RosType = performance_test::msg::Array8m;
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::Array8m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array8m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array8m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__Array8m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array8m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array8m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array8m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array8m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array8m_TypeSupportImpl();
+  }
+#endif
+  static std::string topic_name()
+  {
+    return std::string("Array8m");
   }
 };
 
@@ -754,6 +842,45 @@ public:
   }
 };
 
+class PointCloud8m
+{
+public:
+  using RosType = performance_test::msg::PointCloud8m;
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud8m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud8m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud8m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__PointCloud8m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::PointCloud8m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::PointCloud8m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::PointCloud8m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::PointCloud8m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::PointCloud8m_TypeSupportImpl();
+  }
+#endif
+
+  static std::string topic_name()
+  {
+    return std::string("PointCloud8m");
+  }
+};
+
 class Range
 {
 public:
@@ -911,18 +1038,18 @@ public:
 };
 ///  \endcond
 
-using TopicTypeList = boost::mpl::list<Array1k, Array4k, Array16k, Array32k, Array60k, Array1m,
-    Array2m,
-    Struct16, Struct256, Struct4k, Struct32k, PointCloud512k, PointCloud1m, PointCloud2m,
-    PointCloud4m,
+using TopicTypeList = std::tuple<Array1k, Array4k, Array16k, Array32k, Array60k, Array1m,
+    Array2m, Array4m, Array8m,
+    Struct16, Struct256, Struct4k, Struct32k,
+    PointCloud512k, PointCloud1m, PointCloud2m, PointCloud4m, PointCloud8m,
     Range, NavSatFix, RadarDetection, RadarTrack>;
 
 /// Returns a vector of supported topic names.
 inline std::vector<std::string> supported_topic_names()
 {
   std::vector<std::string> result;
-  boost::mpl::for_each<TopicTypeList>([&result](auto topic) {
-      using T = decltype(topic);
+  performance_test::for_each(TopicTypeList(), [&result](const auto & topic) {
+      using T = std::remove_cv_t<std::remove_reference_t<decltype(topic)>>;
       result.push_back(T::topic_name());
     });
   return result;

@@ -14,11 +14,10 @@
 
 #include "data_runner_factory.hpp"
 
-#include <boost/mpl/for_each.hpp>
+#include <performance_test/for_each.hpp>
 
 #include <string>
 #include <memory>
-
 
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
   #include "../communication_abstractions/ros2_waitset_communicator.hpp"
@@ -52,9 +51,10 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
   const RunType run_type)
 {
   std::shared_ptr<DataRunnerBase> ptr;
-  boost::mpl::for_each<topics::TopicTypeList>([&ptr, requested_topic_name, com_mean,
-    run_type](auto topic) {
-      using T = decltype(topic);
+  performance_test::for_each(
+    topics::TopicTypeList(),
+    [&ptr, requested_topic_name, com_mean, run_type](const auto & topic) {
+      using T = std::remove_cv_t<std::remove_reference_t<decltype(topic)>>;
       if (T::topic_name() == requested_topic_name) {
         if (ptr) {
           throw std::runtime_error("It seems that two topics have the same name");

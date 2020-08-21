@@ -37,6 +37,7 @@ set(IDL_SOURCE_C
   ../Array1m_.idl
   ../Array2m_.idl
   ../Array4m_.idl
+  ../Array8m_.idl
 
   ../Struct16_.idl
   ../Struct256_.idl
@@ -47,6 +48,7 @@ set(IDL_SOURCE_C
   ../PointCloud1m_.idl
   ../PointCloud2m_.idl
   ../PointCloud4m_.idl
+  ../PointCloud8m_.idl
 
   ../Range_.idl
   ../NavSatFix_.idl

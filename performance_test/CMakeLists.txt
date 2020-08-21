@@ -132,6 +132,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
     "src/msg/Array1m.msg"
     "src/msg/Array2m.msg"
     "src/msg/Array4m.msg"
+    "src/msg/Array8m.msg"
 
     "src/msg/Struct16.msg"
     "src/msg/Struct256.msg"
