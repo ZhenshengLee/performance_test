@@ -45,7 +45,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 5, closed)
+#pragma db model version(1, 6, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition
@@ -125,9 +125,6 @@ public:
   std::chrono::seconds expected_wait_for_matched_timeout() const;
   /// \returns Returns if memory operations should be logged.
   bool check_memory() const;
-  /// \returns Returns if ROS shm should be used. This will throw if the experiment
-  /// configuration is not set up.
-  bool use_ros_shm() const;
   /// \returns Returns if only a single participant should be used. This will throw if
   /// the experiment configuration is not set up.
   bool use_single_participant() const;
@@ -202,7 +199,6 @@ private:
     m_expected_num_subs(),
     m_wait_for_matched_timeout(),
     m_check_memory(false),
-    m_use_ros_shm(false),
     m_use_single_participant(false),
     m_no_waitset(false),
     m_no_micro_intra(false),
@@ -271,7 +267,6 @@ private:
 #endif
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
-  bool m_use_ros_shm;
   bool m_use_single_participant;
   bool m_no_waitset;
   bool m_no_micro_intra;

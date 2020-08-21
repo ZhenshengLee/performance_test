@@ -103,7 +103,6 @@ Allowed options:
                                        exiting. Default (0) is to run forever.
   -p [ --num_pub_threads ] arg (=1)    Maximum number of publisher threads.
   -s [ --num_sub_threads ] arg (=1)    Maximum number of subscriber threads.
-  --use_ros_shm                        Use Ros SHM support.
   --check_memory                       Prints backtrace of all memory
                                        operations performed by the middleware.
                                        This will slow down the application!
@@ -140,7 +139,6 @@ Some things to note:
 
 1. `--no_micro_intra` option is obsolete and will not work with the Connext Micro plugin.
 2. `--use_single_participant` option also should not be used as its obsolete and will be removed soon.
-3. `--use_ros_shm` enables [ROS 2 INTRA transport](https://index.ros.org/doc/ros2/Tutorials/Intra-Process-Communication/).
 
 ## Implemented plugins
 

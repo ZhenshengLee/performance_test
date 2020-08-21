@@ -58,7 +58,6 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nNumber of publishers: " << e.number_of_publishers() <<
            "\nNumber of subscribers: " << e.number_of_subscribers() <<
            "\nMemory check enabled: " << e.check_memory() <<
-           "\nUse ros SHM: " << e.use_ros_shm() <<
            "\nUse single participant: " << e.use_single_participant() <<
            "\nNot using waitset: " << e.no_waitset() <<
            "\nNot using Connext DDS Micro INTRA: " << e.no_micro_intra() <<
@@ -97,8 +96,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "num_pub_threads,p", po::value<uint32_t>()->default_value(1),
     "Maximum number of publisher threads.")("num_sub_threads,s",
     po::value<uint32_t>()->default_value(1),
-    "Maximum number of subscriber threads.")("use_ros_shm",
-    "Use Ros SHM support.")("check_memory",
+    "Maximum number of subscriber threads.")("check_memory",
     "Prints backtrace of all memory operations performed by the middleware. "
     "This will slow down the application!")("use_rt_prio", po::value<int32_t>()->default_value(0),
     "Set RT priority. "
@@ -275,13 +273,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       throw std::invalid_argument("More than one publisher is not supported at the moment");
     }
 
-    m_use_ros_shm = false;
-    if (vm.count("use_ros_shm")) {
-      if (m_com_mean != CommunicationMean::ROS2) {
-        throw std::invalid_argument("Must use ROS2 for this option for ROS2 SHM!");
-      }
-      m_use_ros_shm = true;
-    }
     int32_t prio = vm["use_rt_prio"].as<int32_t>();
     uint32_t cpus = vm["use_rt_cpus"].as<uint32_t>();
     if (vm.count("use_drive_px_rt")) {
@@ -491,12 +482,6 @@ bool ExperimentConfiguration::check_memory() const
 {
   check_setup();
   return m_check_memory;
-}
-
-bool ExperimentConfiguration::use_ros_shm() const
-{
-  check_setup();
-  return m_use_ros_shm;
 }
 
 bool ExperimentConfiguration::use_single_participant() const

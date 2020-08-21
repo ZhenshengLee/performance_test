@@ -47,7 +47,7 @@ std::shared_ptr<rclcpp::Node> ResourceManager::ros2_node() const
     rand_str = std::to_string(std::rand());
   }
 
-  auto options = rclcpp::NodeOptions().use_intra_process_comms(m_ec.use_ros_shm());
+  auto options = rclcpp::NodeOptions();
 
   auto env_name = "ROS_DOMAIN_ID";
   auto env_value = std::to_string(m_ec.dds_domain_id());

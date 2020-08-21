@@ -1,4 +1,10 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="6">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="use_ros_shm"/>
+    </alter-table>
+  </changeset>
+
   <changeset version="5">
     <alter-table name="ExperimentConfiguration">
       <add-column name="external_info_ci" type="TEXT" null="false"/>
