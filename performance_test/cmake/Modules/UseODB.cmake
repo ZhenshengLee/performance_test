@@ -199,9 +199,11 @@ function(odb_compile outvar)
     get_filename_component(ODB_BIN_PATH ${ODB_EXECUTABLE} DIRECTORY)
     get_filename_component(ODB_LD_LIBRARY_PATH "${ODB_BIN_PATH}/../lib" ABSOLUTE)
 
-    add_custom_command(OUTPUT ${outputs}
+    get_filename_component(target_suffix "${input}" NAME)
+    add_custom_target("generate_odb_${target_suffix}"
         COMMAND "LD_LIBRARY_PATH=${ODB_LD_LIBRARY_PATH}:${ODB_LIBRARY_PATH}:${LD_LIBRARY_PATH}" ${ODB_EXECUTABLE} ${ODB_ARGS} "${input}"
         DEPENDS "${input}"
+        BYPRODUCTS ${outputs}
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM)
 
