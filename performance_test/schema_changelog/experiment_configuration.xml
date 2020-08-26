@@ -1,4 +1,16 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="10">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="is_drivepx_rt"/>
+    </alter-table>
+  </changeset>
+
+  <changeset version="9">
+    <alter-table name="ExperimentConfiguration">
+      <add-column name="is_rt_init_required" type="TINYINT(1)" null="false"/>
+    </alter-table>
+  </changeset>
+
   <changeset version="8">
     <alter-table name="ExperimentConfiguration">
       <drop-column name="no_micro_intra"/>

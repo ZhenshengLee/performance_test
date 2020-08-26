@@ -45,7 +45,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 8, closed)
+#pragma db model version(1, 10, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition
@@ -130,9 +130,10 @@ public:
   bool use_single_participant() const;
   /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
   ///  of communication is not ROS2
-  /// \returns Returns if Drivepx RT is set or not. This will throw if the experiment configuration
-  /// is not set up.
-  bool is_drivepx_rt() const;
+  /// \returns Returns if post-proc RT initialization is required. This is set when the cpu
+  /// affinity or thread priority is overridden by the caller. This will throw if the experiment
+  /// configuration is not set up.
+  bool is_rt_init_required() const;
   /// \returns Returns if logging of performance_test results is disabled for stdout.
   /// This will throw if the experiment configuration is not setup
   bool disable_logging() const;
@@ -194,7 +195,7 @@ private:
     m_wait_for_matched_timeout(),
     m_check_memory(false),
     m_use_single_participant(false),
-    m_is_drivepx_rt(false),
+    m_is_rt_init_required(false),
     m_disable_logging(false),
     m_roundtrip_mode(RoundTripMode::NONE)
   {}
@@ -260,7 +261,7 @@ private:
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
   bool m_use_single_participant;
-  bool m_is_drivepx_rt;
+  bool m_is_rt_init_required;
   bool m_with_security;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient

@@ -89,6 +89,12 @@ AnalyzeRunner::AnalyzeRunner()
 }
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+static const odb::data_migration_entry<9, 1>
+migrate_is_drivepx_rt_to_is_rt_init_required_entry(
+  [](odb::database & db) {
+    db.execute("UPDATE odb_test.ExperimentConfiguration SET is_rt_init_required = is_drivepx_rt;");
+  });
+
 void AnalyzeRunner::apply_schema_migration()
 {
   odb::core::schema_version v(m_db->schema_version());
@@ -109,7 +115,7 @@ void AnalyzeRunner::apply_schema_migration()
     {
       odb::core::transaction t(m_db->begin());
       odb::core::schema_catalog::migrate_schema_pre(*m_db, v);
-      // Data migration goes here.
+      odb::core::schema_catalog::migrate_data(*m_db);
       odb::core::schema_catalog::migrate_schema_post(*m_db, v);
       t.commit();
     }
@@ -141,8 +147,8 @@ void AnalyzeRunner::run()
     std::for_each(m_sub_runners.begin(), m_sub_runners.end(), [](auto & a) {a->sync_reset();});
 
 #if PERFORMANCE_TEST_RT_ENABLED
-    /// Id drivepx_rt is set and this is the first loop, set the post RT init settings
-    if (m_is_first_entry && m_ec.is_drivepx_rt()) {
+    /// If there are custom RT settings and this is the first loop, set the post RT init settings
+    if (m_is_first_entry && m_ec.is_rt_init_required()) {
       post_proc_rt_init();
       m_is_first_entry = false;
     }

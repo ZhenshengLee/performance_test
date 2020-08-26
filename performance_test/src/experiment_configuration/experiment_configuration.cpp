@@ -102,7 +102,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "use_rt_cpus", po::value<uint32_t>()->default_value(0),
     "Set RT cpu affinity mask. "
     "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
-    "use_drive_px_rt", "alias for --use_rt_prio 5 --use_rt_cpus 62")(
     "use_single_participant",
     "Uses only one participant per process. By default every thread has its own.")(
     "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
@@ -271,15 +270,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     int32_t prio = vm["use_rt_prio"].as<int32_t>();
     uint32_t cpus = vm["use_rt_cpus"].as<uint32_t>();
-    if (vm.count("use_drive_px_rt")) {
-      // Set Drive-px CPU mask "62" cpu 0-5 and real time priority of 5
-      prio = 5;
-      cpus = 62;
-    }
+
     if (prio != 0 || cpus != 0) {
 #if PERFORMANCE_TEST_RT_ENABLED
       pre_proc_rt_init(cpus, prio);
-      m_is_drivepx_rt = true;
+      m_is_rt_init_required = true;
 #else
       throw std::invalid_argument("Built with RT optimizations disabled");
 #endif
@@ -467,10 +462,10 @@ bool ExperimentConfiguration::use_single_participant() const
   return m_use_single_participant;
 }
 
-bool ExperimentConfiguration::is_drivepx_rt() const
+bool ExperimentConfiguration::is_rt_init_required() const
 {
   check_setup();
-  return m_is_drivepx_rt;
+  return m_is_rt_init_required;
 }
 
 bool ExperimentConfiguration::is_with_security() const

@@ -112,8 +112,6 @@ Allowed options:
   --use_rt_cpus arg (=0)               Set RT cpu affinity mask. Only certain
                                        platforms (i.e. Drive PX) have the right
                                        configuration to support this.
-  --use_drive_px_rt                    alias for --use_rt_prio 5 --use_rt_cpus
-                                       62
   --use_single_participant             Uses only one participant per process.
                                        By default every thread has its own.
   --with_security                      Make nodes with deterministic names for
