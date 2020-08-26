@@ -84,7 +84,7 @@ public:
    * \param argv The argv parameter from the main function.
    */
   void setup(int argc, char ** argv);
-  /// Returns if the experiment configuration is setup and ready to use.
+  /// Returns if the experiment configuration is set up and ready to use.
   bool is_setup() const;
 
   /// \returns Returns the configured mean of communication. This will throw if the experiment
@@ -128,15 +128,15 @@ public:
   /// \returns Returns if only a single participant should be used. This will throw if
   /// the experiment configuration is not set up.
   bool use_single_participant() const;
-  /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
-  ///  of communication is not ROS2
   /// \returns Returns if post-proc RT initialization is required. This is set when the cpu
   /// affinity or thread priority is overridden by the caller. This will throw if the experiment
   /// configuration is not set up.
   bool is_rt_init_required() const;
   /// \returns Returns if logging of performance_test results is disabled for stdout.
-  /// This will throw if the experiment configuration is not setup
+  /// This will throw if the experiment configuration is not set up.
   bool disable_logging() const;
+  /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
+  /// of communication is not ROS2.
   bool is_with_security() const;
   /// \returns Returns the roundtrip mode.
   RoundTripMode roundtrip_mode() const;
@@ -144,11 +144,11 @@ public:
   /// is not set up.
   std::string rmw_implementation() const;
   /// \returns Returns current performance test version. This will throw if the experiment
-  // configuration is not set up.
+  /// configuration is not set up.
   std::string perf_test_version() const;
-  /// \returns Returns the publishing topic postfix
+  /// \returns Returns the publishing topic postfix.
   std::string pub_topic_postfix() const;
-  /// \returns Returns the subscribing topic postfix
+  /// \returns Returns the subscribing topic postfix.
   std::string sub_topic_postfix() const;
   /// \returns Returns the randomly generated unique ID of the experiment. This will throw if the
   /// experiment configuration is not set up.
@@ -256,7 +256,7 @@ private:
 #endif
   uint32_t m_expected_num_subs;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db transient
+  #pragma db transient
 #endif
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
