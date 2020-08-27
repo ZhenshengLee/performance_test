@@ -79,8 +79,159 @@ private:
   from(std::chrono::nanoseconds (?))
 #pragma db value(StatisticsTracker) definition
 #pragma db value(RusageTracker) definition
-#pragma db value(rusage) definition
-#pragma db value(timeval) definition
+//#pragma db value(timeval) definition
+#pragma db value
+struct odb_timeval
+{
+  std::int64_t tv_sec;
+  std::int64_t tv_usec;
+};
+
+#pragma db map type(timeval) as(odb_timeval)  \
+    to(odb_timeval{(?).tv_sec, (?).tv_usec})  \
+    from(timeval{(?).tv_sec, (?).tv_usec})
+//#pragma db value(rusage) definition
+#pragma db value
+struct odb_rusage
+{
+    struct odb_timeval ru_utime;
+    struct odb_timeval ru_stime;
+    __extension__ union
+      {
+	long int ru_maxrss;
+	long int __ru_maxrss_word;
+      };
+    __extension__ union
+      {
+	long int ru_ixrss;
+	long int __ru_ixrss_word;
+      };
+    __extension__ union
+      {
+	long int ru_idrss;
+	long int __ru_idrss_word;
+      };
+    __extension__ union
+      {
+	long int ru_isrss;
+	 long int __ru_isrss_word;
+      };
+    __extension__ union
+      {
+	long int ru_minflt;
+	long int __ru_minflt_word;
+      };
+    __extension__ union
+      {
+	long int ru_majflt;
+	long int __ru_majflt_word;
+      };
+    __extension__ union
+      {
+	long int ru_nswap;
+	long int __ru_nswap_word;
+      };
+    __extension__ union
+      {
+	long int ru_inblock;
+	long int __ru_inblock_word;
+      };
+    __extension__ union
+      {
+	long int ru_oublock;
+	long int __ru_oublock_word;
+      };
+    __extension__ union
+      {
+	long int ru_msgsnd;
+	long int __ru_msgsnd_word;
+      };
+    __extension__ union
+      {
+	long int ru_msgrcv;
+	long int __ru_msgrcv_word;
+      };
+    __extension__ union
+      {
+	long int ru_nsignals;
+	long int __ru_nsignals_word;
+      };
+    __extension__ union
+      {
+	long int ru_nvcsw;
+	long int __ru_nvcsw_word;
+      };
+    __extension__ union
+      {
+	long int ru_nivcsw;
+	long int __ru_nivcsw_word;
+      };
+};
+#pragma db map type(rusage) as(odb_rusage)  \
+    to(odb_rusage{ \
+        (?).ru_utime, \
+        (?).ru_stime, \
+        (?).ru_maxrss, \
+        (?).ru_ixrss, \
+        (?).ru_idrss, \
+        (?).ru_isrss, \
+        (?).ru_minflt, \
+        (?).ru_majflt, \
+        (?).ru_nswap, \
+        (?).ru_inblock, \
+        (?).ru_oublock, \
+        (?).ru_msgsnd, \
+        (?).ru_msgrcv, \
+        (?).ru_nsignals, \
+        (?).ru_nvcsw, \
+        (?).ru_nivcsw, \
+        (?).__ru_maxrss_word, \
+        (?).__ru_ixrss_word, \
+        (?).__ru_idrss_word, \
+        (?).__ru_isrss_word, \
+        (?).__ru_minflt_word, \
+        (?).__ru_majflt_word, \
+        (?).__ru_nswap_word, \
+        (?).__ru_inblock_word, \
+        (?).__ru_oublock_word, \
+        (?).__ru_msgsnd_word, \
+        (?).__ru_msgrcv_word, \
+        (?).__ru_nsignals_word, \
+        (?).__ru_nvcsw_word, \
+        (?).__ru_nivcsw_word \
+    })  \
+    from(rusage{ \
+        (?).ru_utime, \
+        (?).ru_stime, \
+        (?).ru_maxrss, \
+        (?).ru_ixrss, \
+        (?).ru_idrss, \
+        (?).ru_isrss, \
+        (?).ru_minflt, \
+        (?).ru_majflt, \
+        (?).ru_nswap, \
+        (?).ru_inblock, \
+        (?).ru_oublock, \
+        (?).ru_msgsnd, \
+        (?).ru_msgrcv, \
+        (?).ru_nsignals, \
+        (?).ru_nvcsw, \
+        (?).ru_nivcsw, \
+        (?).__ru_maxrss_word, \
+        (?).__ru_ixrss_word, \
+        (?).__ru_idrss_word, \
+        (?).__ru_isrss_word, \
+        (?).__ru_minflt_word, \
+        (?).__ru_majflt_word, \
+        (?).__ru_nswap_word, \
+        (?).__ru_inblock_word, \
+        (?).__ru_oublock_word, \
+        (?).__ru_msgsnd_word, \
+        (?).__ru_msgrcv_word, \
+        (?).__ru_nsignals_word, \
+        (?).__ru_nvcsw_word, \
+        (?).__ru_nivcsw_word \
+    })
 #pragma db value(CpuInfo) definition
 /// Represents the results of an experiment iteration.
 #pragma db object pointer(std::shared_ptr)
