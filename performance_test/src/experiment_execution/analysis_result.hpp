@@ -83,8 +83,8 @@ private:
 #pragma db value
 struct odb_timeval
 {
-  std::int64_t tv_sec;
-  std::int64_t tv_usec;
+  std::chrono::nanoseconds tv_sec;
+  std::chrono::nanoseconds tv_usec;
 };
 
 #pragma db map type(timeval) as(odb_timeval)  \
