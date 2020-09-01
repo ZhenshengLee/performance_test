@@ -19,7 +19,6 @@
 
 """Tool for plotting performance test reports."""
 
-import itertools
 import os
 import re
 import shutil
@@ -31,9 +30,8 @@ import click
 
 import jinja2
 
-import pandas
-
 from .generate_plots import generate_figures
+from .load_logfiles import load_logfile
 
 
 __version__ = '0.1.0'
@@ -44,27 +42,6 @@ def sanitize(val):
     if isinstance(val, str):
         val = val.replace('_', r'\_').replace('%', r'\%')
     return val
-
-
-def load_logfile(filename):
-    """Load logfile into header dictionary and pandas dataframe."""
-    with open(filename) as source:
-        header = {}
-        for item in itertools.takewhile(lambda x: not x.startswith('---'), source):
-            if not item.strip():  # Don't care about whitespace-only lines
-                continue
-            try:
-                key = item.split(':')[0].strip()
-                value = item.split(':', maxsplit=1)[1].strip()
-                header[key] = value
-            except Exception:
-                print('Error trying to parse header line "{}"'.format(item))
-                raise
-        dataframe = pandas.read_csv(source, sep='[ \t]*,[ \t]*', engine='python')
-        unnamed = [col for col in dataframe.keys() if col.startswith('Unnamed: ')]
-        if unnamed:
-            dataframe.drop(unnamed, axis=1, inplace=True)
-    return header, dataframe
 
 
 def load_template():
