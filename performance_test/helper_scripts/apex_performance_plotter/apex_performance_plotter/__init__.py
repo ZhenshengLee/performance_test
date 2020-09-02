@@ -106,8 +106,8 @@ def create_layout(header, dataframe):
     header_fields = {
         'Logfile name', 'Experiment id', 'Communication mean', 'Publishing rate',
         'Topic name', 'Number of publishers', 'Number of subscribers', 'Maximum runtime (sec)',
-        'DDS domain id', 'QOS', 'Use ros SHM', 'Use single participant', 'Not using waitset',
-        'Not using Connext DDS Micro INTRA', 'Performance Test Version',
+        'DDS domain id', 'QOS', 'Use single participant',
+        'Performance Test Version',
     }
 
     header.update(dict('QOS {}'.format(x).split(': ')
@@ -156,10 +156,7 @@ def create_layout(header, dataframe):
                 create_kv(header, 'Number of subscribers'),
                 create_kv(header, 'Maximum runtime (sec)'),
                 create_kv(header, 'DDS domain id'),
-                create_kv(header, 'Use ros SHM', boolish=True),
                 create_kv(header, 'Use single participant', boolish=True),
-                create_kv(header, 'Not using waitset', boolish=True),
-                create_kv(header, 'Not using Connext DDS Micro INTRA', boolish=True),
             ]},
             {'name': 'average results', 'items': [
                 {'key': 'Experiment Status', 'value': 'success' if xaxis else 'failed'},
