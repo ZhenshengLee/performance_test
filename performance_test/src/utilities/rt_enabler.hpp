@@ -214,7 +214,8 @@ inline void pre_proc_rt_init(const uint32_t cpu_bit_mask_in, const int32_t prio)
       // (runmask and inherit mask).
 
       size = sizeof(int32_t) + 2u * masksize_bytes;
-      if (NULL != (my_data = malloc(size))) {
+      my_data = malloc(size);
+      if (NULL != my_data) {
         memset(my_data, 0x00, size);
 
         // Set up pointers to the "members" of the structure.
