@@ -51,6 +51,7 @@ build_cyclonedds:
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
+    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -58,6 +59,7 @@ build_cyclonedds:
     paths:
       - log
       - build
+      - opt-cyclonedds.tar.gz
       - opt.tar.gz
 
 build_opendds:
@@ -90,6 +92,7 @@ build_opendds:
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
+    - tar cfz opt-opendds.tar.gz /opt/opendds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -97,6 +100,7 @@ build_opendds:
     paths:
     - log
     - build
+    - opt-opendds.tar.gz
     - opt.tar.gz
 
 build_fastrtps:
@@ -162,6 +166,64 @@ test:
     paths:
       - log
 
+.smoke_test:
+  stage: test
+  image: osrf/ros:dashing-desktop
+  before_script:
+    - apt-get update
+    - apt-get install -y ros-dashing-osrf-testing-tools-cpp
+  script:
+    - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
+    - tar xzf opt.tar.gz -C /
+    - source /opt/performance_test/setup.bash
+    # With the FastRTPS native plugin, there is a double free error
+    # when perf_test exits. Once this error is resolved, remove this
+    # timeout business, and instead use --max_runtime 15.
+    - '
+      TOPICS=${SMOKE_TEST_TOPICS:-Array1k};
+      for TOPIC in ${TOPICS}; do
+        timeout 15 /opt/performance_test/lib/performance_test/perf_test
+            -c ${COMMUNICATION_MEAN}
+            -t ${TOPIC}
+            --rate 2
+            --keep_last
+            --history_depth 10 ||
+        if [ $? -eq 124 ]; then echo "OK";
+        else exit 1;
+        fi;
+      done;
+      '
+
+smoke_test_fastrtps:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_fastrtps
+  variables:
+    COMMUNICATION_MEAN: FastRTPS
+
+smoke_test_cyclonedds:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_cyclonedds
+  variables:
+    COMMUNICATION_MEAN: CycloneDDS
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-cyclonedds.tar.gz -C /;
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib";
+    '
+
+smoke_test_opendds:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_opendds
+  variables:
+    COMMUNICATION_MEAN: OpenDDS
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-opendds.tar.gz -C /;
+    '
 
 test_security:
   stage: test
