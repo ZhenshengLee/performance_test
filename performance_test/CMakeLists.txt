@@ -103,7 +103,10 @@ if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
 endif()
 
-# ROS2 Waitset
+# ROS2 Callback and Executor
+option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback and Executor Plugin." ON)
+
+# Apex.OS Waitset and Polling Subscription
 option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
   The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
 
@@ -166,7 +169,6 @@ set(sources
     src/communication_abstractions/resource_manager.cpp
     src/communication_abstractions/resource_manager.hpp
     src/communication_abstractions/ros2_communicator.hpp
-    src/communication_abstractions/ros2_callback_communicator.hpp
     src/experiment_configuration/topics.hpp
     src/data_running/data_runner.hpp
     src/data_running/data_runner_base.hpp
@@ -190,30 +192,30 @@ if(PERFORMANCE_TEST_RT_ENABLED)
   list(APPEND sources src/utilities/rt_enabler.hpp)
 endif()
 
+if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
+  list(APPEND sources src/communication_abstractions/ros2_callback_communicator.hpp)
+endif()
+
 if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/ros2_waitset_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/ros2_waitset_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/fast_rtps_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/fast_rtps_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/connext_dds_micro_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/connext_dds_micro_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/cyclonedds_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/cyclonedds_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/opendds_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/opendds_communicator.hpp)
 endif()
 
 # Use ODB support to create SQL database
