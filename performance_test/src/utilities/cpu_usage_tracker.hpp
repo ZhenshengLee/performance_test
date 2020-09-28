@@ -124,11 +124,13 @@ public:
     );
 #endif  // defined(QNX)
   }
+#if defined(QNX)
 
 private:
   int64_t m_prev_active_time;
   int64_t m_prev_total_time;
   uint32_t m_tot_cpu_cores;
+#endif  // defined(QNX)
 };
 }  // namespace performance_test
 

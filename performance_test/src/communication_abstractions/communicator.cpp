@@ -16,6 +16,12 @@
 
 #include "communicator.hpp"
 
+#if defined(QNX)
+#include <sys/neutrino.h>
+#include <inttypes.h>
+#include <sys/syspage.h>
+#endif
+
 namespace performance_test
 {
 

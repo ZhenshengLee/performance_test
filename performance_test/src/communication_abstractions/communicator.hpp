@@ -23,12 +23,6 @@
 #include "../utilities/statistics_tracker.hpp"
 #include "../experiment_configuration/experiment_configuration.hpp"
 
-#if defined(QNX)
-#include <sys/neutrino.h>
-#include <inttypes.h>
-#include <sys/syspage.h>
-#endif
-
 namespace performance_test
 {
 
