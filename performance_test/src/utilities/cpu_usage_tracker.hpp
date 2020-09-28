@@ -88,20 +88,20 @@ public:
     float_t cpu_usage_local{};
 
     int64_t cur_time_ms =
-    time_point_cast<milliseconds>(steady_clock::now()).time_since_epoch().count();
+      time_point_cast<milliseconds>(steady_clock::now()).time_since_epoch().count();
 
     if (-1 != clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cur_usage_st)) {
       int64_t cur_active_time =
-      duration_cast<milliseconds>(seconds{cur_usage_st.tv_sec} +
-      nanoseconds{cur_usage_st.tv_nsec}).count();
+        duration_cast<milliseconds>(seconds{cur_usage_st.tv_sec} +
+          nanoseconds{cur_usage_st.tv_nsec}).count();
 
       int64_t active_time_ms = (cur_active_time - m_prev_active_time);
 
       int64_t total_time_ms = ((cur_time_ms - m_prev_total_time) *
-      static_cast<int64_t>(m_tot_cpu_cores));
+        static_cast<int64_t>(m_tot_cpu_cores));
 
       cpu_usage_local = (static_cast<float_t>(active_time_ms) /
-      static_cast<float_t>(total_time_ms)) * 100.0F;
+        static_cast<float_t>(total_time_ms)) * 100.0F;
 
       m_prev_active_time = cur_active_time;
       m_prev_total_time = cur_time_ms;
@@ -122,7 +122,7 @@ public:
       100.0F * static_cast<float>(times.user + times.system) /
       static_cast<float>(times.wall * cpu_cores)
     );
-#endif	// defined(QNX)
+#endif  // defined(QNX)
   }
 
 private:

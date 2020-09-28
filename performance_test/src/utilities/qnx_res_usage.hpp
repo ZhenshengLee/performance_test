@@ -45,7 +45,7 @@ uint64_t get_proc_rss_mem()
     if (!line.compare(0, rss_str_len, rss_string)) {
       auto first_del = line.find("=");
       auto sec_del = line.find(" ");
-      auto value = line.substr(first_del+1, sec_del-first_del);
+      auto value = line.substr(first_del + 1, sec_del - first_del);
       uint64_t rss_sz = std::stoul(value, 0, 16);
       rss_sz = (rss_sz * static_cast<uint64_t>(getpagesize()));
       return rss_sz;

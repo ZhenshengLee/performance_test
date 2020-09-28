@@ -194,59 +194,59 @@ inline void pre_proc_rt_init(const uint32_t cpu_bit_mask_in, const int32_t prio)
         throw std::runtime_error("proc rt init affinity setting failed");
       }
 #elif defined(QNX)
-    uint32_t num_elements = 0u;
-    int32_t * rsizep, * rmaskp, * imaskp;
-    uint64_t masksize_bytes, size;
-    void * my_data;
+      uint32_t num_elements = 0u;
+      int32_t * rsizep, * rmaskp, * imaskp;
+      uint64_t masksize_bytes, size;
+      void * my_data;
 
-    // http://www.qnx.com/developers/docs/7.0.0/index.html#com.qnx.doc.neutrino.prog/topic/multicore_thread_affinity.html
-    // Determine the number of array elements required to hold
-    // the runmasks, based on the number of CPUs in the system.
+      // http://www.qnx.com/developers/docs/7.0.0/index.html#com.qnx.doc.neutrino.prog/topic/multicore_thread_affinity.html
+      // Determine the number of array elements required to hold
+      // the runmasks, based on the number of CPUs in the system.
 
-    num_elements = (uint32_t)RMSK_SIZE(_syspage_ptr->num_cpu);
+      num_elements = (uint32_t)RMSK_SIZE(_syspage_ptr->num_cpu);
 
-    // Determine the size of the runmask, in bytes.
-    masksize_bytes = num_elements * sizeof(uint32_t);
+      // Determine the size of the runmask, in bytes.
+      masksize_bytes = num_elements * sizeof(uint32_t);
 
-    // Allocate memory for the data structure that we'll pass
-    // to ThreadCtl(). We need space for an integer (the number
-    // of elements in each mask array) and the two masks
-    // (runmask and inherit mask).
+      // Allocate memory for the data structure that we'll pass
+      // to ThreadCtl(). We need space for an integer (the number
+      // of elements in each mask array) and the two masks
+      // (runmask and inherit mask).
 
-    size = sizeof(int32_t) + 2u * masksize_bytes;
-    if (NULL != (my_data = malloc(size))) {
-      memset(my_data, 0x00, size);
+      size = sizeof(int32_t) + 2u * masksize_bytes;
+      if (NULL != (my_data = malloc(size))) {
+        memset(my_data, 0x00, size);
 
-      // Set up pointers to the "members" of the structure.
-      rsizep = static_cast<int32_t *>(my_data);
-      rmaskp = rsizep + 1u;
-      imaskp = rmaskp + num_elements;
+        // Set up pointers to the "members" of the structure.
+        rsizep = static_cast<int32_t *>(my_data);
+        rmaskp = rsizep + 1u;
+        imaskp = rmaskp + num_elements;
 
-      // Set the size.
-      *rsizep = static_cast<int32_t>(num_elements);
+        // Set the size.
+        *rsizep = static_cast<int32_t>(num_elements);
 
-      // Set the runmask and inherit mask. Call this macro once for each processor
-      // the thread and its children can run on.
-      uint64_t cmask = cpu_bit_mask_in;
-      uint32_t cpu = 0u;
-      while (cmask > 0u) {
-        if (cmask & 1u) {
-          RMSK_SET(cpu, rmaskp);
-          RMSK_SET(cpu, imaskp);
+        // Set the runmask and inherit mask. Call this macro once for each processor
+        // the thread and its children can run on.
+        uint64_t cmask = cpu_bit_mask_in;
+        uint32_t cpu = 0u;
+        while (cmask > 0u) {
+          if (cmask & 1u) {
+            RMSK_SET(cpu, rmaskp);
+            RMSK_SET(cpu, imaskp);
+          }
+          cpu++;
+          cmask = (cmask >> 1u);
         }
-        cpu++;
-        cmask = (cmask >> 1u);
-      }
 
-      if (ThreadCtl(_NTO_TCTL_RUNMASK_GET_AND_SET_INHERIT, my_data) == -1) {
-        std::cerr << "proc rt init set affinity failed" << strerror(errno) << std::endl;
+        if (ThreadCtl(_NTO_TCTL_RUNMASK_GET_AND_SET_INHERIT, my_data) == -1) {
+          std::cerr << "proc rt init set affinity failed" << strerror(errno) << std::endl;
+          throw std::runtime_error("proc rt init affinity setting failed");
+        }
+        free(my_data);
+      } else {
+        std::cerr << "proc rt init affinity mem alloc failed" << strerror(errno) << std::endl;
         throw std::runtime_error("proc rt init affinity setting failed");
       }
-      free(my_data);
-    } else {
-      std::cerr << "proc rt init affinity mem alloc failed" << strerror(errno) << std::endl;
-      throw std::runtime_error("proc rt init affinity setting failed");
-    }
 #endif  // APEX_LINUX
     }
   }

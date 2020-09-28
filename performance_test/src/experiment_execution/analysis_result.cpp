@@ -58,7 +58,7 @@ AnalysisResult::AnalysisResult(
   // QNX getrusage() max_rss does not give the correct value. Using a different method to get
   // the RSS value and converting into KBytes
   m_sys_usage.ru_maxrss =
-  (static_cast<int64_t>(performance_test::qnx_res::get_proc_rss_mem()) / 1024);
+    (static_cast<int64_t>(performance_test::qnx_res::get_proc_rss_mem()) / 1024);
 #endif
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   m_sys_tracker = RusageTracker(m_sys_usage);
