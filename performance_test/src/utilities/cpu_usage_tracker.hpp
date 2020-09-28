@@ -83,7 +83,7 @@ public:
   CpuInfo get_cpu_usage()
   {
 #if defined(QNX)
-    using namespace std::chrono;
+    using std::chrono;
     struct timespec cur_usage_st;
     float_t cpu_usage_local{};
 

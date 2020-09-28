@@ -22,7 +22,6 @@
 #include <atomic>
 #include <memory>
 #include <thread>
-#include <memory>
 
 #include "../utilities/spin_lock.hpp"
 
