@@ -126,39 +126,46 @@ set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
 
+option(IDL_MESSAGES_ENABLED "Use the .idl files in the src/msg folder, instead of the .msg files" OFF)
+
+if(IDL_MESSAGES_ENABLED)
+  set(MESSAGE_FILE_EXTENSION "idl")
+else()
+  set(MESSAGE_FILE_EXTENSION "msg")
+endif()
+
 rosidl_generate_interfaces(${PROJECT_NAME}
-    "src/msg/Array1k.msg"
-    "src/msg/Array4k.msg"
-    "src/msg/Array16k.msg"
-    "src/msg/Array32k.msg"
-    "src/msg/Array60k.msg"
-    "src/msg/Array1m.msg"
-    "src/msg/Array2m.msg"
-    "src/msg/Array4m.msg"
-    "src/msg/Array8m.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8m.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/Struct16.msg"
-    "src/msg/Struct256.msg"
-    "src/msg/Struct4k.msg"
-    "src/msg/Struct32k.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32k.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/PointCloud1m.msg"
-    "src/msg/PointCloud2m.msg"
-    "src/msg/PointCloud4m.msg"
-    "src/msg/PointCloud8m.msg"
-    "src/msg/PointCloud512k.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512k.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/NavSatStatus.msg"
-    "src/msg/NavSatFix.msg"
-    "src/msg/RadarDetection.msg"
-    "src/msg/RadarTrack.msg"
-    "src/msg/Range.msg"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatus.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFix.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetection.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrack.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Range.${MESSAGE_FILE_EXTENSION}"
 
-    "src/msg/Point.msg"
-    "src/msg/Point32.msg"
-    "src/msg/Polygon.msg"
-    "src/msg/Vector3.msg"
-
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Polygon.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3.${MESSAGE_FILE_EXTENSION}"
 
     DEPENDENCIES builtin_interfaces std_msgs sensor_msgs)
 
