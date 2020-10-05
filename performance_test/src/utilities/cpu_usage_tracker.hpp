@@ -83,17 +83,18 @@ public:
   CpuInfo get_cpu_usage()
   {
 #if defined(QNX)
-    using std::chrono;
     struct timespec cur_usage_st;
     float_t cpu_usage_local{};
 
     int64_t cur_time_ms =
-      time_point_cast<milliseconds>(steady_clock::now()).time_since_epoch().count();
+      std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).
+      time_since_epoch().count();
 
     if (-1 != clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cur_usage_st)) {
       int64_t cur_active_time =
-        duration_cast<milliseconds>(seconds{cur_usage_st.tv_sec} +
-          nanoseconds{cur_usage_st.tv_nsec}).count();
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::seconds{cur_usage_st.tv_sec} +
+        std::chrono::nanoseconds{cur_usage_st.tv_nsec}).count();
 
       int64_t active_time_ms = (cur_active_time - m_prev_active_time);
 

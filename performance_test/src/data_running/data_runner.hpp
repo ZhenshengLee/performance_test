@@ -23,6 +23,11 @@
 #include <memory>
 #include <thread>
 
+#if defined(QNX)
+#include <sys/neutrino.h>
+#include <inttypes.h>
+#endif
+
 #include "../utilities/spin_lock.hpp"
 
 namespace performance_test
