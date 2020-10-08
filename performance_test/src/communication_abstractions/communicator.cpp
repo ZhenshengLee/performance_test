@@ -90,7 +90,7 @@ void Communicator::add_latency_to_statistics(const std::int64_t sample_timestamp
   std::uint64_t ncycles = (rclk_cyc - sclk_cyc);
   // std::uint64_t m_cpms = (m_cps/1000);
   // std::uint64_t m_cpus = (m_cpms/1000);
-  const double sec_diff = static_cast<double>(ncycles / static_cast<double>(m_cps));
+  const double sec_diff = static_cast<double>(ncycles) / static_cast<double>(m_cps);
 #else
   std::chrono::nanoseconds st(sample_timestamp);
   const auto diff = std::chrono::steady_clock::now().time_since_epoch() - st;
