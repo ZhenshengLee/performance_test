@@ -122,6 +122,11 @@ endif()
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
 
+option(APEX_CERT "Set to true if building against Apex.OS Cert" OFF)
+if (APEX_CERT)
+  add_definitions(-DAPEX_CERT)
+endif()
+
 set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
