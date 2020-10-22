@@ -157,8 +157,8 @@ def render(template, filepath, skip_head=0, skip_tail=0):
     # still error out
     if skip_head + skip_tail > len(dataframe):
         print(
-            "ERROR: Told to skip {} rows from the start and {} rows from the end "
-            "but there are only {} rows or data".format(
+            'ERROR: Told to skip {} rows from the start and {} rows from the end '
+            'but there are only {} rows or data'.format(
                 skip_head,
                 skip_tail,
                 len(dataframe)

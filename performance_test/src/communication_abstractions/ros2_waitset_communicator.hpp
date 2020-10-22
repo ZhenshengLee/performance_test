@@ -51,7 +51,8 @@ public:
       m_polling_subscription = this->m_node->template create_polling_subscription<DataType>(
         Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
       if (this->m_ec.expected_num_pubs() > 0) {
-        m_polling_subscription->wait_for_matched(this->m_ec.expected_num_pubs(),
+        m_polling_subscription->wait_for_matched(
+          this->m_ec.expected_num_pubs(),
           this->m_ec.expected_wait_for_matched_timeout());
       }
       m_waitset = std::make_unique<rclcpp::Waitset<>>(m_polling_subscription);

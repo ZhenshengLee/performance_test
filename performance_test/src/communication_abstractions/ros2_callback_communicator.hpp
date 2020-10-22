@@ -52,7 +52,8 @@ public:
         [this](const typename DataType::SharedPtr data) {this->callback(data);});
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       if (this->m_ec.expected_num_pubs() > 0) {
-        m_subscription->wait_for_matched(this->m_ec.expected_num_pubs(),
+        m_subscription->wait_for_matched(
+          this->m_ec.expected_num_pubs(),
           this->m_ec.expected_wait_for_matched_timeout());
       }
 #endif

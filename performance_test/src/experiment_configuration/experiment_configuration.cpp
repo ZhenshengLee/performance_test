@@ -72,31 +72,44 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   namespace po = ::boost::program_options;
 
   po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "Print usage message.")("logfile,l", po::value<std::string>(),
-    "Optionally specify a logfile.")("rate,r", po::value<uint32_t>()->default_value(1000),
+  desc.add_options()("help,h", "Print usage message.")(
+    "logfile,l", po::value<std::string>(),
+    "Optionally specify a logfile.")(
+    "rate,r", po::value<uint32_t>()->default_value(1000),
     "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
     "communication,c", po::value<std::string>()->required(),
     "Communication plugin to use (ROS2, FastRTPS, ConnextDDSMicro, CycloneDDS, OpenDDS, "
     "ROS2PollingSubscription)")(
     "topic,t",
     po::value<std::string>()->required(),
-    "Topic to use. Use --topic_list to get a list.")("topic_list",
-    "Prints list of available topics and exits.")("dds_domain_id",
-    po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")("reliable",
-    "Enable reliable QOS. Default is best effort.")("transient",
-    "Enable transient QOS. Default is volatile.")("keep_last",
-    "Enable keep last QOS. Default is keep all.")("history_depth",
+    "Topic to use. Use --topic_list to get a list.")(
+    "topic_list",
+    "Prints list of available topics and exits.")(
+    "dds_domain_id",
+    po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")(
+    "reliable",
+    "Enable reliable QOS. Default is best effort.")(
+    "transient",
+    "Enable transient QOS. Default is volatile.")(
+    "keep_last",
+    "Enable keep last QOS. Default is keep all.")(
+    "history_depth",
     po::value<uint32_t>()->default_value(1000),
-    "Set history depth QOS. Defaults to 1000.")("disable_async",
-    "Disables async. pub/sub.")("max_runtime",
+    "Set history depth QOS. Defaults to 1000.")(
+    "disable_async",
+    "Disables async. pub/sub.")(
+    "max_runtime",
     po::value<uint64_t>()->default_value(0),
     "Maximum number of seconds to run before exiting. Default (0) is to run forever.")(
     "num_pub_threads,p", po::value<uint32_t>()->default_value(1),
-    "Maximum number of publisher threads.")("num_sub_threads,s",
+    "Maximum number of publisher threads.")(
+    "num_sub_threads,s",
     po::value<uint32_t>()->default_value(1),
-    "Maximum number of subscriber threads.")("check_memory",
+    "Maximum number of subscriber threads.")(
+    "check_memory",
     "Prints backtrace of all memory operations performed by the middleware. "
-    "This will slow down the application!")("use_rt_prio", po::value<int32_t>()->default_value(0),
+    "This will slow down the application!")(
+    "use_rt_prio", po::value<int32_t>()->default_value(0),
     "Set RT priority. "
     "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
     "use_rt_cpus", po::value<uint32_t>()->default_value(0),
@@ -104,16 +117,22 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
     "use_single_participant",
     "Uses only one participant per process. By default every thread has its own.")(
-    "with_security", "Make nodes with deterministic names for use with security")("roundtrip_mode",
+    "with_security", "Make nodes with deterministic names for use with security")(
+    "roundtrip_mode",
     po::value<std::string>()->default_value("None"),
-    "Selects the round trip mode (None, Main, Relay).")("ignore",
+    "Selects the round trip mode (None, Main, Relay).")(
+    "ignore",
     po::value<uint32_t>()->default_value(0),
-    "Ignores first n seconds of the experiment.")("disable_logging",
-    "Disables experiment logging to stdout.")("expected_num_pubs",
+    "Ignores first n seconds of the experiment.")(
+    "disable_logging",
+    "Disables experiment logging to stdout.")(
+    "expected_num_pubs",
     po::value<uint32_t>()->default_value(0), "Expected number of publishers for "
-    "wait_for_matched")("expected_num_subs",
+    "wait_for_matched")(
+    "expected_num_subs",
     po::value<uint32_t>()->default_value(0), "Expected number of subscribers for "
-    "wait_for_matched")("wait_for_matched_timeout",
+    "wait_for_matched")(
+    "wait_for_matched_timeout",
     po::value<uint32_t>()->default_value(30),
     "Maximum time[s] to wait for matching publishers/subscribers. Defaults to 30s")
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -121,10 +140,13 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   "Name of the SQL database.")
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
   ("db_user", po::value<std::string>(),
-  "User name to login to the SQL database.")("db_password",
+  "User name to login to the SQL database.")(
+    "db_password",
     po::value<std::string>(),
-    "Password to login to the SQL database.")("db_host",
-    po::value<std::string>(), "IP address of SQL server.")("db_port",
+    "Password to login to the SQL database.")(
+    "db_host",
+    po::value<std::string>(), "IP address of SQL server.")(
+    "db_port",
     po::value<unsigned int>(), "Port for SQL protocol.")
 #endif
 #endif

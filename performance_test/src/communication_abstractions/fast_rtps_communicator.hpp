@@ -213,7 +213,8 @@ public:
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
         if (m_prev_timestamp >= m_data.time_()) {
-          throw std::runtime_error("Data consistency violated. Received sample with not strictly "
+          throw std::runtime_error(
+                  "Data consistency violated. Received sample with not strictly "
                   "older timestamp. Time diff: " + std::to_string(
                     m_data.time_() - m_prev_timestamp) + " Data Time: " +
                   std::to_string(m_data.time_())

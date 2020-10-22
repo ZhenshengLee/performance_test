@@ -36,7 +36,7 @@ class Instance:
 
     def __init__(self, operation_type):
         """
-        Constructor.
+        Construct the object.
 
         :param operation_type: Type of the operation
         """

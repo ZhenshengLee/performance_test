@@ -108,7 +108,8 @@ public:
         Topic::topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       if (m_ec.expected_num_subs() > 0) {
-        m_publisher->wait_for_matched(m_ec.expected_num_subs(),
+        m_publisher->wait_for_matched(
+          m_ec.expected_num_subs(),
           m_ec.expected_wait_for_matched_timeout());
       }
 #endif
@@ -170,7 +171,8 @@ protected:
   template<class T>
   void callback(const T & data)
   {
-    static_assert(std::is_same<DataType,
+    static_assert(
+      std::is_same<DataType,
       typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value,
       "Parameter type passed to callback() does not match");
     if (m_prev_timestamp >= data.time) {

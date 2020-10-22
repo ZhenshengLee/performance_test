@@ -141,8 +141,9 @@ public:
       ConnextDDSMicroQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply(dw_qos);
 
-      m_datawriter = publisher->create_datawriter(m_topic,
-          dw_qos, nullptr, DDS_STATUS_MASK_NONE);
+      m_datawriter = publisher->create_datawriter(
+        m_topic,
+        dw_qos, nullptr, DDS_STATUS_MASK_NONE);
       if (m_datawriter == nullptr) {
         throw std::runtime_error("Could not create datawriter");
       }
@@ -219,9 +220,10 @@ public:
     DDS_Duration_t wait_timeout = {15, 0};
     m_waitset.wait(m_condition_seq, wait_timeout);
 
-    auto ret = m_typed_datareader->take(m_data_seq, m_sample_info_seq, DDS_LENGTH_UNLIMITED,
-        DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE,
-        DDS_ANY_INSTANCE_STATE);
+    auto ret = m_typed_datareader->take(
+      m_data_seq, m_sample_info_seq, DDS_LENGTH_UNLIMITED,
+      DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE,
+      DDS_ANY_INSTANCE_STATE);
     if (ret == DDS_RETCODE_OK) {
       lock();
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
@@ -248,7 +250,8 @@ public:
         throw std::runtime_error("Round trip mode is not implemented for Connext DDS Micro!");
       }
 
-      m_typed_datareader->return_loan(m_data_seq,
+      m_typed_datareader->return_loan(
+        m_data_seq,
         m_sample_info_seq);
     }
   }
@@ -264,8 +267,9 @@ private:
   void register_topic()
   {
     if (m_topic == nullptr) {
-      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(m_participant,
-          Topic::topic_name().c_str());
+      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(
+        m_participant,
+        Topic::topic_name().c_str());
       if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }

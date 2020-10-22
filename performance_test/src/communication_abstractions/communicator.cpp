@@ -71,7 +71,8 @@ void Communicator::update_lost_samples_counter(const std::uint64_t sample_id)
 {
   // We can lose samples, but samples always arrive in the right order and no duplicates exist.
   if (sample_id <= m_prev_sample_id) {
-    throw std::runtime_error("Data consistency violated. Received sample with not strictly higher "
+    throw std::runtime_error(
+            "Data consistency violated. Received sample with not strictly higher "
             "id. Received sample id " +
             std::to_string(
               sample_id) + " Prev. sample id : " +

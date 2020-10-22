@@ -61,25 +61,32 @@ AnalyzeRunner::AnalyzeRunner()
   m_ec.log(m_ec.get_external_info().m_to_log);
 
   for (uint32_t i = 0; i < m_ec.number_of_publishers(); ++i) {
-    m_pub_runners.push_back(DataRunnerFactory::get(m_ec.topic_name(), m_ec.com_mean(),
-      RunType::PUBLISHER));
+    m_pub_runners.push_back(
+      DataRunnerFactory::get(
+        m_ec.topic_name(), m_ec.com_mean(),
+        RunType::PUBLISHER));
   }
   for (uint32_t i = 0; i < m_ec.number_of_subscribers(); ++i) {
-    m_sub_runners.push_back(DataRunnerFactory::get(m_ec.topic_name(), m_ec.com_mean(),
-      RunType::SUBSCRIBER));
+    m_sub_runners.push_back(
+      DataRunnerFactory::get(
+        m_ec.topic_name(), m_ec.com_mean(),
+        RunType::SUBSCRIBER));
   }
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   if (m_ec.use_odb()) {
 #ifdef DATABASE_SQLITE
-    m_db = std::unique_ptr<odb::core::database>(new odb::sqlite::database(
-          m_ec.db_name(), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
+    m_db = std::unique_ptr<odb::core::database>(
+      new odb::sqlite::database(
+        m_ec.db_name(), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
 #elif DATABASE_MYSQL
-    m_db = std::unique_ptr<odb::core::database>(new odb::mysql::database(
-          m_ec.db_user(), m_ec.db_password(), m_ec.db_name(), m_ec.db_host(), m_ec.db_port()));
+    m_db = std::unique_ptr<odb::core::database>(
+      new odb::mysql::database(
+        m_ec.db_user(), m_ec.db_password(), m_ec.db_name(), m_ec.db_host(), m_ec.db_port()));
 #elif DATABASE_PGSQL
-    m_db = std::unique_ptr<odb::core::database>(new odb::pgsql::database(
-          m_ec.db_user(), m_ec.db_password(), m_ec.db_name(), m_ec.db_host(), m_ec.db_port()));
+    m_db = std::unique_ptr<odb::core::database>(
+      new odb::pgsql::database(
+        m_ec.db_user(), m_ec.db_password(), m_ec.db_name(), m_ec.db_host(), m_ec.db_port()));
 #endif
     {
       apply_schema_migration();
@@ -107,7 +114,8 @@ void AnalyzeRunner::apply_schema_migration()
     t.commit();
   } else if (v < cv) {
     if (v < bv) {
-      throw std::invalid_argument("Check #pragma db model version arguments; "
+      throw std::invalid_argument(
+              "Check #pragma db model version arguments; "
               "migration from this version is no longer supported.");
     }
     for (v = odb::core::schema_catalog::next_version(*m_db, v); v <= cv; v =
@@ -120,7 +128,8 @@ void AnalyzeRunner::apply_schema_migration()
       t.commit();
     }
   } else if (v > cv) {
-    throw std::invalid_argument("Check #pragma db model version arguments; old application "
+    throw std::invalid_argument(
+            "Check #pragma db model version arguments; old application "
             "trying to access new database.");
   }
 }
@@ -180,15 +189,18 @@ void AnalyzeRunner::analyze(
   const std::chrono::nanoseconds experiment_diff_start)
 {
   std::vector<StatisticsTracker> latency_vec(m_sub_runners.size());
-  std::transform(m_sub_runners.begin(), m_sub_runners.end(), latency_vec.begin(),
+  std::transform(
+    m_sub_runners.begin(), m_sub_runners.end(), latency_vec.begin(),
     [](const auto & a) {return a->latency_statistics();});
 
   std::vector<StatisticsTracker> ltr_pub_vec(m_pub_runners.size());
-  std::transform(m_pub_runners.begin(), m_pub_runners.end(), ltr_pub_vec.begin(),
+  std::transform(
+    m_pub_runners.begin(), m_pub_runners.end(), ltr_pub_vec.begin(),
     [](const auto & a) {return a->loop_time_reserve_statistics();});
 
   std::vector<StatisticsTracker> ltr_sub_vec(m_sub_runners.size());
-  std::transform(m_sub_runners.begin(), m_sub_runners.end(), ltr_sub_vec.begin(),
+  std::transform(
+    m_sub_runners.begin(), m_sub_runners.end(), ltr_sub_vec.begin(),
     [](const auto & a) {return a->loop_time_reserve_statistics();});
 
   uint64_t sum_received_samples = 0;
