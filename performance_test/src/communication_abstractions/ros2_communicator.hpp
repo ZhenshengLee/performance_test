@@ -77,12 +77,12 @@ private:
 };
 
 /// Communication plugin interface for ROS 2 for the subscription side.
-template<class Topic>
+template<class Msg>
 class ROS2Communicator : public Communicator
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename Topic::RosType;
+  using DataType = typename Msg::RosType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit ROS2Communicator(SpinLock & lock)
@@ -105,7 +105,7 @@ public:
     if (!m_publisher) {
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
       m_publisher = m_node->create_publisher<DataType>(
-        Topic::topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
+        m_ec.topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       if (m_ec.expected_num_subs() > 0) {
         m_publisher->wait_for_matched(

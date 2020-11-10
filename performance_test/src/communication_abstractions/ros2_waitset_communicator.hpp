@@ -32,16 +32,16 @@ namespace performance_test
 {
 
 /// Communication plugin for ROS 2 using waitsets for the subscription side.
-template<class Topic>
-class ROS2WaitsetCommunicator : public ROS2Communicator<Topic>
+template<class Msg>
+class ROS2WaitsetCommunicator : public ROS2Communicator<Msg>
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename ROS2Communicator<Topic>::DataType;
+  using DataType = typename ROS2Communicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit ROS2WaitsetCommunicator(SpinLock & lock)
-  : ROS2Communicator<Topic>(lock),
+  : ROS2Communicator<Msg>(lock),
     m_polling_subscription(nullptr) {}
 
   /// Reads received data from ROS 2 using waitsets
@@ -49,7 +49,7 @@ public:
   {
     if (!m_polling_subscription) {
       m_polling_subscription = this->m_node->template create_polling_subscription<DataType>(
-        Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
+        this->m_ec.topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
       if (this->m_ec.expected_num_pubs() > 0) {
         m_polling_subscription->wait_for_matched(
           this->m_ec.expected_num_pubs(),

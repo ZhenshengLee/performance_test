@@ -267,15 +267,14 @@ private:
   void register_topic()
   {
     if (m_topic == nullptr) {
-      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(
-        m_participant,
-        Topic::topic_name().c_str());
+      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(m_participant,
+          Topic::msg_name().c_str());
       if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }
       m_topic = m_participant->create_topic(
-        Topic::topic_name().c_str(),
-        Topic::topic_name().c_str(),
+        m_ec.topic_name().c_str(),
+        Topic::msg_name().c_str(),
         DDS_TOPIC_QOS_DEFAULT,
         nullptr,
         DDS_STATUS_MASK_NONE);

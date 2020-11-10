@@ -54,6 +54,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nQOS: " << e.qos() <<
            "\nPublishing rate: " << e.rate() <<
            "\nTopic name: " << e.topic_name() <<
+           "\nMsg name: " << e.msg_name() <<
            "\nMaximum runtime (sec): " << e.max_runtime() <<
            "\nNumber of publishers: " << e.number_of_publishers() <<
            "\nNumber of subscribers: " << e.number_of_subscribers() <<
@@ -82,18 +83,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "ROS2PollingSubscription)")(
     "topic,t",
     po::value<std::string>()->required(),
-    "Topic to use. Use --topic_list to get a list.")(
-    "topic_list",
-    "Prints list of available topics and exits.")(
-    "dds_domain_id",
-    po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")(
-    "reliable",
-    "Enable reliable QOS. Default is best effort.")(
-    "transient",
-    "Enable transient QOS. Default is volatile.")(
-    "keep_last",
-    "Enable keep last QOS. Default is keep all.")(
-    "history_depth",
+    "Specify a topic name to use. "
+    "Only the pub/sub with the same topic name can communicate with each other.")(
+    "msg",
+    po::value<std::string>(),
+    "Msg to use. Use --msg_list to get a list.")("msg_list",
+    "Prints list of available msg types and exits.")("dds_domain_id",
+    po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")("reliable",
+    "Enable reliable QOS. Default is best effort.")("transient",
+    "Enable transient QOS. Default is volatile.")("keep_last",
+    "Enable keep last QOS. Default is keep all.")("history_depth",
     po::value<uint32_t>()->default_value(1000),
     "Set history depth QOS. Defaults to 1000.")(
     "disable_async",
@@ -162,8 +161,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   m_perf_test_version = version;
 
   try {
-    if (vm.count("topic_list")) {
-      for (const auto & s : topics::supported_topic_names()) {
+    if (vm.count("msg_list")) {
+      for (const auto & s : topics::supported_msg_names()) {
         std::cout << s << std::endl;
       }
       // Exiting as we just print out some information and not running the application.
@@ -180,6 +179,13 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     po::notify(vm);
 
     m_topic_name = vm["topic"].as<std::string>();
+    if (vm.count("msg")) {
+      m_msg_name = vm["msg"].as<std::string>();
+    } else {
+      m_msg_name = vm["topic"].as<std::string>();
+      std::cout << "Warning: using the topic name as the message name! It's recommended to "
+        "separate the concept of topics and message types." << std::endl;
+    }
 
     m_rate = vm["rate"].as<uint32_t>();
 
@@ -404,6 +410,11 @@ std::string ExperimentConfiguration::topic_name() const
 {
   check_setup();
   return m_topic_name;
+}
+std::string ExperimentConfiguration::msg_name() const
+{
+  check_setup();
+  return m_msg_name;
 }
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
 std::string ExperimentConfiguration::db_name() const

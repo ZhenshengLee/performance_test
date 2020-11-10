@@ -102,6 +102,9 @@ public:
   /// \returns Returns the chosen topic name. This will throw if the experiment configuration is
   /// not set up.
   std::string topic_name() const;
+  /// \returns Returns the chosen msg type name. This will throw if the experiment configuration is
+  /// not set up.
+  std::string msg_name() const;
   /// \returns Returns the time the application should run until it terminates [s]. This will
   /// throw if the experiment configuration is not set up.
   uint64_t max_runtime() const;
@@ -239,6 +242,7 @@ private:
   QOSAbstraction m_qos;
   uint32_t m_rate;
   std::string m_topic_name;
+  std::string m_msg_name;
 
   uint64_t m_max_runtime;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED

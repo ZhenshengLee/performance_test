@@ -180,11 +180,12 @@ test:
     # when perf_test exits. Once this error is resolved, remove this
     # timeout business, and instead use --max_runtime 15.
     - '
-      TOPICS=${SMOKE_TEST_TOPICS:-Array1k};
-      for TOPIC in ${TOPICS}; do
+      MSGS=${SMOKE_TEST_TOPICS:-Array1k};
+      for MSG in ${MSGS}; do
         timeout 15 /opt/performance_test/lib/performance_test/perf_test
             -c ${COMMUNICATION_MEAN}
-            -t ${TOPIC}
+            --msg ${MSG}
+            --topic test_topic
             --rate 2
             --keep_last
             --history_depth 10 ||
@@ -241,11 +242,11 @@ test_security:
     - source security_setup.bash enable ./demo_keys
     # The below runs should fail:
     # Unexpected node names:
-    - '! ros2 run performance_test perf_test -c ROS2 -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
-    # Unexpected topic names
-    - '! ros2 run performance_test perf_test -c ROS2 -t Struct16 --max_runtime 10 --rate 2 --keep_last --history_depth 10 --with_security'
+    - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
+    # Unexpected msg types
+    - '! ros2 run performance_test perf_test -c ROS2 --msg Struct16 -t test_topic --max_runtime 10 --rate 2 --keep_last --history_depth 10 --with_security'
     # This should pass (time-out)
-    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 -t Array1k --rate 2 --keep_last --history_depth 10 --with_security ||
+    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --rate 2 --keep_last --history_depth 10 --with_security ||
        if [ $? -eq 124 ]; then echo "OK";
        else exit 1;
        fi

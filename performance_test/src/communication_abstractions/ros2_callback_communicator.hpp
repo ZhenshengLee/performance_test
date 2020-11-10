@@ -28,16 +28,16 @@
 namespace performance_test
 {
 /// Communication plugin for ROS 2 using ROS 2 callbacks for the subscription side.
-template<class Topic>
-class ROS2CallbackCommunicator : public ROS2Communicator<Topic>
+template<class Msg>
+class ROS2CallbackCommunicator : public ROS2Communicator<Msg>
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename ROS2Communicator<Topic>::DataType;
+  using DataType = typename ROS2Communicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit ROS2CallbackCommunicator(SpinLock & lock)
-  : ROS2Communicator<Topic>(lock),
+  : ROS2Communicator<Msg>(lock),
     m_subscription(nullptr)
   {
     m_executor.add_node(this->m_node);
@@ -48,7 +48,7 @@ public:
   {
     if (!m_subscription) {
       m_subscription = this->m_node->template create_subscription<DataType>(
-        Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter,
+        this->m_ec.topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter,
         [this](const typename DataType::SharedPtr data) {this->callback(data);});
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       if (this->m_ec.expected_num_pubs() > 0) {

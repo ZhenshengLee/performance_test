@@ -287,13 +287,13 @@ private:
       DDS::ReturnCode_t retcode;
       retcode = Topic::get_type_support()->register_type(
         m_participant,
-        Topic::topic_name().c_str());
+        Topic::msg_name().c_str());
       if (retcode != DDS::RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }
       m_topic = m_participant->create_topic(
-        Topic::topic_name().c_str(),
-        Topic::topic_name().c_str(),
+        m_ec.topic_name().c_str(),
+        Topic::msg_name().c_str(),
         TOPIC_QOS_DEFAULT,
         nullptr,
         OpenDDS::DCPS::DEFAULT_STATUS_MASK);

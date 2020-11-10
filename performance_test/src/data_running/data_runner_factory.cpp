@@ -49,18 +49,18 @@ namespace performance_test
 {
 
 std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
-  const std::string & requested_topic_name,
+  const std::string & requested_msg,
   CommunicationMean com_mean,
   const RunType run_type)
 {
   std::shared_ptr<DataRunnerBase> ptr;
   performance_test::for_each(
     topics::TopicTypeList(),
-    [&ptr, requested_topic_name, com_mean, run_type](const auto & topic) {
-      using T = std::remove_cv_t<std::remove_reference_t<decltype(topic)>>;
-      if (T::topic_name() == requested_topic_name) {
+    [&ptr, requested_msg, com_mean, run_type](const auto & msg_type) {
+      using T = std::remove_cv_t<std::remove_reference_t<decltype(msg_type)>>;
+      if (T::msg_name() == requested_msg) {
         if (ptr) {
-          throw std::runtime_error("It seems that two topics have the same name");
+          throw std::runtime_error("It seems that two msgs have the same name");
         }
 #ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
         if (com_mean == CommunicationMean::ROS2) {

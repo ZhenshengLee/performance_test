@@ -86,9 +86,12 @@ Allowed options:
   -c [ --communication ] arg           Communication plugin to use (ROS2,
                                        FastRTPS, ConnextDDSMicro, CycloneDDS,
                                        OpenDDS, ROS2PollingSubscription)
-  -t [ --topic ] arg                   Topic to use. Use --topic_list to get a
+  -t [ --topic ] arg                   Specify a topic name to use. Only the
+                                       pub/sub with the same topic name can
+                                       communicate with each other.
+  --msg arg                            Msg to use. Use --msg_list to get a
                                        list.
-  --topic_list                         Prints list of available topics and
+  --msg_list                           Prints list of available msg types and
                                        exits.
   --dds_domain_id arg (=0)             Sets the DDS domain id.
   --reliable                           Enable reliable QOS. Default is best
@@ -154,7 +157,7 @@ colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFO
 ```
 Now to run the performance test with ConnextDDSMicro plugin :
 ```
-./install/performance_test/lib/performance_test/perf_test -c ConnextDDSMicro -l log -t Array1k --max_runtime 10
+./install/performance_test/lib/performance_test/perf_test -c ConnextDDSMicro -l log --msg Array1k -t test_topic --max_runtime 10
 ```
 
 ## Supported rmw implementations
@@ -190,22 +193,22 @@ The tool offers to run the experiments either in Intraprocess composition which 
 
 Let's take an example of a single publisher and single subscriber:
 ```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 30 --num_sub_threads 1 --num_pub_threads 1
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30 --num_sub_threads 1 --num_pub_threads 1
 ```
 which is same as running by default:
 ```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 30
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30
 ```
 This is example of running the experiments in Intraprocess composition. Connext Micro as per Apex.OS, is configured to use `Micro INTRA` in this setting. FastDDS and other supported DDS implementations use `UDP` by default.
 
 To run the experiments in different processes, the subscriber and publisher processes we can run the tool twice simultaneously. Run the first instance of the tool like :
 ```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 30 --num_sub_threads 0 --num_pub_threads 1
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30 --num_sub_threads 0 --num_pub_threads 1
 ```
 This is the publisher process. Now to run the subscriber open a second window in the terminal and run a second instance of the tool like:
 
 ```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 30 --num_sub_threads 1 --num_pub_threads 0
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30 --num_sub_threads 1 --num_pub_threads 0
 ```
 This is the subscriber process. The tool supports multiple subscribers to be run at once. So you can configure the value of `--num_sub_threads` in the subscriber process to be more than one also.
 
@@ -219,8 +222,8 @@ In Inter process composition the CPU and Resident Memory measurements are logged
 Testing latency between multiple machines is difficult as it is hard precisely synchronize clocks between them.
 To overcome this issue performance test supports relay mode which allows for a round-trip style of communication.
 
-On the main machine: `./install/performance_test/lib/performance_test/perf_test -c ROS2 -t Array1k --roundtrip_mode Main`
-On the relay machine: `./install/performance_test/lib/performance_test/perf_test -c ROS2 -t Array1k --roundtrip_mode Relay`
+On the main machine: `./install/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k -t test_topic --roundtrip_mode Main`
+On the relay machine: `./install/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k -t test_topic --roundtrip_mode Relay`
 
 Note: On the main machine the round trip latency is reported and will be roughly double the latency compared to the latency reported in non-relay mode.
 
@@ -239,7 +242,7 @@ you need to do the following steps, assuming you already did compile performance
 1. Clone OSRF memory memory tools: `git clone https://github.com/osrf/osrf_testing_tools_cpp.git`
 1. Build everything `cd .. && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release`
 1. You need to preload the memory library to make diagnostics work: `export LD_PRELOAD=$(pwd)/install/osrf_testing_tools_cpp/lib/libmemory_tools_interpose.so`
-1. Run with memory check enabled: `./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 10 --check_memory`
+1. Run with memory check enabled: `./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log ---msg Array1k -t test_topic --max_runtime 10 --check_memory`
 
 > Note: Enabling this feature will cause a huge performance impact.
 
@@ -259,7 +262,7 @@ export APEX_PERFORMANCE_TEST="
 \"My OS Version\": \"Ubuntu 16.04\"
 }
 "
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -t Array1k
+./install/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k -t test_topic
 ```
 
 # Troubleshooting

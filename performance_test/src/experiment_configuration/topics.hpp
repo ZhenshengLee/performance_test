@@ -211,7 +211,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array1k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array1k");
   }
@@ -251,7 +251,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array4k");
   }
@@ -291,7 +291,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array16k");
   }
@@ -330,7 +330,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array32k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array32k");
   }
@@ -369,7 +369,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array60k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array60k");
   }
@@ -408,7 +408,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array1m_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array1m");
   }
@@ -447,7 +447,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array2m_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array2m");
   }
@@ -486,7 +486,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array4m_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array4m");
   }
@@ -525,7 +525,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array8m_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array8m");
   }
@@ -564,7 +564,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct16");
   }
@@ -603,7 +603,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct256");
   }
@@ -641,7 +641,7 @@ public:
     return new performance_test_msgs::msg::dds_::Struct4k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct4k");
   }
@@ -680,7 +680,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct32k");
   }
@@ -719,7 +719,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud512k");
   }
@@ -758,7 +758,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud1m");
   }
@@ -797,7 +797,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud2m");
   }
@@ -836,7 +836,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud4m");
   }
@@ -875,7 +875,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud8m");
   }
@@ -914,7 +914,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Range");
   }
@@ -953,7 +953,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("NavSatFix");
   }
@@ -992,7 +992,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("RadarDetection");
   }
@@ -1031,7 +1031,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("RadarTrack");
   }
@@ -1045,13 +1045,13 @@ using TopicTypeList = std::tuple<Array1k, Array4k, Array16k, Array32k, Array60k,
     Range, NavSatFix, RadarDetection, RadarTrack>;
 
 /// Returns a vector of supported topic names.
-inline std::vector<std::string> supported_topic_names()
+inline std::vector<std::string> supported_msg_names()
 {
   std::vector<std::string> result;
   performance_test::for_each(
     TopicTypeList(), [&result](const auto & topic) {
       using T = std::remove_cv_t<std::remove_reference_t<decltype(topic)>>;
-      result.push_back(T::topic_name());
+      result.push_back(T::msg_name());
     });
   return result;
 }

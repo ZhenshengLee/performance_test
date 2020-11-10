@@ -83,14 +83,14 @@ private:
 
 /**
  * \brief The plugin for Cyclone DDS.
- * \tparam Topic The topic type to use.
+ * \tparam Msg The msg type to use.
  */
-template<class Topic>
+template<class Msg>
 class CycloneDDSCommunicator : public Communicator
 {
 public:
   /// The data type to use.
-  using DataType = typename Topic::CycloneDDSType;
+  using DataType = typename Msg::CycloneDDSType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit CycloneDDSCommunicator(SpinLock & lock)
@@ -201,9 +201,8 @@ private:
   void register_topic()
   {
     if (m_topic == 0) {
-      m_topic = dds_create_topic(
-        m_participant, Topic::CycloneDDSDesc(),
-        Topic::topic_name().c_str(), nullptr, nullptr);
+      m_topic = dds_create_topic(m_participant, Msg::CycloneDDSDesc(),
+          m_ec.topic_name().c_str(), nullptr, nullptr);
       if (m_topic < 0) {
         throw std::runtime_error("failed to create topic");
       }
@@ -221,8 +220,8 @@ private:
   static dds_entity_t m_topic;
 };
 
-template<class Topic>
-dds_entity_t CycloneDDSCommunicator<Topic>::m_topic = 0;
+template<class Msg>
+dds_entity_t CycloneDDSCommunicator<Msg>::m_topic = 0;
 
 }  // namespace performance_test
 
