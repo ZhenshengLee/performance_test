@@ -406,6 +406,10 @@ if(PERFORMANCE_TEST_ODB_SQLITE OR PERFORMANCE_TEST_ODB_MYSQL OR PERFORMANCE_TEST
       ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration
       ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
       ${ODB_INCLUDE_DIRS})
+
+  if(QNX)
+    list(APPEND OPTIONAL_LIBRARIES ${ODB_LIBRARY_DIRECTORY}/libmysqlclient-21.so)
+  endif()
 endif()
 
 set(EXE_NAME perf_test)
