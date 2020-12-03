@@ -164,6 +164,8 @@ void AnalyzeRunner::run()
     auto experiment_diff_start = now - experiment_start;
     analyze(loop_diff_start, experiment_diff_start);
   }
+	//std::cout<<"Stopping publishers" <<std::endl;
+	std::for_each(m_pub_runners.begin(), m_pub_runners.end(), [](auto & a) {a->stop_publisher();});
 
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   if (m_ec.use_odb()) {
