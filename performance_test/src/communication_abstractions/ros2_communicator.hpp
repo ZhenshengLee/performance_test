@@ -121,7 +121,17 @@ public:
     data.id = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
+#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
+    if (m_ec.is_zero_copy_transfer()) {
+      auto borrowed_message{m_publisher->borrow_loaned_message()};
+      borrowed_message.get() = data;  // It would be nice to refactor away this explicit copy
+      m_publisher->publish(borrowed_message.get());
+    } else {
+      m_publisher->publish(data);
+    }
+#else
     m_publisher->publish(data);
+#endif
   }
 
   /**

@@ -296,6 +296,17 @@ private:
     init_fields(data);
   }
 
+  /**
+  * \brief Initializes the frame_id_zc field in data header.
+  * This is the overloaded method which is called if data header has frame_id
+  * \param data The data to publish.
+  */
+  template<typename T>
+  static auto init_data(T & data)->decltype (data.header_.frame_id_zc_, void ()) {
+    snprintf(data.header_.frame_id_zc_, 9U, "frame_id");
+    init_fields(data);
+  }
+
   /// Do nothing if frame_id not present
   static void init_data(...) {}
 
@@ -313,10 +324,24 @@ private:
   * \param data The data to publish.
   */
   template<typename T>
-  static auto init_fields(T & data)->decltype (data.fields_, void ()) {
+  static auto init_fields(T & data)->decltype (data.fields_[0].name_, void ()) {
     auto fields_size = size(data.fields_);
     for (uint8_t i = 0; i < fields_size; i++) {
       data.fields_[i].name_ = DDS_String_dup("name");
+    }
+  }
+
+  /**
+  * \brief Initializes the PointField array name field in data header for zero copy transfer.
+  * This is the overloaded helper method which is called from init_data() if data has
+  * PointField array in the payload
+  * \param data The data to publish.
+  */
+  template<typename T>
+  static auto init_fields(T & data)->decltype (data.fields_[0].name_zc_, void ()) {
+    auto fields_size = size(data.fields_);
+    for (uint8_t i = 0; i < fields_size; i++) {
+      snprintf(data.fields_[i].name_zc_, 5U, "name");
     }
   }
 

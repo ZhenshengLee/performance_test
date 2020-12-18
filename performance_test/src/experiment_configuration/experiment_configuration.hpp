@@ -45,7 +45,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 10, closed)
+#pragma db model version(1, 11, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition
@@ -141,6 +141,9 @@ public:
   /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
   /// of communication is not ROS2.
   bool is_with_security() const;
+  /// \returns Returns whether to use zero copy transfer. This will throw if the experiment
+  /// configuration is not set up.
+  bool is_zero_copy_transfer() const;
   /// \returns Returns the roundtrip mode.
   RoundTripMode roundtrip_mode() const;
   /// \returns Returns current rmw_implementation. This will throw if the experiment configuration
@@ -199,6 +202,7 @@ private:
     m_check_memory(false),
     m_use_single_participant(false),
     m_is_rt_init_required(false),
+    m_is_zero_copy_transfer(false),
     m_disable_logging(false),
     m_roundtrip_mode(RoundTripMode::NONE)
   {}
@@ -267,6 +271,7 @@ private:
   bool m_use_single_participant;
   bool m_is_rt_init_required;
   bool m_with_security;
+  bool m_is_zero_copy_transfer;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient
 #endif

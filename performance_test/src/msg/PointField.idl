@@ -1,0 +1,24 @@
+module performance_test {
+  module msg {
+    module PointField_Constants {
+      const uint8 INT8 = 1;
+      const uint8 UINT8 = 2;
+      const uint8 INT16 = 3;
+      const uint8 UINT16 = 4;
+      const uint8 INT32 = 5;
+      const uint8 UINT32 = 6;
+      const uint8 FLOAT32 = 7;
+      const uint8 FLOAT64 = 8;
+    };
+    typedef char char__256[256];
+    struct PointField {
+      char__256 name_zc;
+
+      uint32 offset;
+
+      uint8 datatype;
+
+      uint32 count;
+    };
+  };
+};

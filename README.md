@@ -117,6 +117,7 @@ Allowed options:
                                        configuration to support this.
   --use_single_participant             Uses only one participant per process.
                                        By default every thread has its own.
+  --zero_copy                          Use zero copy transfer.
   --with_security                      Make nodes with deterministic names for
                                        use with security
   --roundtrip_mode arg (=None)         Selects the round trip mode (None, Main,
@@ -142,8 +143,8 @@ The performance test tool can measure the performance of a variety of communicat
 
 | RAW DDS Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
 |----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|
-| [ROS 2 Callback](https://index.ros.org/doc/ros2/Installation/Dashing/) | Native DDS Code | UDP | `-PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (ON by default) | ROS2 |
-| [Apex.OS WaitSet](https://apexai.pages.apex.ai/grand_central/docs/latest/apexos-node.html#apexos-node-wait-sets) | Native DDS Code | UDP | `-PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON` | ROS2PollingSubscription |
+| [ROS 2 Callback](https://index.ros.org/doc/ros2/Installation/Dashing/) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (ON by default) | ROS2 |
+| [Apex.OS WaitSet](https://apexai.pages.apex.ai/grand_central/docs/latest/apexos-node.html#apexos-node-wait-sets) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON` | ROS2PollingSubscription |
 | [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS |
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) (will only work if Apex.OS is present) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro |
 | [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS |
@@ -176,6 +177,19 @@ The following plugins with a ROS middleware interface are currently supported:
 > - The ROS2PollingSubscription option only works if Apex.OS is present.
 > - The ROS2PollingSubscription option is not yet available with `rmw_cyclonedds_cpp`.
 > - Apex.OS Cert does not support the ROS 2 Callback communicator. When building with Apex.OS Cert, you must explicitly disable the ROS 2 Callback communicator by setting `-PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=OFF`.
+
+## Zero copy transfer
+
+The performance_test tool can also measure the performance of an application that uses zero copy transfer. For more information on how zero copy transfer works, refer to [the RTI documentation](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/connext_dds/html_files/RTI_ConnextDDS_CoreLibraries_UsersManual/index.htm#UsersManual/SendingLDZeroCopy.htm). Currently, the zero copy transfer is only available when both RTI Connext Micro and the Apex.OS WaitSet are enabled.
+
+`colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON -DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON -DPERFORMANCE_TEST_ZERO_COPY_ENABLED=ON`
+
+Zero copy transfer is an [Inter-Process Communication](#running-experiments-intraprocess-vs-running-experiments-interprocess) mechanism. It is currently only available with the Apex.OS WaitSet. When running, use the `--zero_copy` argument for both the publisher and subscriber processes:
+
+```
+./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 --num_pub_threads 1 --num_sub_threads 0 --zero_copy &
+./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 --num_pub_threads 0 --num_sub_threads 1 --zero_copy
+```
 
 # Batch run experiments (for advanced users)
 
