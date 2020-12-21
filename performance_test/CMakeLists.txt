@@ -342,7 +342,13 @@ execute_process(
 )
 add_definitions(-DPERFORMANCE_TEST_VERSION="${PERF_TEST_VERSION}")
 
-rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")
+if(APEX_CERT)
+  set(TYPESUPPORT_INTERFACE rosidl_typesupport_apex_dds_cpp)
+else()
+  set(TYPESUPPORT_INTERFACE rosidl_typesupport_cpp)
+endif()
+
+rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} ${TYPESUPPORT_INTERFACE})
 
 ament_target_dependencies(${EXE_NAME}
     "rclcpp" ${OPTIONAL_AMENT_DEPENDENCES})
