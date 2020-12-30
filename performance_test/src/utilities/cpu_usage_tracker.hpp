@@ -87,7 +87,11 @@ public:
     float_t cpu_usage_local{};
 
     int64_t cur_time_ms =
-      std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).
+#ifdef QNX710
+      std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).
+#else
+			std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).
+#endif
       time_since_epoch().count();
 
     if (-1 != clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cur_usage_st)) {
