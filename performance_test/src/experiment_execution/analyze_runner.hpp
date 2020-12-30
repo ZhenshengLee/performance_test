@@ -62,7 +62,11 @@ private:
    * \param experiment_start The start of the experiment.
    * \return Is the experiment finnished
    */
-  bool check_exit(std::chrono::steady_clock::time_point experiment_start) const;
+#ifdef QNX710
+  bool check_exit(std::chrono::system_clock::time_point experiment_start) const;
+#else
+	bool check_exit(std::chrono::steady_clock::time_point experiment_start) const;
+#endif
 
   const ExperimentConfiguration & m_ec;
 

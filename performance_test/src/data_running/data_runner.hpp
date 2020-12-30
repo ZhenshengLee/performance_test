@@ -30,6 +30,12 @@
 
 #include "../utilities/spin_lock.hpp"
 
+#ifdef QNX710
+using perf_clock = std::chrono::system_clock;
+#else
+using perf_clock = std::chrono::steady_clock;
+#endif
+
 namespace performance_test
 {
 
@@ -49,7 +55,7 @@ public:
     m_sum_lost_samples(0),
     m_sum_received_data(0),
     m_sum_sent_samples(0),
-    m_last_sync(std::chrono::steady_clock::now()),
+    m_last_sync(perf_clock::now()),
     m_run_type(run_type),
     m_thread(std::bind(&DataRunner::thread_function, this))
   {
@@ -114,7 +120,7 @@ public:
   void sync_reset() override
   {
     namespace sc = std::chrono;
-    const auto now = sc::steady_clock::now();
+    const auto now = perf_clock::now();
     m_lock.lock();
     sc::duration<double> iteration_duration = now - m_last_sync;
 
@@ -152,11 +158,11 @@ private:
   {
     auto data = std::make_unique<typename TCommunicator::DataType>();
 
-    auto next_run = std::chrono::steady_clock::now() +
+    auto next_run = perf_clock::now() +
       std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(1.0 / m_ec.rate()));
 
-    auto first_run = std::chrono::steady_clock::now();
+    auto first_run = perf_clock::now();
 
     std::size_t loop_counter = 1;
 
@@ -169,13 +175,13 @@ private:
         data->time = static_cast<std::int64_t>(clk_cyc);
 #endif
         std::chrono::nanoseconds epoc_time =
-          std::chrono::steady_clock::now().time_since_epoch();
+          perf_clock::now().time_since_epoch();
         m_com.publish(*data, epoc_time);
       }
       if (m_run_type == RunType::SUBSCRIBER) {
         m_com.update_subscription();
       }
-      const std::chrono::nanoseconds reserve = next_run - std::chrono::steady_clock::now();
+      const std::chrono::nanoseconds reserve = next_run - perf_clock::now();
       {
         // We track here how much time (can also be negative) was left for the loop iteration given
         // the desired loop rate.
@@ -236,7 +242,7 @@ private:
   StatisticsTracker m_latency_statistics;
   StatisticsTracker m_time_reserve_statistics, m_time_reserve_statistics_store;
 
-  std::chrono::steady_clock::time_point m_last_sync;
+  perf_clock::time_point m_last_sync;
   const RunType m_run_type;
 
   std::thread m_thread;

@@ -44,6 +44,11 @@
   #include "analysis_result_odb.hpp"
 #endif
 
+#ifdef QNX710
+using perf_clock = std::chrono::system_clock;
+#else
+using perf_clock = std::chrono::steady_clock;
+#endif
 
 namespace performance_test
 {
@@ -131,7 +136,7 @@ void AnalyzeRunner::run()
   m_ec.log("---EXPERIMENT-START---");
   m_ec.log(AnalysisResult::csv_header(true));
 
-  const auto experiment_start = std::chrono::steady_clock::now();
+  const auto experiment_start = perf_clock::now();
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   odb::core::transaction t;
   if (m_ec.use_odb()) {
@@ -139,7 +144,7 @@ void AnalyzeRunner::run()
   }
   #endif
   while (!check_exit(experiment_start)) {
-    const auto loop_start = std::chrono::steady_clock::now();
+    const auto loop_start = perf_clock::now();
 
     sleep(1);
 
@@ -154,7 +159,7 @@ void AnalyzeRunner::run()
     }
 #endif
 
-    auto now = std::chrono::steady_clock::now();
+    auto now = perf_clock::now();
     auto loop_diff_start = now - loop_start;
     auto experiment_diff_start = now - experiment_start;
     analyze(loop_diff_start, experiment_diff_start);
@@ -243,7 +248,7 @@ void AnalyzeRunner::analyze(
   }
 }
 
-bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_start) const
+bool AnalyzeRunner::check_exit(perf_clock::time_point experiment_start) const
 {
   if (m_ec.exit_requested()) {
     std::cout << "Caught signal. Exiting." << std::endl;
@@ -256,7 +261,7 @@ bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_
   }
 
   const double runtime_sec =
-    std::chrono::duration<double>(std::chrono::steady_clock::now() - experiment_start).count();
+    std::chrono::duration<double>(perf_clock::now() - experiment_start).count();
 
   if (runtime_sec > static_cast<double>(m_ec.max_runtime())) {
     std::cout << "Maximum runtime reached. Exiting." << std::endl;
