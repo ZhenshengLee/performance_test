@@ -90,7 +90,7 @@ public:
 #ifdef QNX710
       std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now()).
 #else
-			std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).
+      std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).
 #endif
       time_since_epoch().count();
 
