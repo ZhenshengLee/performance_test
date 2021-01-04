@@ -25,11 +25,11 @@ set(OPTIONAL_LIBRARIES)
 # Default to C++14
 set(CMAKE_CXX_STANDARD 14)
 if(BOOST_INCLUDEDIR)
-  set (Boost_INCLUDE_DIR  ${BOOST_INCLUDEDIR})
+  set(Boost_INCLUDE_DIR  ${BOOST_INCLUDEDIR})
 endif()
 if(BOOST_LIBRARYDIR)
-  set (Boost_LIBRARY_DIR ${BOOST_LIBRARYDIR})
-  set (Boost_LIBRARIES ${BOOST_LIBRARYDIR})
+  set(Boost_LIBRARY_DIR ${BOOST_LIBRARYDIR})
+  set(Boost_LIBRARIES ${BOOST_LIBRARYDIR})
 endif()
 find_package(Boost COMPONENTS program_options timer REQUIRED)
 if(Boost_FOUND AND BOOST_INCLUDEDIR)
@@ -133,7 +133,7 @@ set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
 
 option(APEX_CERT "Set to true if building against Apex.OS Cert" OFF)
-if (APEX_CERT)
+if(APEX_CERT)
   add_definitions(-DAPEX_CERT)
 endif()
 

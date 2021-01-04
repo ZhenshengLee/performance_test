@@ -85,7 +85,7 @@ public:
   /// Resets all the stored metrics and replaces them with current ones from the running threads.
   virtual void sync_reset() = 0;
 
-	virtual void stop_publisher() = 0;
+  virtual void stop_publisher() = 0;
 
 protected:
   /// A reference to the experiment configuration.

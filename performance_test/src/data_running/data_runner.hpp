@@ -67,12 +67,12 @@ public:
   ~DataRunner() noexcept override
   {
 #if 0
-		if (m_run_type == RunType::PUBLISHER) {
-			std::cout <<"Stop thread PUB: " <<m_thread.get_id() <<std::endl;
-		} else {
-			std::cout <<"Stop thread SUB: " <<m_thread.get_id() <<std::endl;
-		}
-		std::cout.flush();
+    if (m_run_type == RunType::PUBLISHER) {
+      std::cout << "Stop thread PUB: " << m_thread.get_id() << std::endl;
+    } else {
+      std::cout << "Stop thread SUB: " << m_thread.get_id() << std::endl;
+    }
+    std::cout.flush();
 #endif
     m_run = false;
     m_thread.join();
@@ -147,11 +147,12 @@ public:
     m_lock.unlock();
   }
 
-	void stop_publisher() override
-	{
-		std::cout<<"Setting the flag to stop pub" <<std::endl;
-		m_run = false;
-	}
+  void stop_publisher() override
+  {
+    std::cout << "Setting the flag to stop pub" << std::endl;
+    m_run = false;
+  }
+
 private:
   /// The function running inside the thread doing all the work.
   void thread_function()
