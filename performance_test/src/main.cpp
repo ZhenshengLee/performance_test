@@ -22,7 +22,11 @@ int main(int argc, char ** argv)
   auto & ec = performance_test::ExperimentConfiguration::get();
   ec.setup(argc, argv);
 
+#ifdef APEX_CERT
   rclcpp::init(argc, argv, rclcpp::InitOptions{}, false);
+#else
+  rclcpp::init(argc, argv);
+#endif
 
   performance_test::AnalyzeRunner ar;
   ar.run();
