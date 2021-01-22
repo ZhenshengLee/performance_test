@@ -28,14 +28,13 @@ build_cyclonedds:
     - rosdep update
     - apt-get update
     - rosdep install --from performance_test --ignore-src -y
-    - apt-get install -y python3-pip
+    - apt-get install -y bison maven python3-pip
     - pip3 install -U colcon-common-extensions pytest
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta1 --depth 1
     - cd cyclonedds
-    - git checkout 4e805597631ed0dcbdc0eecfe9d532cb75180ae7 # Head as of 20190725
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds ../src
+    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds ..
     - cmake --build .
     - cmake --build . --target install
     - find /opt/cyclonedds

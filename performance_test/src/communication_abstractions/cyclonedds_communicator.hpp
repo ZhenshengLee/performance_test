@@ -99,7 +99,6 @@ public:
     m_datawriter(0),
     m_datareader(0)
   {
-    register_topic();
   }
 
   /**
@@ -116,7 +115,9 @@ public:
       dds_qos_t * dw_qos = dds_create_qos();
       CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply(dw_qos);
-      m_datawriter = dds_create_writer(m_participant, m_topic, dw_qos, nullptr);
+      dds_entity_t tp = create_topic();
+      m_datawriter = dds_create_writer(m_participant, tp, dw_qos, nullptr);
+      dds_delete(tp);
       dds_delete_qos(dw_qos);
       if (m_datawriter < 0) {
         throw std::runtime_error("failed to create datawriter");
@@ -149,7 +150,9 @@ public:
       dds_qos_t * dw_qos = dds_create_qos();
       CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply(dw_qos);
-      m_datareader = dds_create_reader(m_participant, m_topic, dw_qos, nullptr);
+      dds_entity_t tp = create_topic();
+      m_datareader = dds_create_reader(m_participant, tp, dw_qos, nullptr);
+      dds_delete(tp);
       dds_delete_qos(dw_qos);
       if (m_datareader < 0) {
         throw std::runtime_error("failed to create datareader");
@@ -197,16 +200,16 @@ public:
   }
 
 private:
-  /// Registers a topic to the participant. It makes sure that each topic is only registered once.
-  void register_topic()
+  /// Creates a new topic for the participant
+  dds_entity_t create_topic()
   {
-    if (m_topic == 0) {
-      m_topic = dds_create_topic(m_participant, Msg::CycloneDDSDesc(),
-          m_ec.topic_name().c_str(), nullptr, nullptr);
-      if (m_topic < 0) {
-        throw std::runtime_error("failed to create topic");
-      }
+    dds_entity_t topic;
+    topic = dds_create_topic(m_participant, Msg::CycloneDDSDesc(),
+        m_ec.topic_name().c_str(), nullptr, nullptr);
+    if (topic < 0) {
+      throw std::runtime_error("failed to create topic");
     }
+    return topic;
   }
 
   dds_entity_t m_participant;
@@ -216,12 +219,7 @@ private:
 
   dds_entity_t m_waitset;
   dds_entity_t m_condition;
-
-  static dds_entity_t m_topic;
 };
-
-template<class Msg>
-dds_entity_t CycloneDDSCommunicator<Msg>::m_topic = 0;
 
 }  // namespace performance_test
 

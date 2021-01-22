@@ -97,7 +97,7 @@ endif()
 # CycloneDDS
 option(PERFORMANCE_TEST_CYCLONEDDS_ENABLED "Enable CycloneDDS" OFF)
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-  find_package(CycloneDDS REQUIRED)
+  find_package(CycloneDDS REQUIRED COMPONENTS idlc)
   add_definitions(-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   add_subdirectory(src/idlgen/cyclonedds)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
