@@ -178,30 +178,12 @@ Now to run the performance test with ConnextDDSMicro plugin :
 The performance_test tool can also measure performance of the application with the [ROS 2 layers](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview). For example the following configuration can be tested: `RTI Connext Micro + ROS2PollingSubscription rclcpp + rmw_apex_dds`. Performance_test tool supports [`ROS 2 Dashing`](https://index.ros.org/doc/ros2/Installation/Dashing/) version.
 The following plugins with a ROS middleware interface are currently supported:
 
-<<<<<<< HEAD
-| RMW Implementation                                                                       | Supported subscription                                 | Supported transports |  `--cmake-args` to pass when building performance_test                                                                                  | Communication mean (-c) to pass when running experiments                         |
-|------------------------------------------------------------------------------------------|--------------------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps)                                                                         | ROS 2 Callback(enabled by default),<br>Apex.OS WaitSet | UDP                  | Nothing for ROS 2 Callback<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets)         | ROS2 (enabled by default)<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
-| rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS 2 Callback(enabled by default),<br>Apex.OS WaitSet | INTRA,SHMEM          | Nothing for ROS 2 Callback<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets) | ROS2 (enabled by default)<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
-| rmw_connext_cpp                                                                       | ROS 2 Callback(enabled by default)<br><br>                     | SHMEM, UDP                  | Nothing for ROS 2 Callback                                                                               | ROS2 (enabled by default)|
-| rmw_cyclonedds_cpp                                                                       | ROS 2 Callback(enabled by default)                     | UDP                  | Nothing for ROS 2 Callback                                                                               | ROS2 (enabled by default)|
-
-Apart from the default ROS 2, you can use the Apex.OS WaitSets by building and running the tool with `ROS2PollingSubscription` as:
-
-```
-colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON
-```
-Now run the experiments as follows:
-```
-./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription -l log -t Array1k --max_runtime 10
-```
-=======
 | RMW Implementation | Supported communication means (-c) | Supported transports |
 |--------------------|------------------------------------|----------------------|
 | [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps) | ROS2,<br>ROS2PollingSubscription | UDP |
 | rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS2,<br>ROS2PollingSubscription | INTRA,SHMEM |
+| rmw_connext_cpp | ROS2 | SHMEM, UDP |
 | rmw_cyclonedds_cpp | ROS2 | UDP |
->>>>>>> df519648c441962e116ae5922720a76120aac1c8
 
 > Note:
 > - The DDS implementation that Apex.OS has been compiled with (`rmw_fastrtps_cpp` or `rmw_apex_dds`) is automatically linked when the performance_test tool is built with Apex.OS.
