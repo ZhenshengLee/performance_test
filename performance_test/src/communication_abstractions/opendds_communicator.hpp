@@ -170,8 +170,9 @@ public:
       OpenDdsQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply_dw(dw_qos);
 
-      m_datawriter = publisher->create_datawriter(m_topic,
-          dw_qos, nullptr, OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+      m_datawriter = publisher->create_datawriter(
+        m_topic,
+        dw_qos, nullptr, OpenDDS::DCPS::DEFAULT_STATUS_MASK);
       if (CORBA::is_nil(m_datawriter)) {
         throw std::runtime_error("Could not create datawriter");
       }
@@ -233,14 +234,13 @@ public:
       }
     }
 
-    if (!m_ec.no_waitset()) {
-      DDS::Duration_t wait_timeout = {15, 0};
-      m_waitset.wait(m_condition_seq, wait_timeout);
-    }
+    DDS::Duration_t wait_timeout = {15, 0};
+    m_waitset.wait(m_condition_seq, wait_timeout);
 
-    auto ret = m_typed_datareader->take(m_data_seq, m_sample_info_seq, DDS::LENGTH_UNLIMITED,
-        DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,
-        DDS::ANY_INSTANCE_STATE);
+    auto ret = m_typed_datareader->take(
+      m_data_seq, m_sample_info_seq, DDS::LENGTH_UNLIMITED,
+      DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,
+      DDS::ANY_INSTANCE_STATE);
     if (ret == DDS::RETCODE_OK) {
       lock();
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
@@ -267,7 +267,8 @@ public:
         throw std::runtime_error("Round trip mode is not implemented for OpenDDS!");
       }
 
-      m_typed_datareader->return_loan(m_data_seq,
+      m_typed_datareader->return_loan(
+        m_data_seq,
         m_sample_info_seq);
     }
   }
@@ -286,13 +287,13 @@ private:
       DDS::ReturnCode_t retcode;
       retcode = Topic::get_type_support()->register_type(
         m_participant,
-        Topic::topic_name().c_str());
+        Topic::msg_name().c_str());
       if (retcode != DDS::RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }
       m_topic = m_participant->create_topic(
-        Topic::topic_name().c_str(),
-        Topic::topic_name().c_str(),
+        m_ec.topic_name().c_str(),
+        Topic::msg_name().c_str(),
         TOPIC_QOS_DEFAULT,
         nullptr,
         OpenDDS::DCPS::DEFAULT_STATUS_MASK);

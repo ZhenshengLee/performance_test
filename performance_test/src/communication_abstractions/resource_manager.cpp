@@ -47,7 +47,7 @@ std::shared_ptr<rclcpp::Node> ResourceManager::ros2_node() const
     rand_str = std::to_string(std::rand());
   }
 
-  auto options = rclcpp::NodeOptions().use_intra_process_comms(m_ec.use_ros_shm());
+  auto options = rclcpp::NodeOptions();
 
   auto env_name = "ROS_DOMAIN_ID";
   auto env_value = std::to_string(m_ec.dds_domain_id());
@@ -85,7 +85,11 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
   disc_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
   disc_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
 #endif
+#if FASTRTPS_VERSION_MAJOR < 2
   PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
+#else
+  PParam.domainId = m_ec.dds_domain_id();
+#endif
   PParam.rtps.setName("performance_test_fastRTPS");
 
   if (!m_ec.use_single_participant()) {

@@ -77,18 +77,19 @@ private:
 };
 
 /// Communication plugin interface for ROS 2 for the subscription side.
-template<class Topic>
+template<class Msg>
 class ROS2Communicator : public Communicator
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename Topic::RosType;
+  using DataType = typename Msg::RosType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit ROS2Communicator(SpinLock & lock)
   : Communicator(lock),
     m_node(ResourceManager::get().ros2_node()),
-    m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()) {}
+    m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()),
+    m_data_copy(std::make_unique<DataType>()) {}
 
   /**
    * \brief Publishes the provided data.
@@ -104,20 +105,33 @@ public:
     if (!m_publisher) {
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
       m_publisher = m_node->create_publisher<DataType>(
-        Topic::topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
+        m_ec.topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
       if (m_ec.expected_num_subs() > 0) {
-        m_publisher->wait_for_matched(m_ec.expected_num_subs(),
+        m_publisher->wait_for_matched(
+          m_ec.expected_num_subs(),
           m_ec.expected_wait_for_matched_timeout());
       }
 #endif
     }
     lock();
+#if !defined(QNX)
     data.time = time.count();
+#endif
     data.id = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
+#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
+    if (m_ec.is_zero_copy_transfer()) {
+      auto borrowed_message{m_publisher->borrow_loaned_message()};
+      borrowed_message.get() = data;  // It would be nice to refactor away this explicit copy
+      m_publisher->publish(borrowed_message.get());
+    } else {
+      m_publisher->publish(data);
+    }
+#else
     m_publisher->publish(data);
+#endif
   }
 
   /**
@@ -134,8 +148,8 @@ public:
  */
   void publish(const DataType & data, const std::chrono::nanoseconds time)
   {
-    DataType copy = data;
-    publish(copy, time);
+    *m_data_copy = data;
+    publish(*m_data_copy, time);
   }
 
   /// Reads received data from ROS 2 using callbacks
@@ -167,7 +181,8 @@ protected:
   template<class T>
   void callback(const T & data)
   {
-    static_assert(std::is_same<DataType,
+    static_assert(
+      std::is_same<DataType,
       typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value,
       "Parameter type passed to callback() does not match");
     if (m_prev_timestamp >= data.time) {
@@ -189,6 +204,7 @@ protected:
 
 private:
   std::shared_ptr<::rclcpp::Publisher<DataType>> m_publisher;
+  std::unique_ptr<DataType> m_data_copy;
 };
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__ROS2_COMMUNICATOR_HPP_

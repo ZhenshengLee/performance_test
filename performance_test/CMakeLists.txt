@@ -151,7 +151,10 @@ if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
 endif()
 
-# ROS2 Waitset
+# ROS2 Callback and Executor
+option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback and Executor Plugin." ON)
+
+# Apex.OS Waitset and Polling Subscription
 option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
   The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
 
@@ -171,39 +174,90 @@ set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
 
+option(IDL_MESSAGES_ENABLED "Use the .idl files in the src/msg folder, instead of the .msg files" OFF)
+
+if(IDL_MESSAGES_ENABLED)
+  set(MESSAGE_FILE_EXTENSION "idl")
+else()
+  set(MESSAGE_FILE_EXTENSION "msg")
+endif()
+
+set(MESSAGE_FILES
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8m.${MESSAGE_FILE_EXTENSION}"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32k.${MESSAGE_FILE_EXTENSION}"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512k.${MESSAGE_FILE_EXTENSION}"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatus.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFix.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetection.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrack.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Range.${MESSAGE_FILE_EXTENSION}"
+
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Polygon.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3.${MESSAGE_FILE_EXTENSION}")
+
+option(PERFORMANCE_TEST_ZERO_COPY_ENABLED "Enable the option to use zero copy transfer" OFF)
+
+if(PERFORMANCE_TEST_ZERO_COPY_ENABLED)
+  if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
+    add_definitions(-DPERFORMANCE_TEST_ZERO_COPY_ENABLED)
+    set(MESSAGE_FILES_ZC
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Header.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointField.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16ZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256ZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8mZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512kZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatusZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFixZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetectionZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrackZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RangeZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32ZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PolygonZeroCopy.idl"
+        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3ZeroCopy.idl")
+  else()
+    message("Error: Zero copy requires polling subscription and Apex.OS with RTI Connext Micro. Zero copy will not be enabled.")
+  endif()
+endif()
+
 rosidl_generate_interfaces(${PROJECT_NAME}
-    "src/msg/Array1k.msg"
-    "src/msg/Array4k.msg"
-    "src/msg/Array16k.msg"
-    "src/msg/Array32k.msg"
-    "src/msg/Array60k.msg"
-    "src/msg/Array1m.msg"
-    "src/msg/Array2m.msg"
-    "src/msg/Array4m.msg"
-
-    "src/msg/Struct16.msg"
-    "src/msg/Struct256.msg"
-    "src/msg/Struct4k.msg"
-    "src/msg/Struct32k.msg"
-
-    "src/msg/PointCloud1m.msg"
-    "src/msg/PointCloud2m.msg"
-    "src/msg/PointCloud4m.msg"
-    "src/msg/PointCloud8m.msg"
-    "src/msg/PointCloud512k.msg"
-
-    "src/msg/NavSatStatus.msg"
-    "src/msg/NavSatFix.msg"
-    "src/msg/RadarDetection.msg"
-    "src/msg/RadarTrack.msg"
-    "src/msg/Range.msg"
-
-    "src/msg/Point.msg"
-    "src/msg/Point32.msg"
-    "src/msg/Polygon.msg"
-    "src/msg/Vector3.msg"
-
-
+    ${MESSAGE_FILES}
+    ${MESSAGE_FILES_ZC}
     DEPENDENCIES builtin_interfaces std_msgs sensor_msgs)
 
 set(sources
@@ -212,8 +266,6 @@ set(sources
     src/communication_abstractions/communicator.cpp
     src/communication_abstractions/resource_manager.cpp
     src/communication_abstractions/resource_manager.hpp
-    src/communication_abstractions/ros2_communicator.hpp
-    src/communication_abstractions/ros2_callback_communicator.hpp
     src/experiment_configuration/topics.hpp
     src/data_running/data_runner.hpp
     src/data_running/data_runner_base.hpp
@@ -230,6 +282,7 @@ set(sources
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp
     src/utilities/cpu_usage_tracker.hpp
+    src/utilities/qnx_res_usage.hpp
 )
 
 if(PERFORMANCE_TEST_RT_ENABLED)
@@ -237,30 +290,34 @@ if(PERFORMANCE_TEST_RT_ENABLED)
   list(APPEND sources src/utilities/rt_enabler.hpp)
 endif()
 
+if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
+  list(APPEND sources src/communication_abstractions/ros2_callback_communicator.hpp)
+endif()
+
 if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/ros2_waitset_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/ros2_waitset_communicator.hpp)
+endif()
+
+if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED OR PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
+  list(APPEND sources src/communication_abstractions/ros2_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/fast_rtps_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/fast_rtps_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/connext_dds_micro_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/connext_dds_micro_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/cyclonedds_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/cyclonedds_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-  set(sources ${sources}
-      src/communication_abstractions/opendds_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/opendds_communicator.hpp)
 endif()
 
 # Use ODB support to create SQL database
@@ -341,6 +398,10 @@ target_link_libraries(${EXE_NAME}
 )
 
 if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
+  foreach(header ${${PROJECT_NAME}_HEADERS})
+    get_filename_component(target_suffix ${header} NAME)
+    add_dependencies(${EXE_NAME} "generate_odb_${target_suffix}")
+  endforeach()
   target_link_libraries(${EXE_NAME} ${ODB_LIBRARIES})
   target_include_directories(${EXE_NAME}
       PRIVATE

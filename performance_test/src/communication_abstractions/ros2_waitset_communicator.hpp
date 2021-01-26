@@ -32,16 +32,16 @@ namespace performance_test
 {
 
 /// Communication plugin for ROS 2 using waitsets for the subscription side.
-template<class Topic>
-class ROS2WaitsetCommunicator : public ROS2Communicator<Topic>
+template<class Msg>
+class ROS2WaitsetCommunicator : public ROS2Communicator<Msg>
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename ROS2Communicator<Topic>::DataType;
+  using DataType = typename ROS2Communicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit ROS2WaitsetCommunicator(SpinLock & lock)
-  : ROS2Communicator<Topic>(lock),
+  : ROS2Communicator<Msg>(lock),
     m_polling_subscription(nullptr) {}
 
   /// Reads received data from ROS 2 using waitsets
@@ -49,9 +49,10 @@ public:
   {
     if (!m_polling_subscription) {
       m_polling_subscription = this->m_node->template create_polling_subscription<DataType>(
-        Topic::topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
+        this->m_ec.topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter);
       if (this->m_ec.expected_num_pubs() > 0) {
-        m_polling_subscription->wait_for_matched(this->m_ec.expected_num_pubs(),
+        m_polling_subscription->wait_for_matched(
+          this->m_ec.expected_num_pubs(),
           this->m_ec.expected_wait_for_matched_timeout());
       }
       m_waitset = std::make_unique<rclcpp::Waitset<>>(m_polling_subscription);
@@ -62,6 +63,13 @@ public:
       const std::lock_guard<decltype(this->get_lock())> lock(this->get_lock());
       for (const auto msg : loaned_msg) {
         if (msg.info().valid()) {
+#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
+          if (this->m_ec.is_zero_copy_transfer() &&
+            !m_polling_subscription->is_data_consistent(msg))
+          {
+            throw std::runtime_error("Zero copy transfer, received data is not consistent");
+          }
+#endif
           this->template callback(msg.data());
         }
       }

@@ -20,7 +20,13 @@
 #include <osrf_testing_tools_cpp/memory_tools/memory_tools.hpp>
 #endif
 #include <atomic>
+#include <memory>
 #include <thread>
+
+#if defined(QNX)
+#include <sys/neutrino.h>
+#include <inttypes.h>
+#endif
 
 #include "../utilities/spin_lock.hpp"
 
@@ -131,7 +137,7 @@ private:
   /// The function running inside the thread doing all the work.
   void thread_function()
   {
-    typename TCommunicator::DataType data;
+    auto data = std::make_unique<typename TCommunicator::DataType>();
 
     auto next_run = std::chrono::steady_clock::now() +
       std::chrono::duration_cast<std::chrono::nanoseconds>(
@@ -145,9 +151,13 @@ private:
       if (m_run_type == RunType::PUBLISHER &&
         m_ec.roundtrip_mode() != ExperimentConfiguration::RoundTripMode::RELAY)
       {
+#if defined(QNX)
+        std::uint64_t clk_cyc = ClockCycles();
+        data->time = static_cast<std::int64_t>(clk_cyc);
+#endif
         std::chrono::nanoseconds epoc_time =
           std::chrono::steady_clock::now().time_since_epoch();
-        m_com.publish(data, epoc_time);
+        m_com.publish(*data, epoc_time);
       }
       if (m_run_type == RunType::SUBSCRIBER) {
         m_com.update_subscription();

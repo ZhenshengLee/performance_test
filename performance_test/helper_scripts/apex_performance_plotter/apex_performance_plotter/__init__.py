@@ -19,7 +19,6 @@
 
 """Tool for plotting performance test reports."""
 
-import itertools
 import os
 import re
 import shutil
@@ -31,9 +30,8 @@ import click
 
 import jinja2
 
-import pandas
-
 from .generate_plots import generate_figures
+from .load_logfiles import load_logfile
 
 
 __version__ = '0.1.0'
@@ -44,27 +42,6 @@ def sanitize(val):
     if isinstance(val, str):
         val = val.replace('_', r'\_').replace('%', r'\%')
     return val
-
-
-def load_logfile(filename):
-    """Load logfile into header dictionary and pandas dataframe."""
-    with open(filename) as source:
-        header = {}
-        for item in itertools.takewhile(lambda x: not x.startswith('---'), source):
-            if not item.strip():  # Don't care about whitespace-only lines
-                continue
-            try:
-                key = item.split(':')[0].strip()
-                value = item.split(':', maxsplit=1)[1].strip()
-                header[key] = value
-            except Exception:
-                print('Error trying to parse header line "{}"'.format(item))
-                raise
-        dataframe = pandas.read_csv(source, sep='[ \t]*,[ \t]*', engine='python')
-        unnamed = [col for col in dataframe.keys() if col.startswith('Unnamed: ')]
-        if unnamed:
-            dataframe.drop(unnamed, axis=1, inplace=True)
-    return header, dataframe
 
 
 def load_template():
@@ -106,8 +83,8 @@ def create_layout(header, dataframe):
     header_fields = {
         'Logfile name', 'Experiment id', 'Communication mean', 'Publishing rate',
         'Topic name', 'Number of publishers', 'Number of subscribers', 'Maximum runtime (sec)',
-        'DDS domain id', 'QOS', 'Use ros SHM', 'Use single participant', 'Not using waitset',
-        'Not using Connext DDS Micro INTRA', 'Performance Test Version',
+        'DDS domain id', 'QOS', 'Use single participant',
+        'Performance Test Version',
     }
 
     header.update(dict('QOS {}'.format(x).split(': ')
@@ -156,10 +133,7 @@ def create_layout(header, dataframe):
                 create_kv(header, 'Number of subscribers'),
                 create_kv(header, 'Maximum runtime (sec)'),
                 create_kv(header, 'DDS domain id'),
-                create_kv(header, 'Use ros SHM', boolish=True),
                 create_kv(header, 'Use single participant', boolish=True),
-                create_kv(header, 'Not using waitset', boolish=True),
-                create_kv(header, 'Not using Connext DDS Micro INTRA', boolish=True),
             ]},
             {'name': 'average results', 'items': [
                 {'key': 'Experiment Status', 'value': 'success' if xaxis else 'failed'},
@@ -183,8 +157,8 @@ def render(template, filepath, skip_head=0, skip_tail=0):
     # still error out
     if skip_head + skip_tail > len(dataframe):
         print(
-            "ERROR: Told to skip {} rows from the start and {} rows from the end "
-            "but there are only {} rows or data".format(
+            'ERROR: Told to skip {} rows from the start and {} rows from the end '
+            'but there are only {} rows or data'.format(
                 skip_head,
                 skip_tail,
                 len(dataframe)

@@ -1,4 +1,41 @@
 <changelog xmlns="http://www.codesynthesis.com/xmlns/odb/changelog" database="mysql" version="1">
+  <changeset version="11">
+    <alter-table name="ExperimentConfiguration">
+      <add-column name="msg_name" type="TEXT" null="false"/>
+      <add-column name="is_zero_copy_transfer" type="TINYINT(1)" null="false"/>
+    </alter-table>
+  </changeset>
+
+  <changeset version="10">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="is_drivepx_rt"/>
+    </alter-table>
+  </changeset>
+
+  <changeset version="9">
+    <alter-table name="ExperimentConfiguration">
+      <add-column name="is_rt_init_required" type="TINYINT(1)" null="false"/>
+    </alter-table>
+  </changeset>
+
+  <changeset version="8">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="no_micro_intra"/>
+    </alter-table>
+  </changeset>
+
+  <changeset version="7">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="no_waitset"/>
+    </alter-table>
+  </changeset>
+
+  <changeset version="6">
+    <alter-table name="ExperimentConfiguration">
+      <drop-column name="use_ros_shm"/>
+    </alter-table>
+  </changeset>
+
   <changeset version="5">
     <alter-table name="ExperimentConfiguration">
       <add-column name="external_info_ci" type="TEXT" null="false"/>

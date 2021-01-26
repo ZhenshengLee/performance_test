@@ -26,7 +26,6 @@
 #include <fastrtps/publisher/Publisher.h>
 #include <fastrtps/subscriber/SampleInfo.h>
 #include <fastrtps/Domain.h>
-#include <fastrtps/utils/eClock.h>
 
 #include <atomic>
 
@@ -162,8 +161,8 @@ public:
 
       eprosima::fastrtps::PublisherAttributes wparam;
       wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-      wparam.topic.topicDataType = m_topic_type->getName() + m_ec.pub_topic_postfix();
-      wparam.topic.topicName = Topic::topic_name();
+      wparam.topic.topicDataType = m_topic_type->getName();
+      wparam.topic.topicName = m_ec.topic_name() + m_ec.pub_topic_postfix();
       wparam.topic.historyQos.kind = qos.history_kind();
       wparam.topic.historyQos.depth = qos.history_depth();
       wparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
@@ -199,7 +198,7 @@ public:
       eprosima::fastrtps::SubscriberAttributes rparam;
       rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
       rparam.topic.topicDataType = m_topic_type->getName() + m_ec.sub_topic_postfix();
-      rparam.topic.topicName = Topic::topic_name();
+      rparam.topic.topicName = m_ec.topic_name();
       rparam.topic.historyQos.kind = qos.history_kind();
       rparam.topic.historyQos.depth = qos.history_depth();
       rparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
@@ -209,14 +208,13 @@ public:
       m_subscriber = eprosima::fastrtps::Domain::createSubscriber(m_participant, rparam);
     }
 
-    if (!m_ec.no_waitset()) {
-      m_subscriber->waitForUnreadMessage();
-    }
+    m_subscriber->waitForUnreadMessage();
     lock();
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
         if (m_prev_timestamp >= m_data.time_()) {
-          throw std::runtime_error("Data consistency violated. Received sample with not strictly "
+          throw std::runtime_error(
+                  "Data consistency violated. Received sample with not strictly "
                   "older timestamp. Time diff: " + std::to_string(
                     m_data.time_() - m_prev_timestamp) + " Data Time: " +
                   std::to_string(m_data.time_())

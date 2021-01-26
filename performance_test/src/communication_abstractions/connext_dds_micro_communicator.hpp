@@ -141,8 +141,9 @@ public:
       ConnextDDSMicroQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply(dw_qos);
 
-      m_datawriter = publisher->create_datawriter(m_topic,
-          dw_qos, nullptr, DDS_STATUS_MASK_NONE);
+      m_datawriter = publisher->create_datawriter(
+        m_topic,
+        dw_qos, nullptr, DDS_STATUS_MASK_NONE);
       if (m_datawriter == nullptr) {
         throw std::runtime_error("Could not create datawriter");
       }
@@ -216,14 +217,13 @@ public:
       }
     }
 
-    if (!m_ec.no_waitset()) {
-      DDS_Duration_t wait_timeout = {15, 0};
-      m_waitset.wait(m_condition_seq, wait_timeout);
-    }
+    DDS_Duration_t wait_timeout = {15, 0};
+    m_waitset.wait(m_condition_seq, wait_timeout);
 
-    auto ret = m_typed_datareader->take(m_data_seq, m_sample_info_seq, DDS_LENGTH_UNLIMITED,
-        DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE,
-        DDS_ANY_INSTANCE_STATE);
+    auto ret = m_typed_datareader->take(
+      m_data_seq, m_sample_info_seq, DDS_LENGTH_UNLIMITED,
+      DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE,
+      DDS_ANY_INSTANCE_STATE);
     if (ret == DDS_RETCODE_OK) {
       lock();
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
@@ -250,7 +250,8 @@ public:
         throw std::runtime_error("Round trip mode is not implemented for Connext DDS Micro!");
       }
 
-      m_typed_datareader->return_loan(m_data_seq,
+      m_typed_datareader->return_loan(
+        m_data_seq,
         m_sample_info_seq);
     }
   }
@@ -267,13 +268,13 @@ private:
   {
     if (m_topic == nullptr) {
       auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(m_participant,
-          Topic::topic_name().c_str());
+          Topic::msg_name().c_str());
       if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }
       m_topic = m_participant->create_topic(
-        Topic::topic_name().c_str(),
-        Topic::topic_name().c_str(),
+        m_ec.topic_name().c_str(),
+        Topic::msg_name().c_str(),
         DDS_TOPIC_QOS_DEFAULT,
         nullptr,
         DDS_STATUS_MASK_NONE);
@@ -295,6 +296,17 @@ private:
     init_fields(data);
   }
 
+  /**
+  * \brief Initializes the frame_id_zc field in data header.
+  * This is the overloaded method which is called if data header has frame_id
+  * \param data The data to publish.
+  */
+  template<typename T>
+  static auto init_data(T & data)->decltype (data.header_.frame_id_zc_, void ()) {
+    snprintf(data.header_.frame_id_zc_, 9U, "frame_id");
+    init_fields(data);
+  }
+
   /// Do nothing if frame_id not present
   static void init_data(...) {}
 
@@ -312,10 +324,24 @@ private:
   * \param data The data to publish.
   */
   template<typename T>
-  static auto init_fields(T & data)->decltype (data.fields_, void ()) {
+  static auto init_fields(T & data)->decltype (data.fields_[0].name_, void ()) {
     auto fields_size = size(data.fields_);
     for (uint8_t i = 0; i < fields_size; i++) {
       data.fields_[i].name_ = DDS_String_dup("name");
+    }
+  }
+
+  /**
+  * \brief Initializes the PointField array name field in data header for zero copy transfer.
+  * This is the overloaded helper method which is called from init_data() if data has
+  * PointField array in the payload
+  * \param data The data to publish.
+  */
+  template<typename T>
+  static auto init_fields(T & data)->decltype (data.fields_[0].name_zc_, void ()) {
+    auto fields_size = size(data.fields_);
+    for (uint8_t i = 0; i < fields_size; i++) {
+      snprintf(data.fields_[i].name_zc_, 5U, "name");
     }
   }
 

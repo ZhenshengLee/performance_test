@@ -19,9 +19,7 @@
 #ifndef EXPERIMENT_CONFIGURATION__TOPICS_HPP_
 #define EXPERIMENT_CONFIGURATION__TOPICS_HPP_
 
-
-#include <boost/mpl/list.hpp>
-#include <boost/mpl/for_each.hpp>
+#include <performance_test/for_each.hpp>
 
 // ROS2 2 types:
 #include <performance_test/msg/array1k.hpp>
@@ -32,6 +30,7 @@
 #include <performance_test/msg/array1m.hpp>
 #include <performance_test/msg/array2m.hpp>
 #include <performance_test/msg/array4m.hpp>
+#include <performance_test/msg/array8m.hpp>
 
 #include <performance_test/msg/struct16.hpp>
 #include <performance_test/msg/struct256.hpp>
@@ -42,12 +41,42 @@
 #include <performance_test/msg/point_cloud1m.hpp>
 #include <performance_test/msg/point_cloud2m.hpp>
 #include <performance_test/msg/point_cloud4m.hpp>
+#include <performance_test/msg/point_cloud8m.hpp>
 
 #include <performance_test/msg/range.hpp>
 #include <performance_test/msg/nav_sat_fix.hpp>
 
 #include <performance_test/msg/radar_detection.hpp>
 #include <performance_test/msg/radar_track.hpp>
+
+#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
+  #include <performance_test/msg/array1k_zero_copy.hpp>
+  #include <performance_test/msg/array4k_zero_copy.hpp>
+  #include <performance_test/msg/array16k_zero_copy.hpp>
+  #include <performance_test/msg/array32k_zero_copy.hpp>
+  #include <performance_test/msg/array60k_zero_copy.hpp>
+  #include <performance_test/msg/array1m_zero_copy.hpp>
+  #include <performance_test/msg/array2m_zero_copy.hpp>
+  #include <performance_test/msg/array4m_zero_copy.hpp>
+  #include <performance_test/msg/array8m_zero_copy.hpp>
+
+  #include <performance_test/msg/struct16_zero_copy.hpp>
+  #include <performance_test/msg/struct256_zero_copy.hpp>
+  #include <performance_test/msg/struct4k_zero_copy.hpp>
+  #include <performance_test/msg/struct32k_zero_copy.hpp>
+
+  #include <performance_test/msg/point_cloud512k_zero_copy.hpp>
+  #include <performance_test/msg/point_cloud1m_zero_copy.hpp>
+  #include <performance_test/msg/point_cloud2m_zero_copy.hpp>
+  #include <performance_test/msg/point_cloud4m_zero_copy.hpp>
+  #include <performance_test/msg/point_cloud8m_zero_copy.hpp>
+
+  #include <performance_test/msg/range_zero_copy.hpp>
+  #include <performance_test/msg/nav_sat_fix_zero_copy.hpp>
+
+  #include <performance_test/msg/radar_detection_zero_copy.hpp>
+  #include <performance_test/msg/radar_track_zero_copy.hpp>
+#endif
 
 // FastRTPS Types:
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
@@ -59,6 +88,7 @@
   #include <fast_rtps/Array1m_PubSubTypes.h>
   #include <fast_rtps/Array2m_PubSubTypes.h>
   #include <fast_rtps/Array4m_PubSubTypes.h>
+  #include <fast_rtps/Array8m_PubSubTypes.h>
 
   #include <fast_rtps/Struct16_PubSubTypes.h>
   #include <fast_rtps/Struct256_PubSubTypes.h>
@@ -69,6 +99,7 @@
   #include <fast_rtps/PointCloud1m_PubSubTypes.h>
   #include <fast_rtps/PointCloud2m_PubSubTypes.h>
   #include <fast_rtps/PointCloud4m_PubSubTypes.h>
+  #include <fast_rtps/PointCloud8m_PubSubTypes.h>
 
   #include <fast_rtps/Range_PubSubTypes.h>
   #include <fast_rtps/NavSatFix_PubSubTypes.h>
@@ -87,6 +118,7 @@
   #include <performance_test/msg/dds_connext_micro_typefiles/Array1m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/Array2m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/Array4m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/Array8m_Support.h>
 
   #include <performance_test/msg/dds_connext_micro_typefiles/Struct16_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/Struct256_Support.h>
@@ -97,6 +129,7 @@
   #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud1m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud2m_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud4m_Support.h>
+  #include <performance_test/msg/dds_connext_micro_typefiles/PointCloud8m_Support.h>
 
   #include <performance_test/msg/dds_connext_micro_typefiles/Range_Support.h>
   #include <performance_test/msg/dds_connext_micro_typefiles/NavSatFix_Support.h>
@@ -145,6 +178,7 @@
   #include <cyclonedds/Array1m_.h>
   #include <cyclonedds/Array2m_.h>
   #include <cyclonedds/Array4m_.h>
+  #include <cyclonedds/Array8m_.h>
 
   #include <cyclonedds/Struct16_.h>
   #include <cyclonedds/Struct256_.h>
@@ -155,6 +189,7 @@
   #include <cyclonedds/PointCloud1m_.h>
   #include <cyclonedds/PointCloud2m_.h>
   #include <cyclonedds/PointCloud4m_.h>
+  #include <cyclonedds/PointCloud8m_.h>
 
   #include <cyclonedds/Range_.h>
   #include <cyclonedds/NavSatFix_.h>
@@ -173,6 +208,8 @@
   #include <opendds/Array60k_TypeSupportImpl.h>
   #include <opendds/Array1m_TypeSupportImpl.h>
   #include <opendds/Array2m_TypeSupportImpl.h>
+  #include <opendds/Array4m_TypeSupportImpl.h>
+  #include <opendds/Array8m_TypeSupportImpl.h>
   #include <opendds/Struct16_TypeSupportImpl.h>
   #include <opendds/Struct256_TypeSupportImpl.h>
   #include <opendds/Struct4k_TypeSupportImpl.h>
@@ -181,6 +218,7 @@
   #include <opendds/PointCloud1m_TypeSupportImpl.h>
   #include <opendds/PointCloud2m_TypeSupportImpl.h>
   #include <opendds/PointCloud4m_TypeSupportImpl.h>
+  #include <opendds/PointCloud8m_TypeSupportImpl.h>
   #include <opendds/Range_TypeSupportImpl.h>
   #include <opendds/NavSatFix_TypeSupportImpl.h>
   #include <opendds/RadarDetection_TypeSupportImpl.h>
@@ -189,6 +227,7 @@
 
 #include <algorithm>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace performance_test
@@ -235,7 +274,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array1k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array1k");
   }
@@ -279,7 +318,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array4k");
   }
@@ -323,7 +362,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array16k");
   }
@@ -366,7 +405,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array32k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array32k");
   }
@@ -409,7 +448,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array60k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array60k");
   }
@@ -451,7 +490,7 @@ public:
     return new performance_test_msgs::msg::dds_::Array1m_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array1m");
   }
@@ -494,9 +533,87 @@ public:
     return new performance_test_msgs::msg::dds_::Array2m_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Array2m");
+  }
+};
+
+class Array4m
+{
+public:
+  using RosType = performance_test::msg::Array4m;
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::Array4m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array4m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array4m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__Array4m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array4m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array4m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array4m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array4m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array4m_TypeSupportImpl();
+  }
+#endif
+  static std::string msg_name()
+  {
+    return std::string("Array4m");
+  }
+};
+
+class Array8m
+{
+public:
+  using RosType = performance_test::msg::Array8m;
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::Array8m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array8m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__Array8m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__Array8m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::Array8m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::Array8m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::Array8m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::Array8m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::Array8m_TypeSupportImpl();
+  }
+#endif
+  static std::string msg_name()
+  {
+    return std::string("Array8m");
   }
 };
 
@@ -537,7 +654,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct16");
   }
@@ -580,7 +697,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct256");
   }
@@ -622,7 +739,7 @@ public:
     return new performance_test_msgs::msg::dds_::Struct4k_TypeSupportImpl();
   }
 #endif
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct4k");
   }
@@ -665,7 +782,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Struct32k");
   }
@@ -708,7 +825,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud512k");
   }
@@ -751,7 +868,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud1m");
   }
@@ -794,7 +911,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud2m");
   }
@@ -837,9 +954,48 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("PointCloud4m");
+  }
+};
+
+class PointCloud8m
+{
+public:
+  using RosType = performance_test::msg::PointCloud8m;
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test_msgs::msg::dds_::PointCloud8m_PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud8m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msgs_msg_dds__PointCloud8m_;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msgs_msg_dds__PointCloud8m__desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test_msgs::msg::dds_::PointCloud8m_;
+  using OpenDDSDataWriterType = performance_test_msgs::msg::dds_::PointCloud8m_DataWriter;
+  using OpenDDSDataReaderType = performance_test_msgs::msg::dds_::PointCloud8m_DataReader;
+  using OpenDDSDataTypeSeq = performance_test_msgs::msg::dds_::PointCloud8m_Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test_msgs::msg::dds_::PointCloud8m_TypeSupportImpl();
+  }
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("PointCloud8m");
   }
 };
 
@@ -880,7 +1036,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("Range");
   }
@@ -923,7 +1079,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("NavSatFix");
   }
@@ -966,7 +1122,7 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("RadarDetection");
   }
@@ -1009,26 +1165,368 @@ public:
   }
 #endif
 
-  static std::string topic_name()
+  static std::string msg_name()
   {
     return std::string("RadarTrack");
   }
 };
 ///  \endcond
 
-using TopicTypeList = boost::mpl::list<Array1k, Array4k, Array16k, Array32k, Array60k, Array1m,
-    Array2m,
-    Struct16, Struct256, Struct4k, Struct32k, PointCloud512k, PointCloud1m, PointCloud2m,
-    PointCloud4m,
-    Range, NavSatFix, RadarDetection, RadarTrack>;
+#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
+class Array1kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array1kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array1kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array1kZeroCopy");
+  }
+};
+
+class Array4kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array4kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array4kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array4kZeroCopy");
+  }
+};
+
+class Array16kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array16kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array16kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array16kZeroCopy");
+  }
+};
+
+class Array32kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array32kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array32kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array32kZeroCopy");
+  }
+};
+
+class Array60kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array60kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array60kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array60kZeroCopy");
+  }
+};
+
+class Array1mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array1mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array1mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array1mZeroCopy");
+  }
+};
+
+class Array2mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array2mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array2mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array2mZeroCopy");
+  }
+};
+
+class Array4mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array4mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array4mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array4mZeroCopy");
+  }
+};
+
+class Array8mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Array8mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Array8mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Array8mZeroCopy");
+  }
+};
+
+class Struct16ZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Struct16ZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct16ZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Struct16ZeroCopy");
+  }
+};
+
+class Struct256ZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Struct256ZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct256ZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Struct256ZeroCopy");
+  }
+};
+
+class Struct4kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Struct4kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct4kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Struct4kZeroCopy");
+  }
+};
+
+class Struct32kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::Struct32kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__Struct32kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("Struct32kZeroCopy");
+  }
+};
+
+class PointCloud512kZeroCopy
+{
+public:
+  using RosType = performance_test::msg::PointCloud512kZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud512kZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("PointCloud512kZeroCopy");
+  }
+};
+
+class PointCloud1mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::PointCloud1mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud1mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("PointCloud1mZeroCopy");
+  }
+};
+
+class PointCloud2mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::PointCloud2mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud2mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("PointCloud2mZeroCopy");
+  }
+};
+
+class PointCloud4mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::PointCloud4mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud4mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("PointCloud4mZeroCopy");
+  }
+};
+
+class PointCloud8mZeroCopy
+{
+public:
+  using RosType = performance_test::msg::PointCloud8mZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__PointCloud8mZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("PointCloud8mZeroCopy");
+  }
+};
+
+class RangeZeroCopy
+{
+public:
+  using RosType = performance_test::msg::RangeZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__RangeZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("RangeZeroCopy");
+  }
+};
+
+class NavSatFixZeroCopy
+{
+public:
+  using RosType = performance_test::msg::NavSatFixZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__NavSatFixZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("NavSatFixZeroCopy");
+  }
+};
+
+class RadarDetectionZeroCopy
+{
+public:
+  using RosType = performance_test::msg::RadarDetectionZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__RadarDetectionZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("RadarDetectionZeroCopy");
+  }
+};
+
+class RadarTrackZeroCopy
+{
+public:
+  using RosType = performance_test::msg::RadarTrackZeroCopy;
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_dds__RadarTrackZeroCopy_;
+#endif
+
+  static std::string msg_name()
+  {
+    return std::string("RadarTrackZeroCopy");
+  }
+};
+#endif
+
+using TopicTypeList = std::tuple<Array1k, Array4k, Array16k, Array32k, Array60k, Array1m,
+    Array2m, Array4m, Array8m,
+    Struct16, Struct256, Struct4k, Struct32k,
+    PointCloud512k, PointCloud1m, PointCloud2m, PointCloud4m, PointCloud8m,
+    Range, NavSatFix, RadarDetection, RadarTrack
+#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
+    , Array1kZeroCopy, Array4kZeroCopy, Array16kZeroCopy, Array32kZeroCopy, Array60kZeroCopy,
+    Array1mZeroCopy, Array2mZeroCopy, Array4mZeroCopy, Array8mZeroCopy,
+    Struct16ZeroCopy, Struct256ZeroCopy, Struct4kZeroCopy, Struct32kZeroCopy,
+    PointCloud512kZeroCopy, PointCloud1mZeroCopy, PointCloud2mZeroCopy, PointCloud4mZeroCopy,
+    PointCloud8mZeroCopy, RangeZeroCopy, NavSatFixZeroCopy,
+    RadarDetectionZeroCopy, RadarTrackZeroCopy
+#endif
+>;
 
 /// Returns a vector of supported topic names.
-inline std::vector<std::string> supported_topic_names()
+inline std::vector<std::string> supported_msg_names()
 {
   std::vector<std::string> result;
-  boost::mpl::for_each<TopicTypeList>([&result](auto topic) {
-      using T = decltype(topic);
-      result.push_back(T::topic_name());
+  performance_test::for_each(
+    TopicTypeList(), [&result](const auto & topic) {
+      using T = std::remove_cv_t<std::remove_reference_t<decltype(topic)>>;
+      result.push_back(T::msg_name());
     });
   return result;
 }

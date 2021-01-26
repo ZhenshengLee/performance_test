@@ -18,6 +18,13 @@
 #include <boost/timer/timer.hpp>
 #include <thread>
 
+#if defined(QNX)
+#include <sys/neutrino.h>
+#include <sys/syspage.h>
+#include <sys/types.h>
+#include <chrono>
+#endif  // defined(QNX)
+
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
 #include <odb/core.hxx>
 #endif
@@ -62,7 +69,12 @@ protected:
 
 public:
   CPUsageTracker()
-  : m_cpu_timer() {}
+  : m_cpu_timer()
+  {
+#if defined(QNX)
+    m_tot_cpu_cores = _syspage_ptr->num_cpu;
+#endif
+  }
 
   /**
     * \brief Computes the CPU usage % as (process_active_time/total_cpu_time)*100
@@ -70,6 +82,38 @@ public:
     */
   CpuInfo get_cpu_usage()
   {
+#if defined(QNX)
+    struct timespec cur_usage_st;
+    float_t cpu_usage_local{};
+
+    int64_t cur_time_ms =
+      std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now()).
+      time_since_epoch().count();
+
+    if (-1 != clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &cur_usage_st)) {
+      int64_t cur_active_time =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::seconds{cur_usage_st.tv_sec} +
+        std::chrono::nanoseconds{cur_usage_st.tv_nsec}).count();
+
+      int64_t active_time_ms = (cur_active_time - m_prev_active_time);
+
+      int64_t total_time_ms = ((cur_time_ms - m_prev_total_time) *
+        static_cast<int64_t>(m_tot_cpu_cores));
+
+      cpu_usage_local = (static_cast<float_t>(active_time_ms) /
+        static_cast<float_t>(total_time_ms)) * 100.0F;
+
+      m_prev_active_time = cur_active_time;
+      m_prev_total_time = cur_time_ms;
+
+    } else {
+      throw std::runtime_error("get_cpu_usage: Error getting process CPU usage time");
+    }
+
+    CpuInfo cpu_info_local{m_tot_cpu_cores, cpu_usage_local};
+    return cpu_info_local;
+#else
     auto times = m_cpu_timer.elapsed();
     m_cpu_timer.start();
 
@@ -79,7 +123,15 @@ public:
       100.0F * static_cast<float>(times.user + times.system) /
       static_cast<float>(times.wall * cpu_cores)
     );
+#endif  // defined(QNX)
   }
+#if defined(QNX)
+
+private:
+  int64_t m_prev_active_time;
+  int64_t m_prev_total_time;
+  uint32_t m_tot_cpu_cores;
+#endif  // defined(QNX)
 };
 }  // namespace performance_test
 

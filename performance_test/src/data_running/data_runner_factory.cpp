@@ -14,11 +14,14 @@
 
 #include "data_runner_factory.hpp"
 
-#include <boost/mpl/for_each.hpp>
+#include <performance_test/for_each.hpp>
 
 #include <string>
 #include <memory>
 
+#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
+  #include "../communication_abstractions/ros2_callback_communicator.hpp"
+#endif
 
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
   #include "../communication_abstractions/ros2_waitset_communicator.hpp"
@@ -43,7 +46,6 @@
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   #include "../communication_abstractions/cyclonedds_communicator.hpp"
 #endif
-#include "../communication_abstractions/ros2_callback_communicator.hpp"
 #include "data_runner.hpp"
 #include "../experiment_configuration/topics.hpp"
 
@@ -51,45 +53,53 @@ namespace performance_test
 {
 
 std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
-  const std::string & requested_topic_name,
+  const std::string & requested_msg,
   CommunicationMean com_mean,
   const RunType run_type)
 {
   std::shared_ptr<DataRunnerBase> ptr;
-  boost::mpl::for_each<topics::TopicTypeList>([&ptr, requested_topic_name, com_mean,
-    run_type](auto topic) {
-      using T = decltype(topic);
-      if (T::topic_name() == requested_topic_name) {
+  performance_test::for_each(
+    topics::TopicTypeList(),
+    [&ptr, requested_msg, com_mean, run_type](const auto & msg_type) {
+      using T = std::remove_cv_t<std::remove_reference_t<decltype(msg_type)>>;
+      if (T::msg_name() == requested_msg) {
         if (ptr) {
-          throw std::runtime_error("It seems that two topics have the same name");
+          throw std::runtime_error("It seems that two msgs have the same name");
         }
+#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
         if (com_mean == CommunicationMean::ROS2) {
           ptr = std::make_shared<DataRunner<ROS2CallbackCommunicator<T>>>(run_type);
+        }
+#endif
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
-        } else if (com_mean == CommunicationMean::ROS2PollingSubscription) {
+        if (com_mean == CommunicationMean::ROS2PollingSubscription) {
           ptr = std::make_shared<DataRunner<ROS2WaitsetCommunicator<T>>>(run_type);
+        }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-        } else if (com_mean == CommunicationMean::FASTRTPS) {
+        if (com_mean == CommunicationMean::FASTRTPS) {
           ptr = std::make_shared<DataRunner<FastRTPSCommunicator<T>>>(run_type);
+        }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-        } else if (com_mean == CommunicationMean::CONNEXTDDSMICRO) {
+        if (com_mean == CommunicationMean::CONNEXTDDSMICRO) {
           ptr = std::make_shared<DataRunner<RTIMicroDDSCommunicator<T>>>(run_type);
+        }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
         } else if (com_mean == CommunicationMean::CONNEXTDDS) {
           ptr = std::make_shared<DataRunner<RTIDDSCommunicator<T>>>(run_type);
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-        } else if (com_mean == CommunicationMean::CYCLONEDDS) {
+        if (com_mean == CommunicationMean::CYCLONEDDS) {
           ptr = std::make_shared<DataRunner<CycloneDDSCommunicator<T>>>(run_type);
+        }
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
-        } else if (com_mean == CommunicationMean::OPENDDS) {
+        if (com_mean == CommunicationMean::OPENDDS) {
           ptr = std::make_shared<DataRunner<OpenDDSCommunicator<T>>>(run_type);
-#endif
         }
+#endif
       }
     });
   if (!ptr) {

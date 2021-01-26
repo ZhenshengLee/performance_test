@@ -1,0 +1,17 @@
+// generated from rosidl_adapter/resource/msg.idl.em
+// with input from performance_test/src/msg/Polygon.msg
+// generated code does not contain a copyright notice
+
+#include "performance_test/msg/Point32.idl"
+
+module performance_test {
+  module msg {
+    typedef performance_test::msg::Point32 performance_test__msg__Point32;
+    typedef performance_test__msg__Point32 performance_test__msg__Point32__64[64];
+    @verbatim (language="comment", text=
+      " A specification of a polygon where the first and last points are assumed to be connected")
+    struct Polygon {
+      performance_test__msg__Point32__64 points;
+    };
+  };
+};

@@ -28,6 +28,7 @@ build_cyclonedds:
     - rosdep update
     - apt-get update
     - rosdep install --from performance_test --ignore-src -y
+    - apt-get install -y python3-pip
     - pip3 install -U colcon-common-extensions pytest
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git
     - cd cyclonedds
@@ -36,7 +37,7 @@ build_cyclonedds:
     - cd build
     - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds ../src
     - cmake --build .
-    - sudo cmake --build . --target install
+    - cmake --build . --target install
     - find /opt/cyclonedds
     - cd $CI_PROJECT_DIR
     - mkdir -p /opt/performance_test
@@ -46,10 +47,11 @@ build_cyclonedds:
           --merge-install
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
-            -DPERFORMANCE_TEST_FORCE_CYCLONEDDS=BOOL:ON
+            -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
+    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -57,6 +59,7 @@ build_cyclonedds:
     paths:
       - log
       - build
+      - opt-cyclonedds.tar.gz
       - opt.tar.gz
 
 build_opendds:
@@ -70,6 +73,7 @@ build_opendds:
           ros-dashing-osrf-testing-tools-cpp
           default-jdk
           wget
+          python3-pip
       '
     - pip3 install -U colcon-common-extensions pytest
     - cd /opt
@@ -88,6 +92,7 @@ build_opendds:
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
+    - tar cfz opt-opendds.tar.gz /opt/opendds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -95,6 +100,7 @@ build_opendds:
     paths:
     - log
     - build
+    - opt-opendds.tar.gz
     - opt.tar.gz
 
 build_fastrtps:
@@ -160,6 +166,65 @@ test:
     paths:
       - log
 
+.smoke_test:
+  stage: test
+  image: osrf/ros:dashing-desktop
+  before_script:
+    - apt-get update
+    - apt-get install -y ros-dashing-osrf-testing-tools-cpp
+  script:
+    - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
+    - tar xzf opt.tar.gz -C /
+    - source /opt/performance_test/setup.bash
+    # With the FastRTPS native plugin, there is a double free error
+    # when perf_test exits. Once this error is resolved, remove this
+    # timeout business, and instead use --max_runtime 15.
+    - '
+      MSGS=${SMOKE_TEST_TOPICS:-Array1k};
+      for MSG in ${MSGS}; do
+        timeout 15 /opt/performance_test/lib/performance_test/perf_test
+            -c ${COMMUNICATION_MEAN}
+            --msg ${MSG}
+            --topic test_topic
+            --rate 2
+            --keep_last
+            --history_depth 10 ||
+        if [ $? -eq 124 ]; then echo "OK";
+        else exit 1;
+        fi;
+      done;
+      '
+
+smoke_test_fastrtps:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_fastrtps
+  variables:
+    COMMUNICATION_MEAN: FastRTPS
+
+smoke_test_cyclonedds:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_cyclonedds
+  variables:
+    COMMUNICATION_MEAN: CycloneDDS
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-cyclonedds.tar.gz -C /;
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib";
+    '
+
+smoke_test_opendds:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_opendds
+  variables:
+    COMMUNICATION_MEAN: OpenDDS
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-opendds.tar.gz -C /;
+    '
 
 test_security:
   stage: test
@@ -177,11 +242,11 @@ test_security:
     - source security_setup.bash enable ./demo_keys
     # The below runs should fail:
     # Unexpected node names:
-    - '! ros2 run performance_test perf_test -c ROS2 -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
-    # Unexpected topic names
-    - '! ros2 run performance_test perf_test -c ROS2 -t Struct16 --max_runtime 10 --rate 2 --keep_last --history_depth 10 --with_security'
+    - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
+    # Unexpected msg types
+    - '! ros2 run performance_test perf_test -c ROS2 --msg Struct16 -t test_topic --max_runtime 10 --rate 2 --keep_last --history_depth 10 --with_security'
     # This should pass (time-out)
-    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 -t Array1k --rate 2 --keep_last --history_depth 10 --with_security ||
+    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --rate 2 --keep_last --history_depth 10 --with_security ||
        if [ $? -eq 124 ]; then echo "OK";
        else exit 1;
        fi

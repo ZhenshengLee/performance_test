@@ -194,9 +194,16 @@ function(odb_compile outvar)
       message(STATUS "${_msg}")
     endif()
 
-    add_custom_command(OUTPUT ${outputs}
-        COMMAND "LD_LIBRARY_PATH=${ODB_LIBRARY_PATH}:${LD_LIBRARY_PATH}" ${ODB_EXECUTABLE} ${ODB_ARGS} "${input}"
+    # Look for libraries installed with the executable:
+    # e.g. if the binary is in /opt/odb/bin, look for libraries in /opt/odb/lib
+    get_filename_component(ODB_BIN_PATH ${ODB_EXECUTABLE} DIRECTORY)
+    get_filename_component(ODB_LD_LIBRARY_PATH "${ODB_BIN_PATH}/../lib" ABSOLUTE)
+
+    get_filename_component(target_suffix "${input}" NAME)
+    add_custom_target("generate_odb_${target_suffix}"
+        COMMAND "LD_LIBRARY_PATH=${ODB_LD_LIBRARY_PATH}:${ODB_LIBRARY_PATH}:${LD_LIBRARY_PATH}" ${ODB_EXECUTABLE} ${ODB_ARGS} "${input}"
         DEPENDS "${input}"
+        BYPRODUCTS ${outputs}
         WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
         VERBATIM)
 

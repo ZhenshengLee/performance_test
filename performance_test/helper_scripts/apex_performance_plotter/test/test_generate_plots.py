@@ -12,8 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from apex_performance_plotter.generate_plots import get_range
 from apex_performance_plotter.generate_plots import generate_figures
+from apex_performance_plotter.generate_plots import get_range
 
 
 def test_get_range():

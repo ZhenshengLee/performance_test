@@ -92,6 +92,9 @@ private:
   std::uint64_t m_num_lost_samples;
   std::uint64_t m_received_sample_counter;
   std::uint64_t m_sent_sample_counter;
+#if defined(QNX)
+  std::uint64_t m_cps;
+#endif
 
   StatisticsTracker m_latency;
 

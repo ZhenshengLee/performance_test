@@ -20,6 +20,8 @@
 #include <string>
 #include <iostream>
 
+#include "../utilities/qnx_res_usage.hpp"
+
 namespace performance_test
 {
 
@@ -52,6 +54,12 @@ AnalysisResult::AnalysisResult(
   m_cpu_info(cpu_info)
 {
   const auto ret = getrusage(RUSAGE_SELF, &m_sys_usage);
+#if defined(QNX)
+  // QNX getrusage() max_rss does not give the correct value. Using a different method to get
+  // the RSS value and converting into KBytes
+  m_sys_usage.ru_maxrss =
+    (static_cast<int64_t>(performance_test::qnx_res::get_proc_rss_mem()) / 1024);
+#endif
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   m_sys_tracker = RusageTracker(m_sys_usage);
 #endif

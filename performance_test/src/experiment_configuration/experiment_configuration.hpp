@@ -45,7 +45,7 @@ namespace performance_test
  * configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 5, closed)
+#pragma db model version(1, 11, closed)
 class AnalysisResult;
   #pragma db value(QOSAbstraction) definition
   #pragma db value(ExternalInfoStorage) definition
@@ -84,7 +84,7 @@ public:
    * \param argv The argv parameter from the main function.
    */
   void setup(int argc, char ** argv);
-  /// Returns if the experiment configuration is setup and ready to use.
+  /// Returns if the experiment configuration is set up and ready to use.
   bool is_setup() const;
 
   /// \returns Returns the configured mean of communication. This will throw if the experiment
@@ -102,6 +102,9 @@ public:
   /// \returns Returns the chosen topic name. This will throw if the experiment configuration is
   /// not set up.
   std::string topic_name() const;
+  /// \returns Returns the chosen msg type name. This will throw if the experiment configuration is
+  /// not set up.
+  std::string msg_name() const;
   /// \returns Returns the time the application should run until it terminates [s]. This will
   /// throw if the experiment configuration is not set up.
   uint64_t max_runtime() const;
@@ -125,38 +128,33 @@ public:
   std::chrono::seconds expected_wait_for_matched_timeout() const;
   /// \returns Returns if memory operations should be logged.
   bool check_memory() const;
-  /// \returns Returns if ROS shm should be used. This will throw if the experiment
-  /// configuration is not set up.
-  bool use_ros_shm() const;
   /// \returns Returns if only a single participant should be used. This will throw if
   /// the experiment configuration is not set up.
   bool use_single_participant() const;
-  /// \returns Returns if no waitset should be used. Then the thread loop will just spin as fast
-  /// as possible. This will throw if the experiment configuration is not set up.
-  bool no_waitset() const;
-  /// \returns Returns if Connext DSS Micro INTRA transport should be disabled. This will throw if
-  /// the experiment configuration is not set up.
-  bool no_micro_intra() const;
-  /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
-  ///  of communication is not ROS2
-  /// \returns Returns if Drivepx RT is set or not. This will throw if the experiment configuration
-  /// is not set up.
-  bool is_drivepx_rt() const;
+  /// \returns Returns if post-proc RT initialization is required. This is set when the cpu
+  /// affinity or thread priority is overridden by the caller. This will throw if the experiment
+  /// configuration is not set up.
+  bool is_rt_init_required() const;
   /// \returns Returns if logging of performance_test results is disabled for stdout.
-  /// This will throw if the experiment configuration is not setup
+  /// This will throw if the experiment configuration is not set up.
   bool disable_logging() const;
+  /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
+  /// of communication is not ROS2.
   bool is_with_security() const;
+  /// \returns Returns whether to use zero copy transfer. This will throw if the experiment
+  /// configuration is not set up.
+  bool is_zero_copy_transfer() const;
   /// \returns Returns the roundtrip mode.
   RoundTripMode roundtrip_mode() const;
   /// \returns Returns current rmw_implementation. This will throw if the experiment configuration
   /// is not set up.
   std::string rmw_implementation() const;
   /// \returns Returns current performance test version. This will throw if the experiment
-  // configuration is not set up.
+  /// configuration is not set up.
   std::string perf_test_version() const;
-  /// \returns Returns the publishing topic postfix
+  /// \returns Returns the publishing topic postfix.
   std::string pub_topic_postfix() const;
-  /// \returns Returns the subscribing topic postfix
+  /// \returns Returns the subscribing topic postfix.
   std::string sub_topic_postfix() const;
   /// \returns Returns the randomly generated unique ID of the experiment. This will throw if the
   /// experiment configuration is not set up.
@@ -202,11 +200,9 @@ private:
     m_expected_num_subs(),
     m_wait_for_matched_timeout(),
     m_check_memory(false),
-    m_use_ros_shm(false),
     m_use_single_participant(false),
-    m_no_waitset(false),
-    m_no_micro_intra(false),
-    m_is_drivepx_rt(false),
+    m_is_rt_init_required(false),
+    m_is_zero_copy_transfer(false),
     m_disable_logging(false),
     m_roundtrip_mode(RoundTripMode::NONE)
   {}
@@ -250,6 +246,7 @@ private:
   QOSAbstraction m_qos;
   uint32_t m_rate;
   std::string m_topic_name;
+  std::string m_msg_name;
 
   uint64_t m_max_runtime;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -267,16 +264,14 @@ private:
 #endif
   uint32_t m_expected_num_subs;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db transient
+  #pragma db transient
 #endif
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
-  bool m_use_ros_shm;
   bool m_use_single_participant;
-  bool m_no_waitset;
-  bool m_no_micro_intra;
-  bool m_is_drivepx_rt;
+  bool m_is_rt_init_required;
   bool m_with_security;
+  bool m_is_zero_copy_transfer;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient
 #endif
