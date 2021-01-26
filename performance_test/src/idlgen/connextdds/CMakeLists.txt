@@ -99,6 +99,7 @@ set(IDL_SOURCE_CXX
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array1m_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array2m_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array4m_.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../Array8m_.idl"
 
     "${CMAKE_CURRENT_SOURCE_DIR}/../Struct16_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Struct256_.idl"
@@ -109,6 +110,7 @@ set(IDL_SOURCE_CXX
     "${CMAKE_CURRENT_SOURCE_DIR}/../PointCloud1m_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../PointCloud2m_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../PointCloud4m_.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../PointCloud8m_.idl"
 
     "${CMAKE_CURRENT_SOURCE_DIR}/../Range_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../NavSatFix_.idl"

@@ -87,8 +87,9 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-        } else if (com_mean == CommunicationMean::CONNEXTDDS) {
+        if (com_mean == CommunicationMean::CONNEXTDDS) {
           ptr = std::make_shared<DataRunner<RTIDDSCommunicator<T>>>(run_type);
+        }
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
         if (com_mean == CommunicationMean::CYCLONEDDS) {

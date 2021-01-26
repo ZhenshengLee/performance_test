@@ -148,6 +148,7 @@
 #include <connextdds/Array1m_Support.h>
 #include <connextdds/Array2m_Support.h>
 #include <connextdds/Array4m_Support.h>
+#include <connextdds/Array8m_Support.h>
 
 #include <connextdds/Struct16_Support.h>
 #include <connextdds/Struct256_Support.h>
@@ -158,6 +159,7 @@
 #include <connextdds/PointCloud1m_Support.h>
 #include <connextdds/PointCloud2m_Support.h>
 #include <connextdds/PointCloud4m_Support.h>
+#include <connextdds/PointCloud8m_Support.h>
 
 #include <connextdds/Range_Support.h>
 #include <connextdds/NavSatFix_Support.h>
@@ -553,6 +555,10 @@ public:
   using ConnextDDSMicroType = performance_test_msg_dds__Array4m_;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array4m_;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   using CycloneDDSType = performance_test_msgs_msg_dds__Array4m_;
   static const dds_topic_descriptor_t * CycloneDDSDesc()
@@ -590,6 +596,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__Array8m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__Array8m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -971,6 +981,10 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   using ConnextDDSMicroType = performance_test_msg_dds__PointCloud8m_;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msgs_msg_dds__PointCloud8m_;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED

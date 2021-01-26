@@ -211,10 +211,8 @@ public:
       }
     }
 
-    if (!m_ec.no_waitset()) {
-      DDS_Duration_t wait_timeout = {15, 0};
-      m_waitset.wait(m_condition_seq, wait_timeout);
-    }
+    DDS_Duration_t wait_timeout = {15, 0};
+    m_waitset.wait(m_condition_seq, wait_timeout);
 
     auto ret = m_typed_datareader->take(m_data_seq, m_sample_info_seq, DDS_LENGTH_UNLIMITED,
         DDS_ANY_SAMPLE_STATE, DDS_ANY_VIEW_STATE,
@@ -262,18 +260,21 @@ private:
   {
 
     if (m_topic == nullptr) {
-      auto retcode = TypeSupport::register_type(m_participant, Topic::topic_name().c_str());
+      auto retcode = TypeSupport::register_type(
+        m_participant,
+        Topic::msg_name().c_str());
 
-     if (retcode != DDS_RETCODE_OK) {
+      if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }
 
       m_topic = m_participant->create_topic(
-        Topic::topic_name().c_str(),
-        Topic::topic_name().c_str(),
-        DDS_TOPIC_QOS_DEFAULT,
-        nullptr,
-        DDS_STATUS_MASK_NONE);
+          m_ec.topic_name().c_str(),
+          Topic::msg_name().c_str(),
+          DDS_TOPIC_QOS_DEFAULT,
+          nullptr,
+          DDS_STATUS_MASK_NONE);
+
       if (m_topic == nullptr) {
         throw std::runtime_error("topic == nullptr");
       }
