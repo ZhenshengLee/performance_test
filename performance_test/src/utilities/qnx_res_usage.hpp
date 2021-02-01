@@ -38,7 +38,12 @@ uint64_t get_proc_rss_mem()
 
   pid_t my_pid = getpid();
   std::ifstream vmstat_file("/proc/" + std::to_string(my_pid) + "/vmstat", std::ifstream::in);
+#ifdef QNX700
   const std::string rss_string("as_stats.rss_wired");
+#else
+  // On QNX QOS 2.2 the correct value is as_stats.rss
+  const std::string rss_string("as_stats.rss");
+#endif  // QNX
   const std::size_t rss_str_len = rss_string.size();
 
   while (std::getline(vmstat_file, line)) {
