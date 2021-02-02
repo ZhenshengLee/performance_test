@@ -80,8 +80,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "rate,r", po::value<uint32_t>()->default_value(1000),
     "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
     "communication,c", po::value<std::string>()->required(),
-    "Communication plugin to use (ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, OpenDDS, "
-    "ROS2PollingSubscription)")(
+    "Communication plugin to use (ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, "
+    "OpenDDS, ROS2PollingSubscription)")(
     "topic,t",
     po::value<std::string>()->required(),
     "Specify a topic name to use. "

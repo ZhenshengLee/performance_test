@@ -258,7 +258,6 @@ private:
   /// Registers a topic to the participant. It makes sure that each topic is only registered once.
   void register_topic()
   {
-
     if (m_topic == nullptr) {
       auto retcode = TypeSupport::register_type(
         m_participant,
@@ -269,11 +268,11 @@ private:
       }
 
       m_topic = m_participant->create_topic(
-          m_ec.topic_name().c_str(),
-          Topic::msg_name().c_str(),
-          DDS_TOPIC_QOS_DEFAULT,
-          nullptr,
-          DDS_STATUS_MASK_NONE);
+        m_ec.topic_name().c_str(),
+        Topic::msg_name().c_str(),
+        DDS_TOPIC_QOS_DEFAULT,
+        nullptr,
+        DDS_STATUS_MASK_NONE);
 
       if (m_topic == nullptr) {
         throw std::runtime_error("topic == nullptr");

@@ -169,7 +169,6 @@
 #endif
 
 
-
 // Cyclone DDS Types:
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   #include <cyclonedds/Array1k_.h>

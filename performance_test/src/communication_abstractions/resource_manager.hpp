@@ -105,21 +105,21 @@ public:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
   /// Returns Connext DDS participant.
-  DDSDomainParticipant *connext_dds_participant() const;
+  DDSDomainParticipant * connext_dds_participant() const;
 
   /**
    * \brief Creates a new Connext DDS publisher.
    * \param publisher Will be overwritten with the created publisher.
    * \param dw_qos Will be overwritten with the default QOS from the created publisher.
    */
-  void connext_dds_publisher(DDSPublisher *&publisher, DDS_DataWriterQos &dw_qos) const;
+  void connext_dds_publisher(DDSPublisher * & publisher, DDS_DataWriterQos & dw_qos) const;
 
   /**
    * \brief Creates a new Connext DDS subscriber.
    * \param subscriber Will be overwritten with the created subscriber.
    * \param dr_qos Will be overwritten with the default QOS from the created subscriber.
    */
-  void connext_dds_subscriber(DDSSubscriber *&subscriber, DDS_DataReaderQos &dr_qos) const;
+  void connext_dds_subscriber(DDSSubscriber * & subscriber, DDS_DataReaderQos & dr_qos) const;
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
@@ -182,7 +182,7 @@ private:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  mutable DDSDomainParticipant *m_connext_dds_participant;
+  mutable DDSDomainParticipant * m_connext_dds_participant;
 #endif
 
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED

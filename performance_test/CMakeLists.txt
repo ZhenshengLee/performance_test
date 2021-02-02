@@ -101,7 +101,8 @@ endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED AND PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
   message(FATAL_ERROR
-    "ConnextDDS Pro and ConnextDDS Micro cannot be used in the same application. Please, disable one")
+    "ConnextDDS Pro and ConnextDDS Micro cannot be used in the same "
+    "application. Please, disable one")
 endif()
 
 # ConnextDDS

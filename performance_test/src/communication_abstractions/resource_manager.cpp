@@ -155,15 +155,14 @@ void ResourceManager::connext_dds_micro_subscriber(
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-DDSDomainParticipant *ResourceManager::connext_dds_participant() const
+DDSDomainParticipant * ResourceManager::connext_dds_participant() const
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
-  if (!m_connext_dds_participant)
-  {
+  if (!m_connext_dds_participant) {
     m_connext_dds_participant = DDSTheParticipantFactory->create_participant(
-        m_ec.dds_domain_id(), DDS_PARTICIPANT_QOS_DEFAULT,
-        NULL /* listener */, DDS_STATUS_MASK_NONE);
+      m_ec.dds_domain_id(), DDS_PARTICIPANT_QOS_DEFAULT,
+      NULL /* listener */, DDS_STATUS_MASK_NONE);
     if (m_connext_dds_participant == NULL) {
       throw std::runtime_error("Participant is nullptr");
     }
@@ -172,40 +171,36 @@ DDSDomainParticipant *ResourceManager::connext_dds_participant() const
 }
 
 void ResourceManager::connext_dds_publisher(
-    DDSPublisher *&publisher,
-    DDS_DataWriterQos &dw_qos) const
+  DDSPublisher * & publisher,
+  DDS_DataWriterQos & dw_qos) const
 {
   auto participant = connext_dds_participant();
   std::lock_guard<std::mutex> lock(m_global_mutex);
   publisher = participant->create_publisher(
-      DDS_PUBLISHER_QOS_DEFAULT, nullptr, DDS_STATUS_MASK_NONE);
-  if (publisher == nullptr)
-  {
+    DDS_PUBLISHER_QOS_DEFAULT, nullptr, DDS_STATUS_MASK_NONE);
+  if (publisher == nullptr) {
     throw std::runtime_error("Pulisher is nullptr");
   }
   auto retcode = publisher->get_default_datawriter_qos(dw_qos);
-  if (retcode != DDS_RETCODE_OK)
-  {
+  if (retcode != DDS_RETCODE_OK) {
     throw std::runtime_error("Failed to get default datawriter");
   }
 }
 
 void ResourceManager::connext_dds_subscriber(
-    DDSSubscriber *&subscriber,
-    DDS_DataReaderQos &dr_qos) const
+  DDSSubscriber * & subscriber,
+  DDS_DataReaderQos & dr_qos) const
 {
   auto participant = connext_dds_participant();
   std::lock_guard<std::mutex> lock(m_global_mutex);
   subscriber = participant->create_subscriber(
-      DDS_SUBSCRIBER_QOS_DEFAULT, nullptr,
-      DDS_STATUS_MASK_NONE);
-  if (subscriber == nullptr)
-  {
+    DDS_SUBSCRIBER_QOS_DEFAULT, nullptr,
+    DDS_STATUS_MASK_NONE);
+  if (subscriber == nullptr) {
     throw std::runtime_error("m_subscriber == nullptr");
   }
   auto retcode = subscriber->get_default_datareader_qos(dr_qos);
-  if (retcode != DDS_RETCODE_OK)
-  {
+  if (retcode != DDS_RETCODE_OK) {
     throw std::runtime_error("failed get_default_datareader_qos");
   }
 }
