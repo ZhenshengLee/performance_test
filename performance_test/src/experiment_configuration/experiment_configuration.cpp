@@ -426,6 +426,20 @@ CommunicationMean ExperimentConfiguration::com_mean() const
   check_setup();
   return m_com_mean;
 }
+bool ExperimentConfiguration::use_ros2_layers() const
+{
+#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
+  if (com_mean() == CommunicationMean::ROS2) {
+    return true;
+  }
+#endif
+#ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
+  if (com_mean() == CommunicationMean::ROS2PollingSubscription) {
+    return true;
+  }
+#endif
+  return false;
+}
 uint32_t ExperimentConfiguration::dds_domain_id() const
 {
   check_setup();
@@ -635,7 +649,7 @@ void ExperimentConfiguration::open_file()
 
 bool ExperimentConfiguration::exit_requested() const
 {
-  return !rclcpp::ok();
+  return use_ros2_layers() && !rclcpp::ok();
 }
 
 }  // namespace performance_test

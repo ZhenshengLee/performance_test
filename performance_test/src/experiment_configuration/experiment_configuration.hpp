@@ -90,6 +90,8 @@ public:
   /// \returns Returns the configured mean of communication. This will throw if the experiment
   /// configuration is not set up.
   CommunicationMean com_mean() const;
+  /// \returns Returns whether the ROS 2 layers are used by the communication mean.
+  bool use_ros2_layers() const;
   /// \returns Returns the configured DDS domain ID. This will throw if the experiment
   /// configuration is not set up.
   uint32_t dds_domain_id() const;
