@@ -110,7 +110,53 @@ DDSDomainParticipant * ResourceManager::connext_DDS_micro_participant() const
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
   if (!m_connext_dds_micro_participant) {
-    m_connext_dds_micro_participant = &apex::ConnextMicroContext::get_domain_participant();
+    DDSDomainParticipantFactory * factory = DDSDomainParticipantFactory::get_instance();
+    RTRegistry * registry = factory->get_registry();
+
+    registry->register_component("wh", WHSMHistoryFactory::get_interface(), NULL, NULL);
+    registry->register_component("rh", RHSMHistoryFactory::get_interface(), NULL, NULL);
+    registry->unregister(NETIO_DEFAULT_UDP_NAME, NULL, NULL);
+
+    UDP_InterfaceFactoryProperty * udp_property = new UDP_InterfaceFactoryProperty();
+    registry->register_component(NETIO_DEFAULT_UDP_NAME,
+      UDPInterfaceFactory::get_interface(),
+      &udp_property->_parent._parent,
+      NULL);
+
+    DPDE_DiscoveryPluginProperty dpde_properties;
+    registry->register_component("dpde",
+      DPDEDiscoveryFactory::get_interface(),
+      &dpde_properties._parent,
+      NULL);
+
+    auto dp_qos = DDS_PARTICIPANT_QOS_DEFAULT;
+
+    dp_qos.discovery.discovery.name.set_name("dpde");
+
+    dp_qos.discovery.initial_peers.maximum(1);
+    dp_qos.discovery.initial_peers.length(1);
+    *dp_qos.discovery.initial_peers.get_reference(0) = DDS_String_dup("127.0.0.1");
+
+    dp_qos.resource_limits.local_writer_allocation = 500;
+    dp_qos.resource_limits.local_reader_allocation = 500;
+    dp_qos.resource_limits.local_publisher_allocation = 10;
+    dp_qos.resource_limits.local_subscriber_allocation = 10;
+    dp_qos.resource_limits.local_topic_allocation = 500;
+    dp_qos.resource_limits.local_type_allocation = 500;
+    dp_qos.resource_limits.remote_participant_allocation = 200;
+    dp_qos.resource_limits.remote_writer_allocation = 200;
+    dp_qos.resource_limits.remote_reader_allocation = 200;
+    dp_qos.resource_limits.matching_writer_reader_pair_allocation = 200;
+    dp_qos.resource_limits.matching_reader_writer_pair_allocation = 200;
+    dp_qos.resource_limits.max_receive_ports = 200;
+    dp_qos.resource_limits.max_destination_ports = 200;
+    dp_qos.resource_limits.unbound_data_buffer_size = 65536;
+    dp_qos.resource_limits.shmem_ref_transfer_mode_max_segments = 500;
+
+    m_connext_dds_micro_participant = factory->create_participant(
+      (DDS_DomainId_t)m_ec.dds_domain_id(), dp_qos,
+      NULL /* listener */, DDS_STATUS_MASK_NONE);
+
     if (m_connext_dds_micro_participant == nullptr) {
       throw std::runtime_error("failed to create participant");
     }

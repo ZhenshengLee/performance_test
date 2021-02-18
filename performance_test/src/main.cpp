@@ -22,7 +22,9 @@ int main(int argc, char ** argv)
   auto & ec = performance_test::ExperimentConfiguration::get();
   ec.setup(argc, argv);
 
-  rclcpp::init(argc, argv);
+  if (ec.use_ros2_layers()) {
+    rclcpp::init(argc, argv);
+  }
 
   performance_test::AnalyzeRunner ar;
   ar.run();
