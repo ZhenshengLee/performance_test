@@ -35,6 +35,10 @@
   #include "../communication_abstractions/connext_dds_micro_communicator.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+#include "../communication_abstractions/connext_dds_communicator.hpp"
+#endif
+
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   #include "../communication_abstractions/opendds_communicator.hpp"
 #endif
@@ -82,7 +86,11 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
           ptr = std::make_shared<DataRunner<RTIMicroDDSCommunicator<T>>>(run_type);
         }
 #endif
-
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+        if (com_mean == CommunicationMean::CONNEXTDDS) {
+          ptr = std::make_shared<DataRunner<RTIDDSCommunicator<T>>>(run_type);
+        }
+#endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
         if (com_mean == CommunicationMean::CYCLONEDDS) {
           ptr = std::make_shared<DataRunner<CycloneDDSCommunicator<T>>>(run_type);

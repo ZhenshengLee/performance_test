@@ -3,7 +3,7 @@
 **Default Version Support:** ROS 2 Dashing, Fast-DDS 2.0.x
 
 This performance test tool allows you to test performance and latency of various communication means
-like ROS 2, Apex.OS WaitSet, FastDDS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
+like ROS 2, Apex.OS WaitSet, FastDDS, RTI Connext DDS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
 
 It can be extended to other communication frameworks easily.
 
@@ -13,7 +13,7 @@ A detailed description can be found here: [Design Article](performance_test/desi
 
 ## Installing dependencies
 
-ROS 2: https://github.com/ros2/ros2/wiki/Installation
+ROS 2: https://index.ros.org/doc/ros2/Installation
 
 Additional dependencies are Java and others declared in the `package.xml` file
 ```
@@ -84,8 +84,9 @@ Allowed options:
                                        Defaults to 1000 Hz. 0 means publish as
                                        fast as possible.
   -c [ --communication ] arg           Communication plugin to use (ROS2,
-                                       FastRTPS, ConnextDDSMicro, CycloneDDS,
-                                       OpenDDS, ROS2PollingSubscription)
+                                       FastRTPS, ConnextDDS, ConnextDDSMicro,
+                                       CycloneDDS, OpenDDS,
+                                       ROS2PollingSubscription)
   -t [ --topic ] arg                   Specify a topic name to use. Only the
                                        pub/sub with the same topic name can
                                        communicate with each other.
@@ -146,9 +147,20 @@ The performance test tool can measure the performance of a variety of communicat
 | [ROS 2 Callback](https://index.ros.org/doc/ros2/Installation/Dashing/) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (ON by default) | ROS2 |
 | [Apex.OS WaitSet](https://apexai.pages.apex.ai/grand_central/docs/latest/apexos-node.html#apexos-node-wait-sets) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON` | ROS2PollingSubscription |
 | [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS |
+| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)* | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS |
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) (will only work if Apex.OS is present) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro |
 | [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS |
 | [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS |
+
+> \*NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was installed with ROS 2 (Linux only):
+> ```
+> source /opt/rti.com/rti_connext_dds-5.3.1/setenv_ros2rti.bash
+> ```
+> If RTI Connext DDS is installed separately, you can source the following script to
+> set the environment:
+> ```
+> source <connextdds_install_path>/resource/scripts/rtisetenv_<arch>.bash
+> ```
 
 If you want to use any of these supported plugins, please refer to the table above for the CMAKE arguments to provide while building the tool and specify the appropriate Communication Mean (-c option) when running the experiment.
 
@@ -170,6 +182,7 @@ The following plugins with a ROS middleware interface are currently supported:
 |--------------------|------------------------------------|----------------------|
 | [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps) | ROS2,<br>ROS2PollingSubscription | UDP |
 | rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS2,<br>ROS2PollingSubscription | INTRA,SHMEM |
+| rmw_connext_cpp | ROS2 | SHMEM, UDP |
 | rmw_cyclonedds_cpp | ROS2 | UDP |
 
 > Note:

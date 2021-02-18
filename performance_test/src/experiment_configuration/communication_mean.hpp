@@ -34,6 +34,10 @@ enum class CommunicationMean
   , CONNEXTDDSMICRO
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  , CONNEXTDDS
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   , CYCLONEDDS
 #endif
@@ -59,6 +63,10 @@ inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   } else if (cm == CommunicationMean::CONNEXTDDSMICRO) {
     return stream << "CONNEXTDDSMICRO";
+#endif
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  } else if (cm == CommunicationMean::CONNEXTDDS) {
+    return stream << "CONNEXTDDS";
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   } else if (cm == CommunicationMean::CYCLONEDDS) {

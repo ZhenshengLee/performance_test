@@ -26,6 +26,10 @@
   #include <rti_me_cpp.hxx>
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  #include <ndds/ndds_cpp.h>
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   #include <dds/dds.h>
 #endif
@@ -99,6 +103,25 @@ public:
   void connext_dds_micro_subscriber(DDSSubscriber * & subscriber, DDS_DataReaderQos & dr_qos) const;
 #endif
 
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  /// Returns Connext DDS participant.
+  DDSDomainParticipant * connext_dds_participant() const;
+
+  /**
+   * \brief Creates a new Connext DDS publisher.
+   * \param publisher Will be overwritten with the created publisher.
+   * \param dw_qos Will be overwritten with the default QOS from the created publisher.
+   */
+  void connext_dds_publisher(DDSPublisher * & publisher, DDS_DataWriterQos & dw_qos) const;
+
+  /**
+   * \brief Creates a new Connext DDS subscriber.
+   * \param subscriber Will be overwritten with the created subscriber.
+   * \param dr_qos Will be overwritten with the default QOS from the created subscriber.
+   */
+  void connext_dds_subscriber(DDSSubscriber * & subscriber, DDS_DataReaderQos & dr_qos) const;
+#endif
+
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   /// Returns Cyclone DDS participant.
   dds_entity_t cyclonedds_participant() const;
@@ -133,6 +156,9 @@ private:
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
     , m_connext_dds_micro_participant(nullptr)
 #endif
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+    , m_connext_dds_participant(nullptr)
+#endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
     , m_cyclonedds_participant(0)
@@ -153,6 +179,10 @@ private:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   mutable DDSDomainParticipant * m_connext_dds_micro_participant;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  mutable DDSDomainParticipant * m_connext_dds_participant;
 #endif
 
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED

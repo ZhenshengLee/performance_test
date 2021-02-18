@@ -36,6 +36,25 @@ option(PERFORMANCE_TEST_RT_ENABLED
   "Enable options for thread and memory optimization. This may not build on all platforms"
   ${PERFORMANCE_TEST_RT_ENABLED_DEFAULT})
 
+# Ensure we use the CMake support from ConnextDDS instead of the one provided
+# with the installed RMW package.
+# This change in the environment only affect to the CMake environment. The
+# environment variable will remain as it is outside the building process.
+if($ENV{RMW_IMPLEMENTATION})
+  string(REPLACE
+    "rmw_connext_cpp;"
+    ""
+    ENV{RMW_IMPLEMENTATION}
+    $ENV{RMW_IMPLEMENTATION}
+  )
+  string(REPLACE
+    "rmw_connext_cpp" # It can be alone, without other values
+    ""
+    ENV{RMW_IMPLEMENTATION}
+    $ENV{RMW_IMPLEMENTATION}
+  )
+endif()
+
 find_package(rclcpp REQUIRED)
 find_package(rmw REQUIRED)
 find_package(builtin_interfaces REQUIRED)
@@ -78,6 +97,36 @@ if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_subdirectory(src/idlgen/fast_rtps)
   include_directories(${FAST_RTPS_IDL_INCLUDE_DIR})
 endif()
+
+
+if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED AND PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+  message(FATAL_ERROR
+    "ConnextDDS Pro and ConnextDDS Micro cannot be used in the same "
+    "application. Please, disable one")
+endif()
+
+# ConnextDDS
+option(PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  "Option to enable Connext DDS Pro"
+  OFF
+)
+
+if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED)
+    # Append the path to CMAKE_MODULE_PATH in order to find the
+    # FindConnextDDS.cmake CMake script
+    set(CMAKE_MODULE_PATH
+      ${CMAKE_MODULE_PATH}
+      "$ENV{NDDSHOME}/resource/cmake"
+    )
+
+    find_package(RTIConnextDDS
+      REQUIRED
+      COMPONENTS
+        core
+    )
+    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/idlgen/connextdds")
+endif()
+
 
 # RTI Connext Micro
 option(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED "Option to enable Connext DDS Micro plugin. The
@@ -310,10 +359,11 @@ if(PERFORMANCE_TEST_ODB_SQLITE OR PERFORMANCE_TEST_ODB_MYSQL OR PERFORMANCE_TEST
 endif()
 
 set(EXE_NAME perf_test)
-
 add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
 
+
 set_compile_options(${EXE_NAME})
+
 
 # Try to bake the githash into the perf_test EXE:
 execute_process(
@@ -328,9 +378,25 @@ rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")
 ament_target_dependencies(${EXE_NAME}
     "rclcpp" ${OPTIONAL_AMENT_DEPENDENCES})
 
+# If the target exists, it means we want to build the performance test working
+# with the Connext DDS Communicator.
+if(TARGET rti_connextdds_idl)
+  # Link against the Connext DDS IDL types library
+  target_link_libraries(${EXE_NAME}
+    rti_connextdds_idl
+  )
+
+  # Add the definition to enable the Connext DDS Communicator
+  target_compile_definitions(${EXE_NAME}
+    PRIVATE
+      PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  )
+endif()
+
 target_link_libraries(${EXE_NAME}
     ${Boost_LIBRARIES}
-    ${OPTIONAL_LIBRARIES})
+    ${OPTIONAL_LIBRARIES}
+)
 
 if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
   foreach(header ${${PROJECT_NAME}_HEADERS})
