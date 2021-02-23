@@ -144,8 +144,6 @@ The performance test tool can measure the performance of a variety of communicat
 
 | RAW DDS Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
 |----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|
-| [ROS 2 Callback](https://index.ros.org/doc/ros2/Installation/Dashing/) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (ON by default) | ROS2 |
-| [Apex.OS WaitSet](https://apexai.pages.apex.ai/grand_central/docs/latest/apexos-node.html#apexos-node-wait-sets) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON` | ROS2PollingSubscription |
 | [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS |
 | [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)* | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS |
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro |
@@ -176,14 +174,15 @@ Now to run the performance test with ConnextDDSMicro plugin :
 ## Supported rmw implementations
 
 The performance_test tool can also measure performance of the application with the [ROS 2 layers](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview). For example the following configuration can be tested: `RTI Connext Micro + ROS2PollingSubscription rclcpp + rmw_apex_dds`. Performance_test tool supports [`ROS 2 Dashing`](https://index.ros.org/doc/ros2/Installation/Dashing/) version.
+
 The following plugins with a ROS middleware interface are currently supported:
 
-| RMW Implementation | Supported communication means (-c) | Supported transports |
-|--------------------|------------------------------------|----------------------|
-| [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps) | ROS2,<br>ROS2PollingSubscription | UDP |
-| rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS2,<br>ROS2PollingSubscription | INTRA,SHMEM |
-| rmw_connext_cpp | ROS2 | SHMEM, UDP |
-| rmw_cyclonedds_cpp | ROS2 | UDP |
+| RMW Implementation | Supported subscription | Supported transports |  `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
+|------------------------------------------------------------------------------------------|--------------------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps) | ROS 2 Callback,<br>Apex.OS WaitSet | UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default)<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets) | ROS2<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
+| rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS 2 Callback,<br>Apex.OS WaitSet | INTRA, SHMEM | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default)<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets) | ROS2<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
+| rmw_connext_cpp | ROS 2 Callback | SHMEM, UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default) | ROS2 |
+| rmw_cyclonedds_cpp | ROS 2 Callback | UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default) | ROS2 |
 
 > Note:
 > - The DDS implementation that Apex.OS has been compiled with (`rmw_fastrtps_cpp` or `rmw_apex_dds`) is automatically linked when the performance_test tool is built with Apex.OS.
