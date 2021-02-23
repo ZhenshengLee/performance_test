@@ -17,6 +17,8 @@
 
 #include <dds/dds.h>
 
+#include <string>
+
 #include "communicator.hpp"
 #include "resource_manager.hpp"
 
@@ -205,7 +207,7 @@ public:
 
 private:
   /// Creates a new topic for the participant
-  dds_entity_t create_topic(const std::string& postfix)
+  dds_entity_t create_topic(const std::string & postfix)
   {
     dds_entity_t topic;
     topic = dds_create_topic(m_participant, Msg::CycloneDDSDesc(),
