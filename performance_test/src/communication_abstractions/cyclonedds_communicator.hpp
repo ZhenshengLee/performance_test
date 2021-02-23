@@ -115,7 +115,7 @@ public:
       dds_qos_t * dw_qos = dds_create_qos();
       CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply(dw_qos);
-      dds_entity_t tp = create_topic();
+      dds_entity_t tp = create_topic(m_ec.pub_topic_postfix());
       m_datawriter = dds_create_writer(m_participant, tp, dw_qos, nullptr);
       dds_delete(tp);
       dds_delete_qos(dw_qos);
@@ -150,7 +150,7 @@ public:
       dds_qos_t * dw_qos = dds_create_qos();
       CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
       qos_adapter.apply(dw_qos);
-      dds_entity_t tp = create_topic();
+      dds_entity_t tp = create_topic(m_ec.sub_topic_postfix());
       m_datareader = dds_create_reader(m_participant, tp, dw_qos, nullptr);
       dds_delete(tp);
       dds_delete_qos(dw_qos);
@@ -179,16 +179,20 @@ public:
                   "Time diff: " + std::to_string(data->time_ - m_prev_timestamp) +
                   " Data Time: " + std::to_string(data->time_));
         }
-        m_prev_timestamp = data->time_;
-        update_lost_samples_counter(data->id_);
-        add_latency_to_statistics(data->time_);
-        increment_received();
+        if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
+          unlock();
+          DataType pubdata = *data;
+          publish(pubdata, std::chrono::nanoseconds(pubdata.time_));
+          lock();
+        } else {
+          m_prev_timestamp = data->time_;
+          update_lost_samples_counter(data->id_);
+          add_latency_to_statistics(data->time_);
+          increment_received();
+        }
       }
       unlock();
 
-      if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-        throw std::runtime_error("Round trip mode is not implemented for Cyclone DDS!");
-      }
       dds_return_loan(m_datareader, &untyped, n);
     }
   }
@@ -201,11 +205,11 @@ public:
 
 private:
   /// Creates a new topic for the participant
-  dds_entity_t create_topic()
+  dds_entity_t create_topic(const std::string& postfix)
   {
     dds_entity_t topic;
     topic = dds_create_topic(m_participant, Msg::CycloneDDSDesc(),
-        m_ec.topic_name().c_str(), nullptr, nullptr);
+        (m_ec.topic_name() + postfix).c_str(), nullptr, nullptr);
     if (topic < 0) {
       throw std::runtime_error("failed to create topic");
     }
