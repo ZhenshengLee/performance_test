@@ -263,7 +263,7 @@ dds_entity_t ResourceManager::cyclonedds_participant() const
     result = dds_create_participant(DDS_DOMAIN_DEFAULT, nullptr, nullptr);
   } else {
     if (!m_cyclonedds_participant) {
-      result = dds_create_participant(DDS_DOMAIN_DEFAULT, nullptr, nullptr);
+      m_cyclonedds_participant = dds_create_participant(DDS_DOMAIN_DEFAULT, nullptr, nullptr);
     }
     result = m_cyclonedds_participant;
   }
