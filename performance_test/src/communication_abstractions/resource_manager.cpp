@@ -25,6 +25,13 @@
 namespace performance_test
 {
 
+void ResourceManager::shutdown()
+{
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  eprosima::fastrtps::Domain::stopAll();
+#endif
+}
+
 std::shared_ptr<rclcpp::Node> ResourceManager::ros2_node() const
 {
   /* Temporarely commented out until ROS2 waitsets are available. As of now every ROS2 thread needs a node in the

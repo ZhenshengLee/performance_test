@@ -139,13 +139,14 @@ public:
     m_participant = ResourceManager::get().fastrtps_participant();
     if (m_ec.use_single_participant()) {
       if (!s_type_registered) {
-        eprosima::fastrtps::Domain::registerType(m_participant, m_topic_type);
         s_type_registered = true;
+        eprosima::fastrtps::Domain::registerType(m_participant, m_topic_type);
       }
     } else {
       eprosima::fastrtps::Domain::registerType(m_participant, m_topic_type);
     }
   }
+
   /**
    * \brief Publishes the provided data.
    *
@@ -197,8 +198,8 @@ public:
 
       eprosima::fastrtps::SubscriberAttributes rparam;
       rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-      rparam.topic.topicDataType = m_topic_type->getName() + m_ec.sub_topic_postfix();
-      rparam.topic.topicName = m_ec.topic_name();
+      rparam.topic.topicDataType = m_topic_type->getName();
+      rparam.topic.topicName = m_ec.topic_name() + m_ec.sub_topic_postfix();
       rparam.topic.historyQos.kind = qos.history_kind();
       rparam.topic.historyQos.depth = qos.history_depth();
       rparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();

@@ -175,22 +175,17 @@ test:
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
-    # With the FastRTPS native plugin, there is a double free error
-    # when perf_test exits. Once this error is resolved, remove this
-    # timeout business, and instead use --max_runtime 15.
     - '
       MSGS=${SMOKE_TEST_TOPICS:-Array1k};
       for MSG in ${MSGS}; do
-        timeout 15 /opt/performance_test/lib/performance_test/perf_test
+        /opt/performance_test/lib/performance_test/perf_test
             -c ${COMMUNICATION_MEAN}
             --msg ${MSG}
             --topic test_topic
             --rate 2
             --keep_last
-            --history_depth 10 ||
-        if [ $? -eq 124 ]; then echo "OK";
-        else exit 1;
-        fi;
+            --history_depth 10
+            --max_runtime 15;
       done;
       '
 

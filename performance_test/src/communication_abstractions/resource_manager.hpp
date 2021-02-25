@@ -71,6 +71,8 @@ public:
     return instance;
   }
 
+  static void shutdown();
+
   ResourceManager(ResourceManager const &) = delete;
   ResourceManager(ResourceManager &&) = delete;
   ResourceManager & operator=(ResourceManager const &) = delete;

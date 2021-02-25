@@ -16,6 +16,7 @@
 
 #include "experiment_configuration/experiment_configuration.hpp"
 #include "experiment_execution/analyze_runner.hpp"
+#include "communication_abstractions/resource_manager.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -26,6 +27,10 @@ int main(int argc, char ** argv)
     rclcpp::init(argc, argv);
   }
 
-  performance_test::AnalyzeRunner ar;
-  ar.run();
+  {
+    performance_test::AnalyzeRunner ar;
+    ar.run();
+  }
+
+  performance_test::ResourceManager::shutdown();
 }
