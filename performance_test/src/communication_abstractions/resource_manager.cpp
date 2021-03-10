@@ -18,6 +18,10 @@
   #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
 #endif
 
+#ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+  #include "iceoryx_posh/runtime/posh_runtime.hpp"
+#endif
+
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -269,6 +273,22 @@ dds_entity_t ResourceManager::cyclonedds_participant() const
     result = m_cyclonedds_participant;
   }
   return result;
+}
+#endif
+
+#ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+void ResourceManager::init_iceoryx_runtime() const
+{
+  if (!m_iceoryx_initialized) {
+    m_iceoryx_initialized = true;
+    if (m_ec.number_of_subscribers() == 0) {
+      iox::runtime::PoshRuntime::initRuntime("iox-perf-test-pub");
+    } else if (m_ec.number_of_publishers() == 0) {
+      iox::runtime::PoshRuntime::initRuntime("iox-perf-test-sub");
+    } else {
+      iox::runtime::PoshRuntime::initRuntime("iox-perf-test-intra");
+    }
+  }
 }
 #endif
 

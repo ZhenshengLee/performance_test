@@ -146,12 +146,13 @@ if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
 endif()
 
-# ROS2 Callback and Executor
-option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback and Executor Plugin." ON)
-
-# Apex.OS Waitset and Polling Subscription
-option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
-  The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
+# iceoryx
+option(PERFORMANCE_TEST_ICEORYX_ENABLED "Require iceoryx to be available, fail otherwise" OFF)
+if(PERFORMANCE_TEST_ICEORYX_ENABLED)
+  find_package(iceoryx_posh CONFIG REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_ICEORYX_ENABLED)
+  # set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+endif()
 
 # OpenDDS
 option(PERFORMANCE_TEST_OPENDDS_ENABLED "Require Open DDS to be available, fail otherwise" OFF)
@@ -161,6 +162,13 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   add_subdirectory(src/idlgen/opendds)
   include_directories(${OPENDDS_IDL_INCLUDE_DIR} ${PARENT_DDS_ROOT_INCLUDE})
 endif()
+
+# ROS2 Callback and Executor
+option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback and Executor Plugin." ON)
+
+# Apex.OS Waitset and Polling Subscription
+option(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
+  The plugin can only work if ApexOS is present, otherwise it will fail." OFF)
 
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
@@ -311,6 +319,10 @@ if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   list(APPEND sources src/communication_abstractions/cyclonedds_communicator.hpp)
 endif()
 
+if(PERFORMANCE_TEST_ICEORYX_ENABLED)
+  list(APPEND sources src/communication_abstractions/iceoryx_communicator.hpp)
+endif()
+
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   list(APPEND sources src/communication_abstractions/opendds_communicator.hpp)
 endif()
@@ -429,6 +441,12 @@ if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
       cyclonedds_idl
       CycloneDDS::ddsc)
 endif()
+
+if(PERFORMANCE_TEST_ICEORYX_ENABLED)
+  target_link_libraries(${EXE_NAME}
+      iceoryx_posh::iceoryx_posh)
+endif()
+
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
     set(DDS_DYN_LIBS  ${PARENT_DDS_ROOT_LIBS}/libACE.so
                       ${PARENT_DDS_ROOT_LIBS}/libTAO.so

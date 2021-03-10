@@ -87,7 +87,7 @@ Allowed options:
                                        fast as possible.
   -c [ --communication ] arg           Communication plugin to use (ROS2,
                                        FastRTPS, ConnextDDS, ConnextDDSMicro,
-                                       CycloneDDS, OpenDDS,
+                                       CycloneDDS, iceoryx, OpenDDS,
                                        ROS2PollingSubscription)
   -t [ --topic ] arg                   Specify a topic name to use. Only the
                                        pub/sub with the same topic name can
@@ -144,15 +144,17 @@ Some things to note:
 
 The performance test tool can measure the performance of a variety of communication middlewares from different vendors. In this case there is no [rclcpp or rmw layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview) overhead over the publisher and subscriber routines. The following plugins are currently implemented:
 
-| RAW DDS Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
+| RAW Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
 |----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|
 | [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS |
-| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)* | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS |
+| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional) <sup>1</sup> | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS |
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro |
 | [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS |
 | [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS |
+| [iceoryx pre-release](https://github.com/eclipse-iceoryx/iceoryx) | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx |
 
-> \*NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was installed with ROS 2 (Linux only):
+> <sup>1</sup> NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was 
+> installed with ROS 2 (Linux only):
 > ```
 > source /opt/rti.com/rti_connext_dds-5.3.1/setenv_ros2rti.bash
 > ```
@@ -161,6 +163,11 @@ The performance test tool can measure the performance of a variety of communicat
 > ```
 > source <connextdds_install_path>/resource/scripts/rtisetenv_<arch>.bash
 > ```
+
+> <sup>2</sup> NOTE: The iceoryx plugin is not a DDS implementation. The DDS-specific options 
+> (such as domain ID, durability, and reliability) do not apply. For the iceoryx plugin,
+> [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
+> must be running.
 
 If you want to use any of these supported plugins, please refer to the table above for the CMAKE arguments to provide while building the tool and specify the appropriate Communication Mean (-c option) when running the experiment.
 

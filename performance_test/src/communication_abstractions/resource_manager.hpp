@@ -129,6 +129,10 @@ public:
   dds_entity_t cyclonedds_participant() const;
 #endif
 
+#ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+  void init_iceoryx_runtime() const;
+#endif
+
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   /// Returns OpenDDS participant.
   DDS::DomainParticipant_ptr opendds_participant() const;
@@ -193,6 +197,10 @@ private:
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   mutable dds_entity_t m_cyclonedds_participant;
+#endif
+
+#ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+  mutable bool m_iceoryx_initialized = false;
 #endif
 
   mutable std::mutex m_global_mutex;
