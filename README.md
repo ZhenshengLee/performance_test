@@ -1,6 +1,6 @@
 # Introduction
 
-**Default Version Support:** ROS 2 Dashing, Fast-DDS 2.0.x
+**Default Version Support:** ROS 2 Eloquent, Fast-DDS 2.0.x
 
 This performance test tool allows you to test performance and latency of various communication means
 like ROS 2, Apex.OS WaitSet, FastDDS, RTI Connext DDS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
@@ -173,7 +173,7 @@ Now to run the performance test with ConnextDDSMicro plugin :
 
 ## Supported rmw implementations
 
-The performance_test tool can also measure performance of the application with the [ROS 2 layers](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview). For example the following configuration can be tested: `RTI Connext Micro + ROS2PollingSubscription rclcpp + rmw_apex_dds`. Performance_test tool supports [`ROS 2 Dashing`](https://index.ros.org/doc/ros2/Installation/Dashing/) version.
+The performance_test tool can also measure performance of the application with the [ROS 2 layers](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview). For example the following configuration can be tested: `RTI Connext Micro + ROS2PollingSubscription rclcpp + rmw_apex_dds`. Performance_test tool supports [`ROS 2 Eloquent`](https://index.ros.org/doc/ros2/Installation/Eloquent/) version.
 
 The following plugins with a ROS middleware interface are currently supported:
 
