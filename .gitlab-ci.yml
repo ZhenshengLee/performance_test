@@ -9,11 +9,15 @@ build_cross_image:
   services:
     - docker:dind
   script:
+    - apt-get update && apt-get install -y qemu-user-static
     - '
-      apt-get update && apt-get install -y
-          qemu-user-static
+      docker build
+          --build-arg PERFORMANCE_TEST_DOCKER_ARCH=arm64v8
+          --build-arg PERFORMANCE_TEST_TARGET_ARCH=aarch64
+          -t performance_test_cross
+          -f tools/Dockerimage.crossbuild
+          .
       '
-    - docker build --build-arg PERFORMANCE_TEST_DOCKER_ARCH=arm64v8 --build-arg PERFORMANCE_TEST_TARGET_ARCH=aarch64 -t performance_test_cross -f tools/Dockerimage.crossbuild .
     - '
       docker run -t -v `pwd`:`pwd` -w `pwd`
           --rm performance_test_cross
@@ -22,13 +26,11 @@ build_cross_image:
 
 build_cyclonedds:
   stage: build
-  image: osrf/ros:dashing-desktop
+  image: osrf/ros:foxy-desktop
   script:
-    - source /opt/ros/dashing/setup.bash
-    - rosdep update
+    - source /opt/ros/foxy/setup.bash
     - apt-get update
-    - rosdep install --from performance_test --ignore-src -y
-    - apt-get install -y bison maven python3-pip
+    - apt-get install -y bison maven default-jdk python3-pip
     - pip3 install -U colcon-common-extensions pytest
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta1 --depth 1
     - cd cyclonedds
@@ -63,21 +65,20 @@ build_cyclonedds:
 
 build_opendds:
   stage: build
-  image: osrf/ros:dashing-desktop
+  image: osrf/ros:foxy-desktop
   script:
-    - source /opt/ros/dashing/setup.bash
+    - source /opt/ros/foxy/setup.bash
     - apt-get update
     - '
       apt-get install -y
-          ros-dashing-osrf-testing-tools-cpp
+          ros-foxy-osrf-testing-tools-cpp
           default-jdk
           wget
           python3-pip
       '
     - pip3 install -U colcon-common-extensions pytest
-    - cd /opt
-    - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opendds.tar.gz
-    - tar -xzf opendds.tar.gz
+    - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opt-opendds-3.13.2.tar.gz
+    - tar -xzf opt-opendds-3.13.2.tar.gz -C /
     - find /opt/opendds
     - cd $CI_PROJECT_DIR
     - mkdir -p /opt/performance_test
@@ -104,12 +105,12 @@ build_opendds:
 
 build_fastrtps:
   stage: build
-  image: osrf/ros:dashing-desktop
+  image: osrf/ros:foxy-desktop
   script:
     - apt-get update
     - '
       apt-get install -y
-          ros-dashing-osrf-testing-tools-cpp
+          ros-foxy-osrf-testing-tools-cpp
           default-jdk
           maven
       '
@@ -147,7 +148,7 @@ build_ros1:
 
 test:
   stage: test
-  image: osrf/ros:dashing-desktop
+  image: osrf/ros:foxy-desktop
   dependencies:
     - build_cyclonedds
   script:
@@ -167,10 +168,10 @@ test:
 
 .smoke_test:
   stage: test
-  image: osrf/ros:dashing-desktop
+  image: osrf/ros:foxy-desktop
   before_script:
     - apt-get update
-    - apt-get install -y ros-dashing-osrf-testing-tools-cpp
+    - apt-get install -y ros-foxy-osrf-testing-tools-cpp
   script:
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
@@ -222,12 +223,12 @@ smoke_test_opendds:
 
 test_security:
   stage: test
-  image: osrf/ros:dashing-desktop
+  image: osrf/ros:foxy-desktop
   dependencies:
     - build_fastrtps
   before_script:
     - apt-get update
-    - apt-get install -y ros-dashing-osrf-testing-tools-cpp
+    - apt-get install -y ros-foxy-osrf-testing-tools-cpp
   script:
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
