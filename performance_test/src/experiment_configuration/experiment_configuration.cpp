@@ -88,13 +88,13 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Only the pub/sub with the same topic name can communicate with each other.")(
     "msg",
     po::value<std::string>(),
-    "Msg to use. Use --msg_list to get a list.")("msg_list",
-    "Prints list of available msg types and exits.")("dds_domain_id",
-    po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")("reliable",
-    "Enable reliable QOS. Default is best effort.")("transient",
-    "Enable transient QOS. Default is volatile.")("keep_last",
-    "Enable keep last QOS. Default is keep all.")("history_depth",
-    po::value<uint32_t>()->default_value(1000),
+    "Msg to use. Use --msg_list to get a list.")(
+    "msg_list", "Prints list of available msg types and exits.")(
+    "dds_domain_id", po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")(
+    "reliable", "Enable reliable QOS. Default is best effort.")(
+    "transient", "Enable transient QOS. Default is volatile.")(
+    "keep_last", "Enable keep last QOS. Default is keep all.")(
+    "history_depth", po::value<uint32_t>()->default_value(1000),
     "Set history depth QOS. Defaults to 1000.")(
     "disable_async",
     "Disables async. pub/sub.")(

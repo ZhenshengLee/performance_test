@@ -61,12 +61,13 @@ AnalyzeRunner::AnalyzeRunner()
   m_ec.log(m_ec.get_external_info().m_to_log);
 
   for (uint32_t i = 0; i < m_ec.number_of_publishers(); ++i) {
-    m_pub_runners.push_back(DataRunnerFactory::get(m_ec.msg_name(), m_ec.com_mean(),
-      RunType::PUBLISHER));
+    m_pub_runners.push_back(
+      DataRunnerFactory::get(
+        m_ec.msg_name(), m_ec.com_mean(), RunType::PUBLISHER));
   }
   for (uint32_t i = 0; i < m_ec.number_of_subscribers(); ++i) {
-    m_sub_runners.push_back(DataRunnerFactory::get(m_ec.msg_name(), m_ec.com_mean(),
-      RunType::SUBSCRIBER));
+    m_sub_runners.push_back(
+      DataRunnerFactory::get(m_ec.msg_name(), m_ec.com_mean(), RunType::SUBSCRIBER));
   }
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED

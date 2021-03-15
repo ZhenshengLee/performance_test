@@ -117,13 +117,15 @@ DDSDomainParticipant * ResourceManager::connext_DDS_micro_participant() const
     registry->unregister(NETIO_DEFAULT_UDP_NAME, NULL, NULL);
 
     UDP_InterfaceFactoryProperty * udp_property = new UDP_InterfaceFactoryProperty();
-    registry->register_component(NETIO_DEFAULT_UDP_NAME,
+    registry->register_component(
+      NETIO_DEFAULT_UDP_NAME,
       UDPInterfaceFactory::get_interface(),
       &udp_property->_parent._parent,
       NULL);
 
     DPDE_DiscoveryPluginProperty dpde_properties;
-    registry->register_component("dpde",
+    registry->register_component(
+      "dpde",
       DPDEDiscoveryFactory::get_interface(),
       &dpde_properties._parent,
       NULL);

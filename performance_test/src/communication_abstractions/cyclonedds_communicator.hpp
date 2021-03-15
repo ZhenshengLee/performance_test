@@ -210,8 +210,9 @@ private:
   dds_entity_t create_topic(const std::string & postfix)
   {
     dds_entity_t topic;
-    topic = dds_create_topic(m_participant, Msg::CycloneDDSDesc(),
-        (m_ec.topic_name() + postfix).c_str(), nullptr, nullptr);
+    topic = dds_create_topic(
+      m_participant, Msg::CycloneDDSDesc(),
+      (m_ec.topic_name() + postfix).c_str(), nullptr, nullptr);
     if (topic < 0) {
       throw std::runtime_error("failed to create topic");
     }

@@ -267,8 +267,8 @@ private:
   void register_topic()
   {
     if (m_topic == nullptr) {
-      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(m_participant,
-          Topic::msg_name().c_str());
+      auto retcode = Topic::ConnextDDSMicroType::TypeSupport::register_type(
+        m_participant, Topic::msg_name().c_str());
       if (retcode != DDS_RETCODE_OK) {
         throw std::runtime_error("failed to register type");
       }
