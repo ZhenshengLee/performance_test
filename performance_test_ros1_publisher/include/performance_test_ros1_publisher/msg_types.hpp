@@ -14,6 +14,8 @@
 #include "performance_test_ros1_msgs/Array4k.h"
 #include "performance_test_ros1_msgs/Array4m.h"
 #include "performance_test_ros1_msgs/Array60k.h"
+#include "performance_test_ros1_msgs/Array64k.h"
+#include "performance_test_ros1_msgs/Array256k.h"
 #include "performance_test_ros1_msgs/NavSatFix.h"
 #include "performance_test_ros1_msgs/NavSatStatus.h"
 #include "performance_test_ros1_msgs/Point.h"
