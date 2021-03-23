@@ -101,7 +101,11 @@ public:
           {iox_sub_service, iox_sub_instance, iox_sub_event},
           subscriberOptions));
       m_waitset = std::unique_ptr<iox::popo::WaitSet<>>(new iox::popo::WaitSet<>());
-      m_waitset->attachEvent(*m_subscriber.get(), iox::popo::SubscriberEvent::HAS_DATA);
+      m_waitset->attachEvent(*m_subscriber.get(), iox::popo::SubscriberEvent::HAS_DATA);+
+      {
+        using namespace iox::units::duration_literals;
+        m_waitset->timedWait(15_s);
+      }
     }
 
     if (m_subscriber->getSubscriptionState() == iox::SubscribeState::SUBSCRIBED) {
