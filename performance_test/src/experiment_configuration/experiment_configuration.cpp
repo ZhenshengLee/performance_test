@@ -81,7 +81,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
     "communication,c", po::value<std::string>()->required(),
     "Communication plugin to use (ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, "
-    "OpenDDS, ROS2PollingSubscription)")(
+    "iceoryx, OpenDDS, ROS2PollingSubscription)")(
     "topic,t",
     po::value<std::string>()->required(),
     "Specify a topic name to use. "
@@ -248,6 +248,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #else
       throw std::invalid_argument(
               "You must compile with CycloneDDS support to enable it as communication mean.");
+#endif
+    } else if (vm["communication"].as<std::string>() == "iceoryx") {
+#ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+      m_com_mean = CommunicationMean::ICEORYX;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "ICEORYX";
+      #endif
+#else
+      throw std::invalid_argument(
+              "You must compile with iceoryx support to enable it as communication mean.");
 #endif
     } else if (vm["communication"].as<std::string>() == "OpenDDS") {
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED

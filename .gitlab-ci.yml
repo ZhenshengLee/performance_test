@@ -63,6 +63,55 @@ build_cyclonedds:
       - opt-cyclonedds.tar.gz
       - opt.tar.gz
 
+build_iceoryx:
+  stage: build
+  image: osrf/ros:foxy-desktop
+  script:
+    - source /opt/ros/foxy/setup.bash
+    - rosdep update
+    - apt-get update
+    - rosdep install --from performance_test --ignore-src -y
+    - apt-get install -y python3-pip libacl1-dev libncurses5-dev
+    - pip3 install -U colcon-common-extensions pytest
+    - mkdir -p /iceoryx_ws/src
+    - cd /iceoryx_ws/src/
+    - git clone https://github.com/eclipse-iceoryx/iceoryx.git
+    - cd iceoryx
+    - git checkout 8dd43130e7abf99fd30044b3763595338743ac9a # todo update to v1.0.0 when it's released and tagged
+    - cd /iceoryx_ws
+    - '
+      colcon build
+          --install-base /opt/iceoryx
+          --cmake-args
+            -DIOX_MAX_PUBLISHERS=32
+            -DIOX_MAX_SUBSCRIBERS=32
+            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
+      '
+    - find /opt/iceoryx
+    - source /opt/iceoryx/setup.bash
+    - cd $CI_PROJECT_DIR
+    - mkdir -p /opt/performance_test
+    - '
+      colcon build
+          --install-base /opt/performance_test
+          --merge-install
+          --cmake-args
+            -DCMAKE_BUILD_TYPE=Release
+            -DPERFORMANCE_TEST_ICEORYX_ENABLED=ON
+          --base-path performance_test
+      '
+    - cp LICENSE /opt/performance_test
+    - tar cfz opt-iceoryx.tar.gz /opt/iceoryx
+    - tar cfz opt.tar.gz /opt/performance_test
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - log
+      - build
+      - opt-iceoryx.tar.gz
+      - opt.tar.gz
+
 build_opendds:
   stage: build
   image: osrf/ros:foxy-desktop
@@ -132,7 +181,6 @@ build_fastrtps:
       - build
       - opt.tar.gz
 
-
 build_ros1:
   stage: build
   image: osrf/ros:melodic-desktop
@@ -144,7 +192,6 @@ build_ros1:
     - rm performance_test_ros1_msgs/COLCON_IGNORE  # ROS1 packages are ignored by default
     - rm performance_test_ros1_publisher/COLCON_IGNORE  # ROS1 packages are ignored by default
     - colcon build  # Should build msgs and publisher
-
 
 test:
   stage: test
@@ -208,6 +255,20 @@ smoke_test_cyclonedds:
     SMOKE_TEST_BEFORE_SCRIPT: '
         tar xzf opt-cyclonedds.tar.gz -C /;
         LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib";
+    '
+
+smoke_test_iceoryx:
+  extends:
+    - .smoke_test
+  dependencies:
+    - build_iceoryx
+  variables:
+    COMMUNICATION_MEAN: iceoryx
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-iceoryx.tar.gz -C /;
+        mkdir -p /etc/iceoryx;
+        printf "[general]\nversion = 1\n\n[[segment]]\n\n[[segment.mempool]]\nsize = 128\ncount = 1000\n\n[[segment.mempool]]\nsize = 1024\ncount = 1000\n\n[[segment.mempool]]\nsize = 16384\ncount = 100\n\n[[segment.mempool]]\nsize = 131072\ncount = 10" > /etc/iceoryx/roudi_config.toml;
+        /opt/iceoryx/iceoryx_posh/bin/iox-roudi -c /etc/iceoryx/roudi_config.toml &
     '
 
 smoke_test_opendds:
