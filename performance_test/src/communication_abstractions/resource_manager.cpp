@@ -116,31 +116,51 @@ DDSDomainParticipant * ResourceManager::connext_DDS_micro_participant() const
     DDSDomainParticipantFactory * factory = DDSDomainParticipantFactory::get_instance();
     RTRegistry * registry = factory->get_registry();
 
-    registry->register_component("wh", WHSMHistoryFactory::get_interface(), NULL, NULL);
-    registry->register_component("rh", RHSMHistoryFactory::get_interface(), NULL, NULL);
-    registry->unregister(NETIO_DEFAULT_UDP_NAME, NULL, NULL);
+    registry->register_component("wh", WHSMHistoryFactory::get_interface(), nullptr, nullptr);
+    registry->register_component("rh", RHSMHistoryFactory::get_interface(), nullptr, nullptr);
+    registry->unregister(NETIO_DEFAULT_UDP_NAME, nullptr, nullptr);
 
-    UDP_InterfaceFactoryProperty * udp_property = new UDP_InterfaceFactoryProperty();
+    m_shmem_property.received_message_count_max = 1024 * 16;
+    m_shmem_property.receive_buffer_size = 1024 * 1024 * 128 * 2;
     registry->register_component(
-      NETIO_DEFAULT_UDP_NAME,
-      UDPInterfaceFactory::get_interface(),
-      &udp_property->_parent._parent,
-      NULL);
+      NETIO_DEFAULT_SHMEM_NAME,
+      SHMEMInterfaceFactory::get_interface(),
+      &m_shmem_property._parent._parent,
+      nullptr);
 
-    DPDE_DiscoveryPluginProperty dpde_properties;
     registry->register_component(
       "dpde",
       DPDEDiscoveryFactory::get_interface(),
-      &dpde_properties._parent,
-      NULL);
+      &m_dpde_property._parent,
+      nullptr);
 
     auto dp_qos = DDS_PARTICIPANT_QOS_DEFAULT;
+    factory->get_default_participant_qos(dp_qos);
+
+    dp_qos.participant_name.set_name("participant_name");
 
     dp_qos.discovery.discovery.name.set_name("dpde");
 
     dp_qos.discovery.initial_peers.maximum(1);
     dp_qos.discovery.initial_peers.length(1);
-    *dp_qos.discovery.initial_peers.get_reference(0) = DDS_String_dup("127.0.0.1");
+    *dp_qos.discovery.initial_peers.get_reference(0) =
+      DDS_String_dup("_shmem://");
+
+    dp_qos.transports.enabled_transports.ensure_length(2, 2);
+    *dp_qos.transports.enabled_transports.get_reference(0) =
+      DDS_String_dup(NETIO_DEFAULT_SHMEM_NAME);
+    *dp_qos.transports.enabled_transports.get_reference(1) =
+      DDS_String_dup(NETIO_DEFAULT_INTRA_NAME);
+
+    dp_qos.discovery.enabled_transports.ensure_length(1, 1);
+    *dp_qos.discovery.enabled_transports.get_reference(0) =
+      DDS_String_dup("_shmem://");
+
+    dp_qos.user_traffic.enabled_transports.ensure_length(2, 2);
+    *dp_qos.user_traffic.enabled_transports.get_reference(0) =
+      DDS_String_dup("_intra://");
+    *dp_qos.user_traffic.enabled_transports.get_reference(1) =
+      DDS_String_dup("_shmem://");
 
     dp_qos.resource_limits.local_writer_allocation = 500;
     dp_qos.resource_limits.local_reader_allocation = 500;
@@ -160,7 +180,7 @@ DDSDomainParticipant * ResourceManager::connext_DDS_micro_participant() const
 
     m_connext_dds_micro_participant = factory->create_participant(
       (DDS_DomainId_t)m_ec.dds_domain_id(), dp_qos,
-      NULL /* listener */, DDS_STATUS_MASK_NONE);
+      nullptr /* listener */, DDS_STATUS_MASK_NONE);
 
     if (m_connext_dds_micro_participant == nullptr) {
       throw std::runtime_error("failed to create participant");
