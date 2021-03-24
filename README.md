@@ -194,9 +194,8 @@ The following plugins with a ROS middleware interface are currently supported:
 | rmw_cyclonedds_cpp | ROS 2 Callback | UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default) | ROS2 |
 
 > Note:
-> - The DDS implementation that Apex.OS has been compiled with (`rmw_fastrtps_cpp` or `rmw_apex_dds`) is automatically linked when the performance_test tool is built with Apex.OS.
+> - The DDS implementation that Apex.OS has been compiled with (`rmw_apex_dds` or `rmw_cyclone_dds`) is automatically linked when the performance_test tool is built with Apex.OS.
 > - The ROS2PollingSubscription option only works if Apex.OS is present.
-> - The ROS2PollingSubscription option is not yet available with `rmw_cyclonedds_cpp`.
 > - Apex.OS Cert does not support the ROS 2 Callback communicator. When building with Apex.OS Cert, you must explicitly disable the ROS 2 Callback communicator by setting `-PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=OFF`.
 
 ## Zero copy transfer
