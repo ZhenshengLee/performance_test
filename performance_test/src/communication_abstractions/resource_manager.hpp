@@ -185,6 +185,8 @@ private:
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   mutable DDSDomainParticipant * m_connext_dds_micro_participant;
+  mutable NETIO_SHMEMInterfaceFactoryProperty m_shmem_property;
+  mutable DPDE_DiscoveryPluginProperty m_dpde_property;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
