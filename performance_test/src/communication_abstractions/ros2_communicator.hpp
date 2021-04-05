@@ -20,6 +20,7 @@
 
 #include <memory>
 #include <atomic>
+#include <utility>
 
 #include "../experiment_configuration/topics.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
@@ -100,7 +101,7 @@ public:
    * \param data The data to publish.
    * \param time The time to fill into the data field.
    */
-  void publish(DataType & data, const std::chrono::nanoseconds time)
+  void publish(std::int64_t time)
   {
     if (!m_publisher) {
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
@@ -114,42 +115,23 @@ public:
       }
 #endif
     }
-    lock();
-#if !defined(QNX)
-    data.time = time.count();
-#endif
-    data.id = next_sample_id();
-    increment_sent();  // We increment before publishing so we don't have to lock twice.
-    unlock();
-#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
     if (m_ec.is_zero_copy_transfer()) {
       auto borrowed_message{m_publisher->borrow_loaned_message()};
-      borrowed_message.get() = data;  // It would be nice to refactor away this explicit copy
-      m_publisher->publish(borrowed_message.get());
+      lock();
+      borrowed_message.get().time = time;
+      borrowed_message.get().id = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
+      m_publisher->publish(std::move(borrowed_message));
     } else {
+      DataType data;
+      lock();
+      data.time = time;
+      data.id = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
       m_publisher->publish(data);
     }
-#else
-    m_publisher->publish(data);
-#endif
-  }
-
-  /**
- * \brief Publishes the provided data.
- *
- *  This is an overloaded version of the publish function .
- *  We need this because this is triggered by ROS2 executor thread callback
- *  when the ExperimentConfiguration RoundTripMode is RELAY and the callback passes a
- *  const ref for the incoming data. We have to create a copy of the data to be able to
- *  update it inside the function before publishing.
- *
- * \param data The data to publish.
- * \param time The time to fill into the data field.
- */
-  void publish(const DataType & data, const std::chrono::nanoseconds time)
-  {
-    *m_data_copy = data;
-    publish(*m_data_copy, time);
   }
 
   /// Reads received data from ROS 2 using callbacks
@@ -192,7 +174,7 @@ protected:
 
     if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
       unlock();
-      publish(data, std::chrono::nanoseconds(data.time));
+      publish(data.time);
       lock();
     } else {
       m_prev_timestamp = data.time;

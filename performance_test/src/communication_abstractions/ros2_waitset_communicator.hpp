@@ -63,13 +63,11 @@ public:
       const std::lock_guard<decltype(this->get_lock())> lock(this->get_lock());
       for (const auto msg : loaned_msg) {
         if (msg.info().valid()) {
-#ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
           if (this->m_ec.is_zero_copy_transfer() &&
             !m_polling_subscription->is_data_consistent(msg))
           {
             throw std::runtime_error("Zero copy transfer, received data is not consistent");
           }
-#endif
           this->template callback(msg.data());
         }
       }

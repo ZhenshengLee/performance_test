@@ -51,7 +51,7 @@ public:
    * \param data The data to publish.
    * \param time The time to fill into the data field.
    */
-  void publish(DataType & data, const std::chrono::nanoseconds time)
+  void publish(std::int64_t time)
   {
     if (m_publisher == nullptr) {
       ResourceManager::get().init_iceoryx_runtime();
@@ -62,17 +62,34 @@ public:
         new iox::popo::Publisher<DataType>({iox_pub_service, iox_pub_instance, iox_pub_event}));
     }
 
-    lock();
-    data.time = time.count();
-    data.id = next_sample_id();
-    increment_sent();  // We increment before publishing so we don't have to lock twice.
-    unlock();
-
-    m_publisher->publishCopyOf(data)
-    .or_else(
-      [](auto &) {
-        throw std::runtime_error("Failed to write to sample");
-      });
+    if (m_ec.is_zero_copy_transfer()) {
+      m_publisher->loan()
+      .and_then(
+        [&](auto & sample) {
+          lock();
+          sample->time = time;
+          sample->id = next_sample_id();
+          increment_sent();  // We increment before publishing so we don't have to lock twice.
+          unlock();
+          sample.publish();
+        })
+      .or_else(
+        [](auto &) {
+          throw std::runtime_error("Failed to write to sample");
+        });
+    } else {
+      DataType data;
+      lock();
+      data.time = time;
+      data.id = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
+      m_publisher->publishCopyOf(data)
+      .or_else(
+        [](auto &) {
+          throw std::runtime_error("Failed to write to sample");
+        });
+    }
   }
 
   /**

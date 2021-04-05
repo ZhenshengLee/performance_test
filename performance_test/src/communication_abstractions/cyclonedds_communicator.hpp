@@ -111,7 +111,7 @@ public:
    * \param data The data to publish.
    * \param time The time to fill into the data field.
    */
-  void publish(DataType & data, const std::chrono::nanoseconds time)
+  void publish(std::int64_t time)
   {
     if (m_datawriter == 0) {
       dds_qos_t * dw_qos = dds_create_qos();
@@ -125,8 +125,9 @@ public:
         throw std::runtime_error("failed to create datawriter");
       }
     }
+    DataType data;
     lock();
-    data.time_ = time.count();
+    data.time_ = time;
     data.id_ = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
@@ -183,8 +184,7 @@ public:
         }
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           unlock();
-          DataType pubdata = *data;
-          publish(pubdata, std::chrono::nanoseconds(pubdata.time_));
+          publish(data->time_);
           lock();
         } else {
           m_prev_timestamp = data->time_;

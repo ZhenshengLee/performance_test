@@ -160,7 +160,7 @@ public:
    * \param data The data to publish.
    * \param time The time to fill into the data field.
    */
-  void publish(DataType & data, const std::chrono::nanoseconds time)
+  void publish(std::int64_t time)
   {
     if (m_datawriter == nullptr) {
       DDS::Publisher_ptr publisher;
@@ -182,8 +182,9 @@ public:
         throw std::runtime_error("failed datawriter narrow");
       }
     }
+    DataType data;
     lock();
-    data.time_ = time.count();
+    data.time_ = time;
     data.id_ = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();

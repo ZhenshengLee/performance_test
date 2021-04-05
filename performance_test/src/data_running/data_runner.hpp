@@ -137,8 +137,6 @@ private:
   /// The function running inside the thread doing all the work.
   void thread_function()
   {
-    auto data = std::make_unique<typename TCommunicator::DataType>();
-
     auto next_run = std::chrono::steady_clock::now() +
       std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(1.0 / m_ec.rate()));
@@ -152,12 +150,12 @@ private:
         m_ec.roundtrip_mode() != ExperimentConfiguration::RoundTripMode::RELAY)
       {
 #if defined(QNX)
-        std::uint64_t clk_cyc = ClockCycles();
-        data->time = static_cast<std::int64_t>(clk_cyc);
+        std::int64_t epoc_time = static_cast<std::int64_t>(ClockCycles());
+#else
+        std::int64_t epoc_time =
+          std::chrono::steady_clock::now().time_since_epoch().count();
 #endif
-        std::chrono::nanoseconds epoc_time =
-          std::chrono::steady_clock::now().time_since_epoch();
-        m_com.publish(*data, epoc_time);
+        m_com.publish(epoc_time);
       }
       if (m_run_type == RunType::SUBSCRIBER) {
         m_com.update_subscription();
