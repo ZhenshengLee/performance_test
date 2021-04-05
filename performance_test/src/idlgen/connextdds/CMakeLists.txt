@@ -96,6 +96,8 @@ set(IDL_SOURCE_CXX
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array16k_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array32k_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array60k_.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../Array64k_.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../Array256k_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array1m_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array2m_.idl"
     "${CMAKE_CURRENT_SOURCE_DIR}/../Array4m_.idl"

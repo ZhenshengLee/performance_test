@@ -30,6 +30,8 @@ set(IDL_SOURCE_C
     Array16k_.idl
     Array32k_.idl
     Array60k_.idl
+    Array64k_.idl
+    Array256k_.idl
     Array1m_.idl
     Array2m_.idl
     Array4m_.idl
