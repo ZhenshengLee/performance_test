@@ -81,10 +81,11 @@ foreach(idl ${SUPP_IDL_SOURCE_C} ${IDL_SOURCE_C})
 
   add_custom_command(
     OUTPUT   ${IDL_GEN_C} ${IDL_GEN_H}
-    COMMAND  "${IDLC_DIR}/${IDLC}"
-    ARGS     -d ${IDL_GEN_ROOT}/. ${IDL_GEN_ROOT}/${basename}.idl
+    COMMAND  CycloneDDS::idlc
+    ARGS     -fcase-sensitive -fkeylist ${IDL_GEN_ROOT}/${basename}.idl
     DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/${idl}
     COMMENT  "Running idlc on ${FIL}"
+    WORKING_DIRECTORY ${IDL_GEN_ROOT}
     VERBATIM)
   set_source_files_properties(${IDL_GEN_C} ${IDL_GEN_H} PROPERTIES GENERATED 1)
   list(APPEND IDL_GEN_H_LIST ${IDL_GEN_H})
