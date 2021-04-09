@@ -34,6 +34,23 @@ The previous step installed a ``perfplot`` binary, it can be invoked using
 
 Be sure to also check ``perfplot -h`` for additional options.
 
+Common Pitfalls
+***************
+
+All of the latency metrics are collected and calculated by the subscriber process.
+For interprocess communication, it is recommended to provide different prefixes for
+the log files:
+
+::
+
+   perf_test -c ROS2 -t Array1k -p 1 -s 0 -l log_pub
+   perf_test -c ROS2 -t Array1k -p 0 -s 1 -l log_sub
+
+Then, to plot the latency metrics, invoke perfplot on the subscriber's log file.
+If perfplot is invoked on the publisher's log file, then the CPU and memory
+metrics will be plotted, but the latency plot will be empty.
+   
+
 Jupyter notebook extension
 ---------------------------
 
