@@ -12,6 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import math
+
 GETRUSAGE = '\\href{http://man7.org/linux/man-pages/man2/getrusage.2.html}{man getrusage}'
 
 
@@ -85,7 +87,9 @@ def get_range(padding, *args):
     if not isinstance(padding, tuple):
         padding = (padding, padding)
 
-    all_data = [item for lst in args for item in lst]
+    all_data = [item for lst in args for item in lst if math.isfinite(item)]
+    if not all_data:
+        all_data = [0]
     return [min(all_data) - padding[0], max(all_data) + padding[1]]
 
 
