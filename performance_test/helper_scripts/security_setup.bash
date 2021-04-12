@@ -39,20 +39,16 @@ then
     return 1
   fi
 
-  for ((i=0; i<=$max_nodes; i++))
-  do
-    node=/performance_test$i
-    echo "generating keys for "$node
-    ros2 security create_key "$2" "$node"
-    ros2 security create_permission "$2" "$node" policy.xml;  
-    echo " "
-  done 
+  echo "generating keys for /performance_test"
+  ros2 security create_key "$2" /performance_test
+  ros2 security create_permission "$2" /performance_test policies/policy.xml;  
+  echo " "
 
   #enable security
   echo "Setting environment variables to enable security"
   export ROS_SECURITY_ENABLE=true
   export ROS_SECURITY_STRATEGY=Enforce
-  export ROS_SECURITY_ROOT_DIRECTORY=$2
+  export ROS_SECURITY_KEYSTORE=$2
 elif [ "$1" == "disable" ]
 then 
   #disable security
