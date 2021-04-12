@@ -1,4 +1,4 @@
-// Copyright 2017 Apex.AI, Inc.
+// Copyright 2017-2021 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,12 +17,10 @@
 
 #if defined(QNX)
 
-#include <unistd.h>
-#include <sys/neutrino.h>
-#include <sys/syspage.h>
-
 #include <fstream>
+#include <sstream>
 #include <string>
+#include <vector>
 
 namespace performance_test
 {
@@ -37,26 +35,25 @@ uint64_t get_proc_rss_mem()
   std::string line;
 
   pid_t my_pid = getpid();
-  std::ifstream vmstat_file("/proc/" + std::to_string(my_pid) + "/vmstat", std::ifstream::in);
-#ifdef QNX700
-  const std::string rss_string("as_stats.rss_wired");
-#else
-  // On QNX QOS 2.2 the correct value is as_stats.rss
-  const std::string rss_string("as_stats.rss");
-#endif  // QNX
-  const std::size_t rss_str_len = rss_string.size();
+  std::ifstream ifile("/proc/" + std::to_string(my_pid) + "/pmap");
+  int num_line = 0;
+  uint64_t total_memory = 0u;
 
-  while (std::getline(vmstat_file, line)) {
-    if (!line.compare(0, rss_str_len, rss_string)) {
-      auto first_del = line.find("=");
-      auto sec_del = line.find(" ");
-      auto value = line.substr(first_del + 1, sec_del - first_del);
-      uint64_t rss_sz = std::stoul(value, 0, 16);
-      rss_sz = (rss_sz * static_cast<uint64_t>(getpagesize()));
-      return rss_sz;
+  while (std::getline(ifile, line)) {
+    // Discard first line, contains only the header
+    if (num_line > 0) {
+      std::istringstream iss{line};  // Construct string stream from line
+      std::vector<std::string> fields;
+      std::string field;
+      while (std::getline(iss, field, ',')) {
+        fields.push_back(field);
+      }
+      // Convert field 9(Rsv) to check memory usage
+      total_memory += std::stoul(fields[8], nullptr, 16);
     }
+    num_line++;
   }
-  return 0u;
+  return total_memory;
 }
 }  // namespace qnx_res
 
