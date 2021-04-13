@@ -153,16 +153,34 @@ public:
         throw std::runtime_error("failed datawriter narrow");
       }
     }
-    DataType data;
-    init_data(data);
-    lock();
-    data.time_ = time;
-    data.id_ = next_sample_id();
-    increment_sent();  // We increment before publishing so we don't have to lock twice.
-    unlock();
-    auto retcode = m_typed_datawriter->write(data, DDS_HANDLE_NIL);
-    if (retcode != DDS_RETCODE_OK) {
-      throw std::runtime_error("Failed to write to sample");
+    if (m_ec.is_zero_copy_transfer()) {
+      DataType * sample;
+      DDS_ReturnCode_t dds_rc = m_typed_datawriter->get_loan(sample);
+      if (dds_rc != DDS_RETCODE_OK) {
+        throw std::runtime_error("Failed to get a loan");
+      }
+      init_data(*sample);
+      lock();
+      sample->time_ = time;
+      sample->id_ = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
+      auto retcode = m_typed_datawriter->write(*sample, DDS_HANDLE_NIL);
+      if (retcode != DDS_RETCODE_OK) {
+        throw std::runtime_error("Failed to write to sample");
+      }
+    } else {
+      DataType data;
+      init_data(data);
+      lock();
+      data.time_ = time;
+      data.id_ = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
+      auto retcode = m_typed_datawriter->write(data, DDS_HANDLE_NIL);
+      if (retcode != DDS_RETCODE_OK) {
+        throw std::runtime_error("Failed to write to sample");
+      }
     }
   }
 

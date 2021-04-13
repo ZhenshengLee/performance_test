@@ -223,43 +223,39 @@ set(MESSAGE_FILES
 option(PERFORMANCE_TEST_ZERO_COPY_ENABLED "Enable the option to use zero copy transfer" OFF)
 
 if(PERFORMANCE_TEST_ZERO_COPY_ENABLED)
-  if(PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED)
-    add_definitions(-DPERFORMANCE_TEST_ZERO_COPY_ENABLED)
-    set(MESSAGE_FILES_ZC
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Header.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointField.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array64kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array256kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16ZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256ZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8mZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512kZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatusZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFixZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetectionZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrackZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RangeZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32ZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PolygonZeroCopy.idl"
-        "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3ZeroCopy.idl")
-  else()
-    message("Error: Zero copy requires polling subscription and Apex.OS with RTI Connext Micro. Zero copy will not be enabled.")
-  endif()
+  add_definitions(-DPERFORMANCE_TEST_ZERO_COPY_ENABLED)
+  set(MESSAGE_FILES_ZC
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Header.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointField.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array64kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array256kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16ZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256ZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8mZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512kZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatusZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFixZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetectionZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrackZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RangeZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32ZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PolygonZeroCopy.idl"
+      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3ZeroCopy.idl")
 endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}

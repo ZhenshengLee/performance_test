@@ -347,11 +347,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     m_is_zero_copy_transfer = false;
 #ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
-#ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
     if (vm.count("zero_copy")) {
-      if (m_com_mean != CommunicationMean::ROS2PollingSubscription) {
-        throw std::invalid_argument("Only ROS2PollingSubscription supports zero copy transfer!");
-      } else if (m_number_of_publishers > 0 && m_number_of_subscribers > 0) {
+      if (m_number_of_publishers > 0 && m_number_of_subscribers > 0) {
         throw std::invalid_argument(
                 "Zero copy transfer only makes sense for interprocess communication!");
       } else {
@@ -362,7 +359,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
         }
       }
     }
-#endif
 #endif
 
     m_roundtrip_mode = RoundTripMode::NONE;

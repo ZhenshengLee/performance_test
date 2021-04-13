@@ -144,14 +144,14 @@ Some things to note:
 
 The performance test tool can measure the performance of a variety of communication middlewares from different vendors. In this case there is no [rclcpp or rmw layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview) overhead over the publisher and subscriber routines. The following plugins are currently implemented:
 
-| RAW Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
-|----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|
-| [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS |
-| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional) <sup>1</sup> | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS |
-| [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro |
-| [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS |
-| [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS |
-| [iceoryx pre-release](https://github.com/eclipse-iceoryx/iceoryx) | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx |
+| RAW Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments | Supports zero copy? |
+|----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|---------------------|
+| [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS | No |
+| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional) <sup>1</sup> | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS | No |
+| [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro | Yes |
+| [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS | No |
+| [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS | No |
+| [iceoryx pre-release](https://github.com/eclipse-iceoryx/iceoryx) | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx | Yes |
 
 > <sup>1</sup> NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was 
 > installed with ROS 2 (Linux only):
@@ -200,16 +200,20 @@ The following plugins with a ROS middleware interface are currently supported:
 
 ## Zero copy transfer
 
-The performance_test tool can also measure the performance of an application that uses zero copy transfer. For more information on how zero copy transfer works, refer to [the RTI documentation](https://community.rti.com/static/documentation/connext-dds/current/doc/manuals/connext_dds/html_files/RTI_ConnextDDS_CoreLibraries_UsersManual/index.htm#UsersManual/SendingLDZeroCopy.htm). Currently, the zero copy transfer is only available when both RTI Connext Micro and the Apex.OS WaitSet are enabled.
+The performance_test tool can also measure the performance of an application that uses zero copy transfer. With zero copy transfer, the publisher requests a loan from a pre-allocated shared memory pool, where it writes the sample. The subscriber reads the sample from that same location. To enable the zero copy features in this tool, add the CMake arg:
 
-`colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON -DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON -DPERFORMANCE_TEST_ZERO_COPY_ENABLED=ON`
+`colcon build --cmake-clean-cache --cmake-args -DPERFORMANCE_TEST_ZERO_COPY_ENABLED=ON`
 
-Zero copy transfer is an [Inter-Process Communication](#running-experiments-intraprocess-vs-running-experiments-interprocess) mechanism. It is currently only available with the Apex.OS WaitSet. When running, use the `--zero_copy` argument for both the publisher and subscriber processes:
+Zero copy transfer is an [Inter-Process Communication](#running-experiments-intraprocess-vs-running-experiments-interprocess) mechanism. When running, use the `--zero_copy` argument for both the publisher and subscriber processes:
 
 ```
-./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 --num_pub_threads 1 --num_sub_threads 0 --zero_copy &
-./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 --num_pub_threads 0 --num_sub_threads 1 --zero_copy
+./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 -p 1 -s 0 --zero_copy &
+./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 -p 0 -s 1 --zero_copy
 ```
+
+Not all of the native DDS plugins support zero copy transfer. The [Implemented Plugins Table](#implemented-plugins) indicates which plugins support zero copy transfer.
+
+This tool also supports zero copy transfer for RMW implementations, with the `ROS2PollingSubscription` communication mean, via the `rclcpp::Publisher::borrow_loaned_message` API. You can read more about loaned message in ROS2 [here](https://design.ros2.org/articles/zero_copy.html).
 
 # Batch run experiments (for advanced users)
 
