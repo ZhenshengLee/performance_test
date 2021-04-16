@@ -1,0 +1,27 @@
+# docker build . -f dockerfiles/Dockerfile.FastDDS -t performance_test_fast_dds
+# docker run -it performance_test_fast_dds bash
+# /opt/performance_test/lib/performance_test/perf_test -c FastRTPS -t test_topic --msg Array1k
+
+FROM osrf/ros:foxy-desktop
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y default-jdk
+
+RUN mkdir -p /perf_test_ws/src
+
+ADD . /perf_test_ws/src/performance_test
+
+RUN source /opt/ros/foxy/setup.bash && \
+    cd /perf_test_ws && \
+    colcon build \
+      --install-base /opt/performance_test \
+      --merge-install \
+      --cmake-clean-cache \
+      --cmake-args \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON
+
+RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc

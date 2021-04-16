@@ -80,15 +80,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "rate,r", po::value<uint32_t>()->default_value(1000),
     "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
     "communication,c", po::value<std::string>()->required(),
-    "Communication plugin to use (ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, "
+    "(REQUIRED) Communication plugin to use ( "
+    "ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, "
     "iceoryx, OpenDDS, ROS2PollingSubscription)")(
     "topic,t",
-    po::value<std::string>()->required(),
-    "Specify a topic name to use. "
+    po::value<std::string>()->required(),  // TODO(erik.snider): make this default to "test_topic"
+    "(REQUIRED) Specify a topic name to use. "
     "Only the pub/sub with the same topic name can communicate with each other.")(
     "msg",
-    po::value<std::string>(),
-    "Msg to use. Use --msg_list to get a list.")(
+    po::value<std::string>(),  // TODO(erik.snider): make this required
+    "(REQUIRED) Msg to use. Use --msg_list to get a list.")(
     "msg_list", "Prints list of available msg types and exits.")(
     "dds_domain_id", po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")(
     "reliable", "Enable reliable QOS. Default is best effort.")(
@@ -116,7 +117,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "Set RT cpu affinity mask. "
     "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
     "use_single_participant",
-    "Uses only one participant per process. By default every thread has its own.")(
+    "**DEPRECATED** Uses only one participant per process. By default every thread has its own.")(
     "with_security", "Make nodes with deterministic names for use with security")(
 #ifdef PERFORMANCE_TEST_ZERO_COPY_ENABLED
     "zero_copy", "Use zero copy transfer")(

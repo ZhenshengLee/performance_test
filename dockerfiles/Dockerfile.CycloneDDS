@@ -1,0 +1,36 @@
+# docker build . -f dockerfiles/Dockerfile.CycloneDDS -t performance_test_cyclone_dds
+# docker run -it performance_test_cyclone_dds bash
+# /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test_topic --msg Array1k
+
+FROM osrf/ros:foxy-desktop
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y bison default-jdk
+
+RUN git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta4 --depth 1 && \
+    cd cyclonedds && \
+    mkdir -p build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds .. && \
+    cmake --build . && \
+    cmake --build . --target install
+
+RUN mkdir -p /perf_test_ws/src
+
+ADD . /perf_test_ws/src/performance_test
+
+RUN source /opt/ros/foxy/setup.bash && \
+    cd /perf_test_ws && \
+    colcon build \
+      --install-base /opt/performance_test \
+      --merge-install \
+      --cmake-clean-cache \
+      --cmake-args \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
+
+RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
+RUN echo 'source /opt/performance_test/setup.bash' >> /root/.bashrc
+RUN echo 'LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib"' >> /root/.bashrc

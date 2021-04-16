@@ -1,298 +1,293 @@
-# Introduction
+# performance_test
 
-**Default Version Support:** ROS 2 Foxy, Fast-DDS 2.0.x. For older ROS 2 versions, seach for the
-latest corresponding tag (for example, [dashing](https://gitlab.com/ApexAI/performance_test/-/tags?utf8=%E2%9C%93&search=dashing)
-and [eloquent](https://gitlab.com/ApexAI/performance_test/-/tags?utf8=%E2%9C%93&search=eloquent)).
+The performance_test tool tests latency and other performance metrics of [various middleware
+implementations](#middleware-plugins) that support a pub/sub pattern. It is used to simulate
+non-functional performance of your application.
 
-This performance test tool allows you to test performance and latency of various communication means
-like ROS 2, Apex.OS WaitSet, FastDDS, RTI Connext DDS, Connext DDS Micro, Eclipse Cyclone DDS and OpenDDS.
+The performance_test tool allows you to quickly set up a pub/sub configuration,
+e.g. number of publisher/subscribers, message size, QOS settings, middleware. The following metrics
+are automatically recorded when the application is running:
 
-It can be extended to other communication frameworks easily.
+- **latency**: corresponds to the time a message takes to travel from a publisher to subscriber. The
+  latency is measured by timestamping the sample when it's published and subtracting the timestamp
+  (from the sample) from the measured time when the sample arrives at the subscriber.
+- **CPU usage**: percentage of the total system wide CPU usage
+- **resident memory**: heap allocations, shared memory segments, stack (used for system's internal
+  work).
+- **sample statistics**: number of samples received, sent, and lost per experiment run.
 
-A detailed description can be found here: [Design Article](performance_test/design/performance_test-design.md)
+## How to use this document
 
-# Building and running performance test
+1. Start [here](#example) for a quick example of building and running the performance_test tool
+   with the Cyclone DDS plugin.
+2. If needed, find more detailed information about [building](#building-the-performance_test-tool)
+   and [running](#running-an-experiment)
+3. Or, if the quick example is good enough, skip ahead to the [list of supported middleware
+   plugins](#middleware-plugins) to learn how to test a specific middleware implementation.
+4. Check out the [tools for visualizing the results](#analyze-the-results)
+5. If desired, read about the [design and architecture](#architecture) of the tool.
 
-## Installing dependencies
+## Example
 
-ROS 2: https://index.ros.org/doc/ros2/Installation
+This example shows how to test the non-functional performance of the following configuration:
 
-Additional dependencies are Java and others declared in the `package.xml` file
+| Option                     | Value       |
+|----------------------------|-------------|
+| Plugin                     | Cyclone DDS |
+| Message type               | Array1k     |
+| Publishing rate            | 100Hz       |
+| Topic name                 | test_topic  |
+| Duration of the experiment | 30s         |
+
+1. Install [ROS 2](https://docs.ros.org/en/foxy/index.html)
+
+2. Install [Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds) to /opt/cyclonedds
+
+3. Build performance_test with the [CMake build flag](#eclipse-cyclone-dds) for Cyclone DDS:
+
+```bash
+source /opt/ros/foxy/setup.bash
+cd ~/perf_test_ws
+colcon build --cmake-args -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
+source ./install/setup.bash
 ```
-sudo apt-get install default-jre
-rosdep install -y --from performance_test --ignore-src
+
+4. Run with the [communication plugin option](#eclipse-cyclone-dds) for Cyclone DDS:
+
+```bash
+mkdir experiment
+./install/performance_test/lib/performance_test/perf_test --communication CycloneDDS
+                                                          --msg Array1k
+                                                          --rate 100
+                                                          --topic test_topic
+                                                          --max_runtime 30
+                                                          --logfile experiment/log
 ```
 
-## How to build
+At the end of the experiment, a CSV log file will be generated in the experiment folder with a name
+that starts with `log`.
 
+## Building the performance_test tool
+
+For a simple example, see [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2).
+
+The performance_test tool is structured as a ROS 2 package, so `colcon` is used to build it.
+Therefore, you must source a ROS 2 installation:
+
+```bash
+source /opt/ros/foxy/setup.bash
+# or use Apex.OS in ade:
+source /opt/ApexOS/setup.bash
 ```
-source <ros2_install_path>/setup.bash
-mkdir -p perf_test_ws/src
-cd perf_test_ws/src
+
+Select a middleware plugin from [this list](#middleware-plugins).
+Then build the performance_test tool with the selected middleware:
+
+```bash
+mkdir -p ~/perf_test_ws/src
+cd ~/perf_test_ws/src
 git clone https://gitlab.com/ApexAI/performance_test.git
 cd ..
-colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release
+# At this stage, you need to choose which middleware you want to use
+# The list of available flags is described in the middleware plugins section
+colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release <cmake_enable_plugin_flag>
 source install/setup.bash
 ```
 
-## How to run a single experiment
+## Running an experiment
 
-After building, a simple experiment can be run using the following.
+The performance_test experiments are run through the `perf_test` executable.
+To find the available settings, run with `--help` (note the required and default arguments):
 
-Before you start create a directory for the output.
-
-```
-mkdir experiment
-cd experiment
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 30
-```
-At the end of the experiment, a CSV log file will be generated in the experiment folder (e.g. `experiment/log_Array1k_<current_date>`
-
-# Generating graphical plots
-
-## Plot results
-
-To plot the results, you will need to install the perfplot tool from the apex_performance_plotter python module.
-See [apex_performance_plotter](https://gitlab.com/ApexAI/performance_test/-/tree/master/performance_test/helper_scripts/apex_performance_plotter)
-for the list of dependecies.
-
-```
-pip3 install performance_test/helper_scripts/apex_performance_plotter
-```
-
-This tool will convert performance test log files into PDFs containing graphs of the results.
-
-Note: Some of the dependencies of apex_performance_plotter (specifically pandas, at the time of writing) require python 3.6. It is possible to get apex_performance_plotter working with older dependencies that run with python 3.5, but that is beyond the scope of this document.
-
-In order to have the log-file plotted into a PDF file, specify the log file name after the plotter's tool executable:
-```
-perfplot <logfile_name>
-```
-
-This will generate a PDF file `<logfile_name>.pdf` that can be viewed in any PDF viewer.
-
-# Configuration options provided by the tool
-
-The tool has a fully documented command line interface which can be accessed by typing
-`performance_test --help`.
-
-```
+```bash
 ~/perf_test_ws$ ./install/performance_test/lib/performance_test/perf_test --help
-
-Allowed options:
-  -h [ --help ]                        Print usage message.
-  -l [ --logfile ] arg                 Optionally specify a logfile.
-  -r [ --rate ] arg (=1000)            The rate data should be published.
-                                       Defaults to 1000 Hz. 0 means publish as
-                                       fast as possible.
-  -c [ --communication ] arg           Communication plugin to use (ROS2,
-                                       FastRTPS, ConnextDDS, ConnextDDSMicro,
-                                       CycloneDDS, iceoryx, OpenDDS,
-                                       ROS2PollingSubscription)
-  -t [ --topic ] arg                   Specify a topic name to use. Only the
-                                       pub/sub with the same topic name can
-                                       communicate with each other.
-  --msg arg                            Msg to use. Use --msg_list to get a
-                                       list.
-  --msg_list                           Prints list of available msg types and
-                                       exits.
-  --dds_domain_id arg (=0)             Sets the DDS domain id.
-  --reliable                           Enable reliable QOS. Default is best
-                                       effort.
-  --transient                          Enable transient QOS. Default is
-                                       volatile.
-  --keep_last                          Enable keep last QOS. Default is keep
-                                       all.
-  --history_depth arg (=1000)          Set history depth QOS. Defaults to 1000.
-  --disable_async                      Disables async. pub/sub.
-  --max_runtime arg (=0)               Maximum number of seconds to run before
-                                       exiting. Default (0) is to run forever.
-  -p [ --num_pub_threads ] arg (=1)    Maximum number of publisher threads.
-  -s [ --num_sub_threads ] arg (=1)    Maximum number of subscriber threads.
-  --check_memory                       Prints backtrace of all memory
-                                       operations performed by the middleware.
-                                       This will slow down the application!
-  --use_rt_prio arg (=0)               Set RT priority. Only certain platforms
-                                       (i.e. Drive PX) have the right
-                                       configuration to support this.
-  --use_rt_cpus arg (=0)               Set RT cpu affinity mask. Only certain
-                                       platforms (i.e. Drive PX) have the right
-                                       configuration to support this.
-  --use_single_participant             Uses only one participant per process.
-                                       By default every thread has its own.
-  --zero_copy                          Use zero copy transfer.
-  --with_security                      Make nodes with deterministic names for
-                                       use with security
-  --roundtrip_mode arg (=None)         Selects the round trip mode (None, Main,
-                                       Relay).
-  --ignore arg (=0)                    Ignores first n seconds of the
-                                       experiment.
-  --disable_logging                    Disables experiment logging to stdout.
-  --expected_num_pubs arg (=0)         Expected number of publishers for
-                                       wait_for_matched
-  --expected_num_subs arg (=0)         Expected number of subscribers for
-                                       wait_for_matched
-  --wait_for_matched_timeout arg (=30) Maximum time[s] to wait for matching
-                                       publishers/subscribers. Defaults to 30s
 ```
 
-Some things to note:
+- The `-c` argument should match the selected [middleware plugin](#middleware-plugins)
+  from the build phase.
+- The `--msg` argument should be one of the supported message types, which can be listed
+  by running with `--msg_list`.
 
-1. `--use_single_participant` option also should not be used as its obsolete and will be removed soon.
+### Single machine or distributed system?
 
-## Implemented plugins
+Based on the configuration you want to test, the usage of the performance_test tool differs. The
+different possibilities are explained below.
 
-The performance test tool can measure the performance of a variety of communication middlewares from different vendors. In this case there is no [rclcpp or rmw layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview) overhead over the publisher and subscriber routines. The following plugins are currently implemented:
+For running tests on a single machine, you can choose between the following options:
 
-| RAW Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments | Supports zero copy? |
-|----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|---------------------|
-| [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS | No |
-| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional) <sup>1</sup> | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS | No |
-| [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro | Yes |
-| [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS | No |
-| [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS | No |
-| [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0) | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx | Yes |
+1. Intraprocess means that the publisher and subscriber threads are in the same process.
+   This is the default configuration.
+1. Interprocess means that the publisher and subscriber are in different processes. To test
+   interprocess communication, two instances of the performance_test must be run, e.g.
 
-> <sup>1</sup> NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was 
-> installed with ROS 2 (Linux only):
-> ```
-> source /opt/rti.com/rti_connext_dds-5.3.1/setenv_ros2rti.bash
-> ```
-> If RTI Connext DDS is installed separately, you can source the following script to
-> set the environment:
-> ```
-> source <connextdds_install_path>/resource/scripts/rtisetenv_<arch>.bash
-> ```
+    ```bash
+    perf_test <options> --num_sub_threads 0 --num_pub_threads 1 &
+    perf_test <options> --num_sub_threads 1 --num_pub_threads 0
+    ```
 
-> <sup>2</sup> NOTE: The iceoryx plugin is not a DDS implementation. The DDS-specific options 
-> (such as domain ID, durability, and reliability) do not apply. For the iceoryx plugin,
-> [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
-> must be running.
+    1. :point_up: CPU and Resident Memory measurements are logged separately for the publisher and
+       subscriber processes.
+    1. Latency is only logged for the subscriber process, because it is calculated after the
+       sample is received.
+    1. Some plugins also support zero copy transfer. With zero copy transfer, the publisher
+       requests a loan from a pre-allocated shared memory pool, where it writes the sample. The
+       subscriber reads the sample from that same location. When running, use the `--zero_copy`
+       argument for both the publisher and subscriber processes.
+    1. :memo: The transport is dependent on the middleware
 
-If you want to use any of these supported plugins, please refer to the table above for the CMAKE arguments to provide while building the tool and specify the appropriate Communication Mean (-c option) when running the experiment.
+On a distributed system, testing latency is difficult, because the clocks are probably not
+perfectly synchronized between the two devices. To work around this, the performance_test tool
+supports relay mode, which allows for a round-trip style of communication:
 
-For example, to run a performance test with the ConnextMicro plugin, build performance_test with the following command:
-```
-colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON
-```
-Now to run the performance test with ConnextDDSMicro plugin :
-```
-./install/performance_test/lib/performance_test/perf_test -c ConnextDDSMicro -l log --msg Array1k -t test_topic --max_runtime 10
-```
+```bash
+# On the main machine
+perf_test <options> --roundtrip_mode Main
 
-## Supported rmw implementations
-
-The performance_test tool can also measure performance of the application with the [ROS 2 layers](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview). For example the following configuration can be tested: `RTI Connext Micro + ROS2PollingSubscription rclcpp + rmw_apex_dds`. Performance_test tool supports [`ROS 2 Foxy`](https://index.ros.org/doc/ros2/Installation/Foxy/) version.
-
-The following plugins with a ROS middleware interface are currently supported:
-
-| RMW Implementation | Supported subscription | Supported transports |  `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments |
-|------------------------------------------------------------------------------------------|--------------------------------------------------------|----------------------|-------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| [rmw_fastrtps_cpp](https://github.com/ros2/rmw_fastrtps) | ROS 2 Callback,<br>Apex.OS WaitSet | UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default)<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets) | ROS2<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
-| rmw_apex_dds ([Apex.AI](https://www.apex.ai/apex-os) proprietary <br>rmw implementation) | ROS 2 Callback,<br>Apex.OS WaitSet | INTRA, SHMEM | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default)<br><br>`-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`<br>(for using Apex.OS waitsets) | ROS2<br><br>ROS2PollingSubscription (for using Apex.OS waitsets) |
-| rmw_connext_cpp | ROS 2 Callback | SHMEM, UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default) | ROS2 |
-| rmw_cyclonedds_cpp | ROS 2 Callback | UDP | Nothing for ROS 2 Callback (`-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` is set by default) | ROS2 |
-
-> Note:
-> - The DDS implementation that Apex.OS has been compiled with (`rmw_apex_dds` or `rmw_cyclone_dds`) is automatically linked when the performance_test tool is built with Apex.OS.
-> - The ROS2PollingSubscription option only works if Apex.OS is present.
-> - Apex.OS Cert does not support the ROS 2 Callback communicator. When building with Apex.OS Cert, you must explicitly disable the ROS 2 Callback communicator by setting `-PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=OFF`.
-
-## Zero copy transfer
-
-The performance_test tool can also measure the performance of an application that uses zero copy transfer. With zero copy transfer, the publisher requests a loan from a pre-allocated shared memory pool, where it writes the sample. The subscriber reads the sample from that same location. To enable the zero copy features in this tool, add the CMake arg:
-
-`colcon build --cmake-clean-cache --cmake-args -DPERFORMANCE_TEST_ZERO_COPY_ENABLED=ON`
-
-Zero copy transfer is an [Inter-Process Communication](#running-experiments-intraprocess-vs-running-experiments-interprocess) mechanism. When running, use the `--zero_copy` argument for both the publisher and subscriber processes:
-
-```
-./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 -p 1 -s 0 --zero_copy &
-./install/performance_test/lib/performance_test/perf_test -c ROS2PollingSubscription --msg Array1k -t test_topic --max_runtime 30 -p 0 -s 1 --zero_copy
+# On the relay machine:
+perf_test <options> --roundtrip_mode Relay
 ```
 
-Not all of the native DDS plugins support zero copy transfer. The [Implemented Plugins Table](#implemented-plugins) indicates which plugins support zero copy transfer.
+In relay mode, the Main machine sends messages to the Relay machine, which immediately sends the
+messages back. The Main machine receives the relayed message, and reports the round-trip latency.
+Therefore, the reported latency will be roughly double the latency compared to the latency reported
+in non-relay mode.
 
-This tool also supports zero copy transfer for RMW implementations, with the `ROS2PollingSubscription` communication mean, via the `rclcpp::Publisher::borrow_loaned_message` API. You can read more about loaned message in ROS2 [here](https://design.ros2.org/articles/zero_copy.html).
+## Middleware plugins
 
-# Batch run experiments (for advanced users)
+### Native plugins
 
-Multiple experiments can be run using this python script:
+The performance test tool can measure the performance of a variety of communication solutions
+from different vendors. In this case there is no [rclcpp or rmw
+layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview)
+overhead over the publisher and subscriber routines. The following plugins are currently
+implemented:
 
-```
-python3 src/performance_test/performance_test/helper_scripts/run_experiment.py
-```
+#### Eclipse Cyclone DDS
 
-You need to edit the python script to call the performance test tool with the desired configurations.
+- [Eclipse Cyclone DDS 0.8.0beta4](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta4)
+- CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
+- Communication plugin: `-c CycloneDDS`
+- Zero copy transport (`--zero-copy`): no
+- Docker file: [Dockerfile.CycloneDDS](dockerfiles/Dockerfile.CycloneDDS)
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | INTRA | UDP                 | UDP                |
 
-# Running experiments intraprocess vs running experiments interprocess
+#### Eclipse iceoryx
 
-The tool offers to run the experiments either in Intraprocess composition which means the publisher and subscriber threads are in the same process or Inter process composition which requires the publisher and subscriber to be in different processes. This is very useful if you want to test the performance of different transports like Micro INTRA, UDP and SHMEM.
+- [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
+- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- Communication plugin: `-c iceoryx`
+- Zero copy transport (`--zero-copy`): yes
+- Docker file: [Dockerfile.iceoryx](dockerfiles/Dockerfile.iceoryx)
+- The iceoryx plugin is not a DDS implementation.
+  - The DDS-specific options (such as domain ID, durability, and reliability) do not apply.
+- To run with the iceoryx plugin,
+  [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
+  must be running.
+  | INTRA     | IPC on same machine | Distributed system                |
+  |-----------|---------------------|-----------------------------------|
+  | zero copy | zero copy           | Not supported by performance_test |
 
-Let's take an example of a single publisher and single subscriber:
-```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30 --num_sub_threads 1 --num_pub_threads 1
-```
-which is same as running by default:
-```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30
-```
-This is example of running the experiments in Intraprocess composition. Connext Micro as per Apex.OS, is configured to use `Micro INTRA` in this setting. FastDDS and other supported DDS implementations use `UDP` by default.
+#### eProsima Fast DDS
 
-To run the experiments in different processes, the subscriber and publisher processes we can run the tool twice simultaneously. Run the first instance of the tool like :
-```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30 --num_sub_threads 0 --num_pub_threads 1
-```
-This is the publisher process. Now to run the subscriber open a second window in the terminal and run a second instance of the tool like:
+- [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x)
+- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- Communication plugin: `-c FastRTPS`
+- Zero copy transport (`--zero-copy`): no
+- Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | UDP   | UDP                 | UDP                |
 
-```
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k -t test_topic --max_runtime 30 --num_sub_threads 1 --num_pub_threads 0
-```
-This is the subscriber process. The tool supports multiple subscribers to be run at once. So you can configure the value of `--num_sub_threads` in the subscriber process to be more than one also.
+#### OCI OpenDDS
 
-This is an example of running the experiments in Interprocess composition. Connext Micro as per Apex.OS, is configured to use `SHMEM` in this setting. FastDDS and other supported DDS implementations use `UDP` by default.
+- [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
+- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- Communication plugin: `-c OpenDDS`
+- Zero copy transport (`--zero-copy`): no
+- Docker file: [Dockerfile.OpenDDS](dockerfiles/Dockerfile.OpenDDS)
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | TCP   | TCP                 | TCP                |
 
-> Note:
-In Inter process composition the CPU and Resident Memory measurements are logged separately for the publisher and subscriber processes.
+#### RTI Connext DDS
 
-# Relay mode
+- [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)
+- CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON`
+- Communication plugin: `-c ConnextDDS`
+- Zero copy transport (`--zero-copy`): no
+- Docker file: Not available
+- A license is required
+- You need to source an RTI Connext DDS environment.
+  - If RTI Connext DDS was installed with ROS 2 (Linux only):
+    - `source /opt/rti.com/rti_connext_dds-5.3.1/setenv_ros2rti.bash`
+  - If RTI Connext DDS is installed separately, you can source the following script to set the
+    environment:
+    - `source <connextdds_install_path>/resource/scripts/rtisetenv_<arch>.bash`
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | INTRA | SHMEM               | UDP                |
 
-Testing latency between multiple machines is difficult as it is hard precisely synchronize clocks between them.
-To overcome this issue performance test supports relay mode which allows for a round-trip style of communication.
+#### RTI Connext DDS Micro
 
-On the main machine: `./install/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k -t test_topic --roundtrip_mode Main`
-On the relay machine: `./install/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k -t test_topic --roundtrip_mode Relay`
+- [Connext DDS Micro 3.0.3](https://www.rti.com/products/connext-dds-micro)
+- CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON`
+- Communication plugin: `-c ConnextDDSMicro`
+- Zero copy transport (`--zero-copy`): no
+- Docker file: Not available
+- A license is required
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | INTRA | SHMEM               | UDP                |
 
-Note: On the main machine the round trip latency is reported and will be roughly double the latency compared to the latency reported in non-relay mode.
+### ROS 2 Middleware plugins
 
-# Save results to a SQL database
+The performance test tool can also measure the performance of a variety of RMW implementations,
+through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API. The following plugins are
+currently implemented:
 
-The tool also gives you the ability to persist the performance test results in a SQL compatible database.
+#### ROS 2 Callback Executor
 
-See [Add SQL support readme](add_sql_support_readme.md) for instructions and implementation details.
+- [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
+- CMake build flag: `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (on by default)
+- Communication plugin: `-c ROS2`
+- Zero copy transport (`--zero-copy`): no
+- Docker file: [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2)
+- This plugin will use the ROS 2 RMW implementation that is configured on your system.
+  - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
+    - Follow [these instructions](https://docs.ros.org/en/foxy/Guides/Working-with-multiple-RMW-implementations.html)
+    to use a different RMW implementation with ROS 2.
+    - You can find a list of several other middleware options
+      [here](https://docs.ros.org/en/foxy/Concepts/About-Different-Middleware-Vendors.html).
+  - Apex.OS is pre-configured to use Apex.Middleware.
+    - Apex.OS Cert does not support the ROS 2 Callback Executor. When building performance_test with
+      Apex.OS Cert, you must explicitly disable the ROS 2 Callback communicator by setting
+      `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=OFF`.
+- Default transports: depends on underlying DDS implementation
 
-# Memory analysis
+#### Apex.OS Polling Subscription
 
-You can use OSRF memory tools to find memory allocations in your application. To enable it
-you need to do the following steps, assuming you already did compile performance test before:
+- [Apex.OS Polling Subscription with wait-set](https://apexai.pages.apex.ai/grand_central/docs/latest/using-read-and-take.html)
+- CMake build flag: `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`
+- Communication plugin: `-c ROS2PollingSubscription`
+- Zero copy transport (`--zero-copy`): yes
+- Docker file: Not available
+- Default transports: depends on underlying DDS implementation
 
-1. Enter your work space: `cd perf_test_ws/src`
-1. Clone OSRF memory memory tools: `git clone https://github.com/osrf/osrf_testing_tools_cpp.git`
-1. Build everything `cd .. && colcon build --cmake-args -DCMAKE_BUILD_TYPE=Release`
-1. You need to preload the memory library to make diagnostics work: `export LD_PRELOAD=$(pwd)/install/osrf_testing_tools_cpp/lib/libmemory_tools_interpose.so`
-1. Run with memory check enabled: `./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log ---msg Array1k -t test_topic --max_runtime 10 --check_memory`
+## Analyze the results
 
-> Note: Enabling this feature will cause a huge performance impact.
+After an experiment is run with the `-l` flag, a CSV file is recorded. It is possible to add custom
+data to the CSV file by setting the`APEX_PERFORMANCE_TEST` environment variable before running an
+experiment, e.g.
 
-# Custom environment data
-
-You can set the `APEX_PERFORMANCE_TEST` environment variable before running performance test
-to add custom data to the output CSV file.
-This information will then also be visible in the files outputted by the plotter script.
-Please use the JSON format to pass the values.
-
-Example:
-```
+```json
+# JSON format
 export APEX_PERFORMANCE_TEST="
 {
 \"My Version\": \"1.0.4\",
@@ -300,16 +295,98 @@ export APEX_PERFORMANCE_TEST="
 \"My OS Version\": \"Ubuntu 16.04\"
 }
 "
-./install/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k -t test_topic
 ```
 
-# Troubleshooting
+It is also possible to save the results in a SQL compatible database.
+See [Add SQL support readme](add_sql_support_readme.md) for more info.
 
-1. When running performance test it prints for example the following error :
-`ERROR: You must compile with FastRTPS support to enable FastDDS as communication mean.`
+### Plot results
 
-This means that the performance test needs to be compiled with `--cmake-args -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` to switch from ROS 2 to FastDDS.
+The performance_test tool provides several tools to plot the generated results:
 
-# Literature
+1. Results rendered on a PDF file: handy to share results
+    <img src="plotter_generated_pdf.png"  width="1000">
+1. Results rendered in a Jupyter notebook: used to compare multiple experiments
+    <img src="performance_test/helper_scripts/apex_performance_plotter/example_plot_two_experiments.png"  width="1000">
 
-We have attempted to write a white paper with the goal of explaining how to do a fair and unbiased performance testing based on the performance testing framework that we built at Apex.AI and the experience that we gathered in the past 1.5 years. Here is a [link](https://drive.google.com/file/d/15nX80RK6aS8abZvQAOnMNUEgh7px9V5S/view) to the paper.
+#### Installation
+
+The plot tool requires python3 and texlive. On an Ubuntu system you will need to
+install the following packages:
+
+`sudo apt-get install python3 python3-pip texlive texlive-pictures texlive-luatex`
+
+Start a Python virtual environment and install the required Python packages:
+
+```bash
+cd performance_test/helper_scripts/apex_performance_plotter
+pip3 install pipenv
+pipenv shell
+pipenv install --ignore-pipefile
+```
+
+#### Usage
+
+To generate a PDF from the logfile, invoke the `perfplot` binary installed in the previous step:
+
+`perfplot <filename1> <filename2> ...`
+
+Be sure to also check `perfplot -h` for additional options.
+
+>>>
+:point_up: **Common Pitfalls**
+
+All of the latency metrics are collected and calculated by the subscriber process.
+For interprocess communication, it is recommended to provide different prefixes for
+the log files:
+
+```bash
+perf_test -c ROS2 -t Array1k -p 1 -s 0 -l log_pub
+perf_test -c ROS2 -t Array1k -p 0 -s 1 -l log_sub
+```
+
+Then, to plot the latency metrics, invoke perfplot on the subscriber's log file.
+If perfplot is invoked on the publisher's log file, then the CPU and memory
+metrics will be plotted, but the latency plot will be empty.
+>>>
+
+To analyze the results in a Jupyter notebook run the following commands:
+
+```bash
+pipenv shell
+jupyter notebook plot_logs.ipynb
+
+# When you are done, deactivate the venv
+deactivate
+```
+
+## Architecture
+
+Apex.AI's _Performance Testing in ROS 2_ white paper
+([available here](https://drive.google.com/file/d/15nX80RK6aS8abZvQAOnMNUEgh7px9V5S/view))
+describes how to design a fair and unbiased performance test, and is the basis for this project.
+<center><img src="architecture.png"></center>
+
+## Future extensions and limitations
+
+- Communication frameworks like DDS have a huge amount of settings. This tool only allows the most
+  common QOS settings to be configured. The other QOS settings are hardcoded in the application.
+- Only one publisher per topic is allowed, because the data verification logic does not support
+  matching data to the different publishers.
+- Some communication plugins can get stuck in their internal loops if too much data is received.
+  Figuring out ways around such issues is one of the goals of this tool.
+- FastRTPS wait-set does not support timeouts which can lead to the receiving not aborting. In that
+  case the performance test must be manually killed.
+- Using Connext DDS Micro INTRA transport with `reliable` QoS and history kind set to `keep_all`
+  [is not supported with Connext
+  Micro](https://community.rti.com/static/documentation/connext-micro/3.0.3/doc/html/usersmanual/transports/INTRA.html#reliability-and-durability).
+  Set `keep_last` as QoS history kind always when using `reliable`.
+
+Possible additional communication which could be implemented are:
+
+- Raw UDP communication
+
+## Batch run experiments (for advanced users)
+
+A python script [`run_experiment.py`](helper_scripts/run_experiment.py)
+is provided to run multiple experiments at once.
