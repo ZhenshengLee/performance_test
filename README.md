@@ -167,7 +167,15 @@ implemented:
 - [Eclipse Cyclone DDS 0.8.0beta4](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta4)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS`
-- Zero copy transport (`--zero-copy`): no
+- Zero copy transport (`--zero_copy`): yes
+  - Cyclone DDS zero copy requires the
+    [runtime switch](https://github.com/eclipse-cyclonedds/cyclonedds/blob/iceoryx/docs/manual/shared_memory.rst)
+    to be enabled.
+  - Currently, this is only available on the
+    [`iceoryx` branch of Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/iceoryx).
+  - If the runtime switch is enabled, but `--zero_copy` is not added, then the plugin will not use
+    the loaned sample API, but iceoryx will still transport the samples.
+  - See [Dockerfile.mashup](dockerfiles/Dockerfile.mashup)
 - Docker file: [Dockerfile.CycloneDDS](dockerfiles/Dockerfile.CycloneDDS)
 - Default transports:
   | INTRA | IPC on same machine | Distributed system |
@@ -179,7 +187,7 @@ implemented:
 - [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c iceoryx`
-- Zero copy transport (`--zero-copy`): yes
+- Zero copy transport (`--zero_copy`): yes
 - Docker file: [Dockerfile.iceoryx](dockerfiles/Dockerfile.iceoryx)
 - The iceoryx plugin is not a DDS implementation.
   - The DDS-specific options (such as domain ID, durability, and reliability) do not apply.
@@ -195,7 +203,7 @@ implemented:
 - [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c FastRTPS`
-- Zero copy transport (`--zero-copy`): no
+- Zero copy transport (`--zero_copy`): no
 - Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
 - Default transports:
   | INTRA | IPC on same machine | Distributed system |
@@ -207,7 +215,7 @@ implemented:
 - [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c OpenDDS`
-- Zero copy transport (`--zero-copy`): no
+- Zero copy transport (`--zero_copy`): no
 - Docker file: [Dockerfile.OpenDDS](dockerfiles/Dockerfile.OpenDDS)
 - Default transports:
   | INTRA | IPC on same machine | Distributed system |
@@ -219,7 +227,7 @@ implemented:
 - [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON`
 - Communication plugin: `-c ConnextDDS`
-- Zero copy transport (`--zero-copy`): no
+- Zero copy transport (`--zero_copy`): no
 - Docker file: Not available
 - A license is required
 - You need to source an RTI Connext DDS environment.
@@ -238,7 +246,7 @@ implemented:
 - [Connext DDS Micro 3.0.3](https://www.rti.com/products/connext-dds-micro)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON`
 - Communication plugin: `-c ConnextDDSMicro`
-- Zero copy transport (`--zero-copy`): no
+- Zero copy transport (`--zero_copy`): no
 - Docker file: Not available
 - A license is required
 - Default transports:
@@ -257,7 +265,7 @@ currently implemented:
 - [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 - CMake build flag: `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (on by default)
 - Communication plugin: `-c ROS2`
-- Zero copy transport (`--zero-copy`): no
+- Zero copy transport (`--zero_copy`): no
 - Docker file: [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2)
 - This plugin will use the ROS 2 RMW implementation that is configured on your system.
   - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
@@ -276,7 +284,7 @@ currently implemented:
 - [Apex.OS Polling Subscription with wait-set](https://apexai.pages.apex.ai/grand_central/docs/latest/using-read-and-take.html)
 - CMake build flag: `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`
 - Communication plugin: `-c ROS2PollingSubscription`
-- Zero copy transport (`--zero-copy`): yes
+- Zero copy transport (`--zero_copy`): yes
 - Docker file: Not available
 - Default transports: depends on underlying DDS implementation
 
@@ -309,7 +317,14 @@ The performance_test tool provides several tools to plot the generated results:
 1. Results rendered in a Jupyter notebook: used to compare multiple experiments
     <img src="performance_test/helper_scripts/apex_performance_plotter/example_plot_two_experiments.png"  width="1000">
 
-#### Installation
+| RAW Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments | Supports zero copy? |
+|----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|---------------------|
+| [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS | No |
+| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional) <sup>1</sup> | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS | No |
+| [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro | Yes |
+| [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS | Yes<sup>2</sup> |
+| [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS | No |
+| [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)<sup>3</sup> | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx | Yes |
 
 The plot tool requires python3 and texlive. On an Ubuntu system you will need to
 install the following packages:

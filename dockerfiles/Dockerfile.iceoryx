@@ -24,8 +24,6 @@ RUN source /opt/ros/foxy/setup.bash && \
     cd build && \
     make
 
-RUN mkdir -p /perf_test_ws/src
-
 ADD . /perf_test_ws/src/performance_test
 
 RUN source /opt/ros/foxy/setup.bash && \
@@ -39,10 +37,9 @@ RUN source /opt/ros/foxy/setup.bash && \
         -DCMAKE_BUILD_TYPE=Release \
         -DPERFORMANCE_TEST_ICEORYX_ENABLED=ON
 
-RUN mkdir -p /etc/iceoryx
-RUN printf "[general]\nversion = 1\n\n[[segment]]\n\n[[segment.mempool]]\nsize = 128\ncount = 10000\n\n[[segment.mempool]]\nsize = 1024\ncount = 5000\n\n[[segment.mempool]]\nsize = 16384\ncount = 1000\n\n[[segment.mempool]]\nsize = 131072\ncount = 200\n\n[[segment.mempool]]\nsize = 524288\ncount = 50\n\n[[segment.mempool]]\nsize = 1048576\ncount = 30\n\n[[segment.mempool]]\nsize = 4194304\ncount = 10\n\n[[segment.mempool]]\nsize = 16777216\ncount = 3" > /etc/iceoryx/roudi_config.toml
-
 RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
 RUN echo "source /opt/iceoryx/setup.bash" >> /root/.bashrc
 RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
+
+ADD dockerfiles/roudi_config.toml /etc/iceoryx/roudi_config.toml
 RUN echo "/opt/iceoryx/iceoryx_posh/bin/iox-roudi -c /etc/iceoryx/roudi_config.toml &" >> /root/.bashrc

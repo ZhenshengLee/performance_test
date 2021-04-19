@@ -6,8 +6,6 @@ FROM osrf/ros:foxy-desktop
 
 SHELL ["/bin/bash", "-c"]
 
-RUN mkdir -p /perf_test_ws/src
-
 ADD . /perf_test_ws/src/performance_test
 
 RUN source /opt/ros/foxy/setup.bash && \

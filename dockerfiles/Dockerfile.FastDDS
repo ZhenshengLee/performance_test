@@ -9,8 +9,6 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update && \
     apt-get install -y default-jdk
 
-RUN mkdir -p /perf_test_ws/src
-
 ADD . /perf_test_ws/src/performance_test
 
 RUN source /opt/ros/foxy/setup.bash && \

@@ -26,7 +26,7 @@ namespace performance_test
 {
 
 /**
- * \brief Translates abstract QOS settings to specific QOS settings for Connext DDS
+ * \brief Translates abstract QOS settings to specific QOS settings for Cyclone DDS
  * Micro data writers and readers.
  *
  * The reason that this class is constructed like this is that one usually gets a
@@ -84,6 +84,52 @@ private:
 };
 
 /**
+ * \brief Translates abstract QOS settings to specific QOS settings for iceoryx
+ * data writers and readers, for Cyclone DDS zero copy
+ *
+ * The reason that this class is constructed like this is that one usually gets a
+ * partially specified QOS from the topic or similar higher level entity and just
+ * changes some settings from these.
+ */
+class CycloneDDSIceoryxQOSAdapter
+{
+public:
+  /**
+   * \brief Constructs the QOS adapter.
+   * \param qos The abstract QOS settings the adapter should use to derive the
+   * implementation specific QOS settings.
+   */
+  explicit CycloneDDSIceoryxQOSAdapter(const QOSAbstraction qos)
+  : m_qos(qos)
+  {}
+  /**
+   * \brief Applies the abstract QOS to an existing QOS leaving unsupported values as
+   * they were.
+   * \tparam CycloneDDSQos The type of the QOS setting, for example data reader or data
+   * writer QOS.
+   * \param qos The QOS settings to fill supported values in.
+   */
+  template<class CycloneDDSQos>
+  void apply(CycloneDDSQos & qos)
+  {
+    std::cerr << "Cyclone DDS + iceoryx only supports RELIABLE reliability. " <<
+      "Setting reliability to RELIABLE." << std::endl;
+    dds_qset_reliability(qos, DDS_RELIABILITY_RELIABLE, DDS_SECS(1));
+
+    std::cerr << "Cyclone DDS + iceoryx only supports VOLATILE durability. " <<
+      "Setting durability to VOLATILE." << std::endl;
+    dds_qset_durability(qos, DDS_DURABILITY_VOLATILE);
+
+    std::cerr << "Cyclone DDS + iceoryx only supports KEEP_LAST history. " <<
+      "Setting history to KEEP_LAST, with a depth of 16." << std::endl;
+    dds_qset_history(qos, DDS_HISTORY_KEEP_LAST, static_cast<int32_t>(16));
+  }
+
+private:
+  const QOSAbstraction m_qos;
+};
+
+/**
  * \brief The plugin for Cyclone DDS.
  * \tparam Msg The msg type to use.
  */
@@ -115,8 +161,13 @@ public:
   {
     if (m_datawriter == 0) {
       dds_qos_t * dw_qos = dds_create_qos();
-      CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
-      qos_adapter.apply(dw_qos);
+      if (m_ec.is_zero_copy_transfer()) {
+        CycloneDDSIceoryxQOSAdapter qos_adapter(m_ec.qos());
+        qos_adapter.apply(dw_qos);
+      } else {
+        CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
+        qos_adapter.apply(dw_qos);
+      }
       dds_entity_t tp = create_topic(m_ec.pub_topic_postfix());
       m_datawriter = dds_create_writer(m_participant, tp, dw_qos, nullptr);
       dds_delete(tp);
@@ -126,16 +177,33 @@ public:
       }
     }
     if (m_ec.is_zero_copy_transfer()) {
-      throw std::runtime_error("This plugin does not support zero copy transfer");
-    }
-    DataType data;
-    lock();
-    data.time_ = time;
-    data.id_ = next_sample_id();
-    increment_sent();  // We increment before publishing so we don't have to lock twice.
-    unlock();
-    if (dds_write(m_datawriter, static_cast<void *>(&data)) < 0) {
-      throw std::runtime_error("Failed to write to sample");
+      void * loaned_sample;
+      dds_return_t status = dds_loan_sample(m_datawriter, &loaned_sample);
+      if (status != DDS_RETCODE_OK) {
+        throw std::runtime_error("Failed to obtain a loaned sample " + std::to_string(status));
+      }
+      DataType * sample = static_cast<DataType *>(loaned_sample);
+      lock();
+      sample->time_ = time;
+      sample->id_ = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
+      status = dds_write(m_datawriter, sample);
+      if (status == DDS_RETCODE_UNSUPPORTED) {
+        throw std::runtime_error("DDS write unsupported");
+      } else if (status != DDS_RETCODE_OK) {
+        throw std::runtime_error("Failed to write to sample");
+      }
+    } else {
+      DataType data;
+      lock();
+      data.time_ = time;
+      data.id_ = next_sample_id();
+      increment_sent();  // We increment before publishing so we don't have to lock twice.
+      unlock();
+      if (dds_write(m_datawriter, static_cast<void *>(&data)) < 0) {
+        throw std::runtime_error("Failed to write to sample");
+      }
     }
   }
 
@@ -154,8 +222,13 @@ public:
   {
     if (m_datareader == 0) {
       dds_qos_t * dw_qos = dds_create_qos();
-      CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
-      qos_adapter.apply(dw_qos);
+      if (m_ec.is_zero_copy_transfer()) {
+        CycloneDDSIceoryxQOSAdapter qos_adapter(m_ec.qos());
+        qos_adapter.apply(dw_qos);
+      } else {
+        CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
+        qos_adapter.apply(dw_qos);
+      }
       dds_entity_t tp = create_topic(m_ec.sub_topic_postfix());
       m_datareader = dds_create_reader(m_participant, tp, dw_qos, nullptr);
       dds_delete(tp);
