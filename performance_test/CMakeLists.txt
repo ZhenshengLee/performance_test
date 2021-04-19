@@ -177,90 +177,45 @@ set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
 
-option(IDL_MESSAGES_ENABLED "Use the .idl files in the src/msg folder, instead of the .msg files" OFF)
-
-if(IDL_MESSAGES_ENABLED)
-  set(MESSAGE_FILE_EXTENSION "idl")
-else()
-  set(MESSAGE_FILE_EXTENSION "msg")
-endif()
-
 set(MESSAGE_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array64k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array256k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8m.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array64k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array256k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8m.idl"
 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4k.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4k.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32k.idl"
 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8m.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512k.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8m.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512k.idl"
 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatus.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFix.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetection.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrack.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Range.${MESSAGE_FILE_EXTENSION}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Header.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointField.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatus.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFix.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetection.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrack.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Range.idl"
 
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Polygon.${MESSAGE_FILE_EXTENSION}"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3.${MESSAGE_FILE_EXTENSION}")
-
-option(PERFORMANCE_TEST_ZERO_COPY_ENABLED "Enable the option to use zero copy transfer" OFF)
-
-if(PERFORMANCE_TEST_ZERO_COPY_ENABLED)
-  add_definitions(-DPERFORMANCE_TEST_ZERO_COPY_ENABLED)
-  set(MESSAGE_FILES_ZC
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Header.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointField.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array64kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array256kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16ZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256ZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8mZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512kZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatusZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFixZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetectionZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrackZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RangeZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32ZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PolygonZeroCopy.idl"
-      "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3ZeroCopy.idl")
-endif()
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Polygon.idl"
+    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3.idl")
 
 rosidl_generate_interfaces(${PROJECT_NAME}
     ${MESSAGE_FILES}
-    ${MESSAGE_FILES_ZC}
     DEPENDENCIES builtin_interfaces std_msgs sensor_msgs)
 
 set(sources

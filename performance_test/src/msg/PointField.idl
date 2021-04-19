@@ -12,7 +12,7 @@ module performance_test {
     };
     typedef char char__256[256];
     struct PointField {
-      char__256 name_zc;
+      char__256 name;
 
       uint32 offset;
 

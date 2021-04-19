@@ -2,13 +2,13 @@
 // with input from performance_test/src/msg/PointCloud512k.msg
 // generated code does not contain a copyright notice
 
-#include "sensor_msgs/msg/PointField.idl"
-#include "std_msgs/msg/Header.idl"
+#include "performance_test/msg/PointField.idl"
+#include "performance_test/msg/Header.idl"
 
 module performance_test {
   module msg {
-    typedef sensor_msgs::msg::PointField sensor_msgs__msg__PointField;
-    typedef sensor_msgs__msg__PointField sensor_msgs__msg__PointField__8[8];
+    typedef performance_test::msg::PointField performance_test__msg__PointField;
+    typedef performance_test__msg__PointField performance_test__msg__PointField__8[8];
     typedef uint8 uint8__524288[524288];
     @verbatim (language="comment", text=
       " This message holds a collection of N-dimensional points, which may" "\n"
@@ -21,7 +21,7 @@ module performance_test {
         " Point clouds organized as 2d images may be produced by camera depth sensors" "\n"
         " such as stereo or time-of-flight." "\n"
         " Time of sensor data acquisition, and the coordinate frame ID (for 3d points).")
-      std_msgs::msg::Header header;
+      performance_test::msg::Header header;
 
       @verbatim (language="comment", text=
         " 2D structure of the point cloud. If the cloud is unordered, height is" "\n"
@@ -32,7 +32,7 @@ module performance_test {
 
       @verbatim (language="comment", text=
         " Describes the channels and their layout in the binary data blob.")
-      sensor_msgs__msg__PointField__8 fields;
+      performance_test__msg__PointField__8 fields;
 
       @verbatim (language="comment", text=
         " Is this data bigendian?")

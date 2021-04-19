@@ -175,6 +175,9 @@ public:
       wparam.qos.m_publishMode.kind = qos.publish_mode();
       m_publisher = eprosima::fastrtps::Domain::createPublisher(m_participant, wparam);
     }
+    if (m_ec.is_zero_copy_transfer()) {
+      throw std::runtime_error("This plugin does not support zero copy transfer");
+    }
     DataType data;
     lock();
     data.time_(time);

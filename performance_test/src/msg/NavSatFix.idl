@@ -3,7 +3,7 @@
 // generated code does not contain a copyright notice
 
 #include "performance_test/msg/NavSatStatus.idl"
-#include "std_msgs/msg/Header.idl"
+#include "performance_test/msg/Header.idl"
 
 module performance_test {
   module msg {
@@ -28,7 +28,7 @@ module performance_test {
         "        receiver, usually the location of the antenna.  This is a" "\n"
         "        Euclidean frame relative to the vehicle, not a reference" "\n"
         "        ellipsoid.")
-      std_msgs::msg::Header header;
+      performance_test::msg::Header header;
 
       @verbatim (language="comment", text=
         " Satellite fix status information.")

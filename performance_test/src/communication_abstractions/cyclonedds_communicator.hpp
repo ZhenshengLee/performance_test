@@ -125,6 +125,9 @@ public:
         throw std::runtime_error("failed to create datawriter");
       }
     }
+    if (m_ec.is_zero_copy_transfer()) {
+      throw std::runtime_error("This plugin does not support zero copy transfer");
+    }
     DataType data;
     lock();
     data.time_ = time;

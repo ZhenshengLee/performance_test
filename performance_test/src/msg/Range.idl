@@ -2,7 +2,7 @@
 // with input from performance_test/src/msg/Range.msg
 // generated code does not contain a copyright notice
 
-#include "std_msgs/msg/Header.idl"
+#include "performance_test/msg/Header.idl"
 
 module performance_test {
   module msg {
@@ -23,7 +23,7 @@ module performance_test {
         " and +Inf if the object is outside of the detection range." "\n"
         " timestamp in the header is the time the ranger" "\n"
         " returned the distance reading")
-      std_msgs::msg::Header header;
+      performance_test::msg::Header header;
 
       @verbatim (language="comment", text=
         " the type of radiation used by the sensor" "\n"
