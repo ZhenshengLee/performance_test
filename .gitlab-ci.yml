@@ -30,13 +30,13 @@ build_cyclonedds:
   script:
     - source /opt/ros/foxy/setup.bash
     - apt-get update
-    - apt-get install -y bison maven default-jdk python3-pip libcunit1-dev
+    - apt-get install -y bison maven default-jdk python3-pip libcunit1-dev libssl-dev
     - pip3 install -U colcon-common-extensions pytest
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta3 --depth 1
     - cd cyclonedds
     - mkdir -p build
     - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds ..
+    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SECURITY=ON ..
     - cmake --build .
     - cmake --build . --target install
     - find /opt/cyclonedds
@@ -282,7 +282,7 @@ smoke_test_opendds:
         tar xzf opt-opendds.tar.gz -C /;
     '
 
-test_security:
+test_security_fast_dds:
   stage: test
   image: osrf/ros:foxy-desktop
   dependencies:
@@ -296,6 +296,34 @@ test_security:
     # Enable security
     - cd performance_test/helper_scripts
     - source security_setup.bash enable ./demo_keys
+    # The below runs should fail:
+    # Unexpected node names:
+    - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
+    # Unexpected msg types
+    - '! ros2 run performance_test perf_test -c ROS2 --msg Struct16 -t test_topic --max_runtime 10 --rate 2 --keep_last --history_depth 10 --with_security --ros-args -e /performance_test'
+    # This should pass (time-out)
+    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 --msg Array16k -t Array16k --rate 2 --keep_last --history_depth 10 --with_security --ros-args -e /performance_test ||
+       if [ $? -eq 124 ]; then echo "OK";
+       else exit 1;
+       fi
+      '
+test_security_cyclone_dds:
+  stage: test
+  image: osrf/ros:foxy-desktop
+  dependencies:
+    - build_cyclonedds
+  before_script:
+    - apt-get update
+    - apt-get install -y ros-foxy-osrf-testing-tools-cpp ros-foxy-rmw-cyclonedds-cpp
+  script:
+    - tar xzf opt.tar.gz -C /
+    - tar xzf opt-cyclonedds.tar.gz -C /
+    - source /opt/performance_test/setup.bash
+    # Enable security
+    - cd performance_test/helper_scripts
+    - source security_setup.bash enable ./demo_keys
+    - export LD_LIBRARY_PATH=/opt/cyclonedds/lib:$LD_LIBRARY_PATH
+    - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     # The below runs should fail:
     # Unexpected node names:
     - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
