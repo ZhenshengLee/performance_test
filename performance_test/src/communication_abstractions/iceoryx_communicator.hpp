@@ -118,35 +118,37 @@ public:
           {iox_sub_service, iox_sub_instance, iox_sub_event},
           subscriberOptions));
       m_waitset = std::unique_ptr<iox::popo::WaitSet<>>(new iox::popo::WaitSet<>());
-      m_waitset->attachEvent(*m_subscriber.get(), iox::popo::SubscriberEvent::HAS_DATA);
+      m_waitset->attachEvent(*m_subscriber.get(), iox::popo::SubscriberEvent::DATA_RECEIVED);
     }
 
     if (m_subscriber->getSubscriptionState() == iox::SubscribeState::SUBSCRIBED) {
       auto eventVector = m_waitset->timedWait(iox::units::Duration::fromSeconds(15));
       for (auto & event : eventVector) {
         if (event->doesOriginateFrom(m_subscriber.get())) {
-          m_subscriber->take()
-          .and_then(
-            [this](auto & data) {
-              if (m_prev_timestamp >= data->time) {
-                throw std::runtime_error(
-                  "Data consistency violated. Received sample with not strictly older timestamp. "
-                  "Time diff: " + std::to_string(data->time - m_prev_timestamp) +
-                  " Data Time: " + std::to_string(data->time));
-              }
-              lock();
-              m_prev_timestamp = data->time;
-              update_lost_samples_counter(data->id);
-              add_latency_to_statistics(data->time);
-              increment_received();
-              unlock();
-            })
-          .or_else(
-            [](auto & result) {
-              if (result != iox::popo::ChunkReceiveResult::NO_CHUNK_AVAILABLE) {
-                throw std::runtime_error("Error: received Chunk not available");
-              }
-            });
+          lock();
+          while (m_subscriber->hasData()) {
+            m_subscriber->take()
+            .and_then(
+              [this](auto & data) {
+                if (m_prev_timestamp >= data->time) {
+                  throw std::runtime_error(
+                    "Data consistency violated. Received sample with not strictly older timestamp. "
+                    "Time diff: " + std::to_string(data->time - m_prev_timestamp) +
+                    " Data Time: " + std::to_string(data->time));
+                }
+                m_prev_timestamp = data->time;
+                update_lost_samples_counter(data->id);
+                add_latency_to_statistics(data->time);
+                increment_received();
+              })
+            .or_else(
+              [](auto & result) {
+                if (result != iox::popo::ChunkReceiveResult::NO_CHUNK_AVAILABLE) {
+                  throw std::runtime_error("Error: received Chunk not available");
+                }
+              });
+          }
+          unlock();
         }
       }
     } else {

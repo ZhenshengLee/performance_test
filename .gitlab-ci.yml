@@ -75,9 +75,7 @@ build_iceoryx:
     - pip3 install -U colcon-common-extensions pytest
     - mkdir -p /iceoryx_ws/src
     - cd /iceoryx_ws/src/
-    - git clone https://github.com/eclipse-iceoryx/iceoryx.git
-    - cd iceoryx
-    - git checkout 8dd43130e7abf99fd30044b3763595338743ac9a # todo update to v1.0.0 when it's released and tagged
+    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b release_1.0 --depth 1
     - cd /iceoryx_ws
     - '
       colcon build
@@ -266,6 +264,7 @@ smoke_test_iceoryx:
     COMMUNICATION_MEAN: iceoryx
     SMOKE_TEST_BEFORE_SCRIPT: '
         tar xzf opt-iceoryx.tar.gz -C /;
+        source /opt/iceoryx/setup.bash;
         mkdir -p /etc/iceoryx;
         printf "[general]\nversion = 1\n\n[[segment]]\n\n[[segment.mempool]]\nsize = 128\ncount = 1000\n\n[[segment.mempool]]\nsize = 1024\ncount = 1000\n\n[[segment.mempool]]\nsize = 16384\ncount = 100\n\n[[segment.mempool]]\nsize = 131072\ncount = 10" > /etc/iceoryx/roudi_config.toml;
         /opt/iceoryx/iceoryx_posh/bin/iox-roudi -c /etc/iceoryx/roudi_config.toml &

@@ -151,7 +151,7 @@ The performance test tool can measure the performance of a variety of communicat
 | [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro | Yes |
 | [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/4e805597631ed0dcbdc0eecfe9d532cb75180ae7) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS | No |
 | [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS | No |
-| [iceoryx pre-release](https://github.com/eclipse-iceoryx/iceoryx) | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx | Yes |
+| [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0) | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx | Yes |
 
 > <sup>1</sup> NOTE: you need to source an RTI Connext DDS environment: if RTI Connext DDS was 
 > installed with ROS 2 (Linux only):
