@@ -434,14 +434,14 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     // define default output files if none specified
     if (m_csv_logfile == "") {
       auto t = std::time(nullptr);
-      auto tm = *std::gmtime(&t);
+      auto tm = *std::localtime(&t);
       auto oss = std::ostringstream();
       oss << "results_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S") << ".csv";
       m_csv_logfile = oss.str();
     }
     if (m_json_logfile == "") {
       auto t = std::time(nullptr);
-      auto tm = *std::gmtime(&t);
+      auto tm = *std::localtime(&t);
       auto oss = std::ostringstream();
       oss << "results_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S") << ".json";
       m_json_logfile = oss.str();
