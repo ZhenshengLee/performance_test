@@ -1,3 +1,3 @@
-byte[4194304] array
+byte[4194272] array
 int64 time
 uint64 id
