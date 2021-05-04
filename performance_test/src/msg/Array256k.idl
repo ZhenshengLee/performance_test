@@ -6,7 +6,7 @@
 module performance_test {
   module msg {
     typedef octet octet__262144[262144];
-    struct Array64k {
+    struct Array256k {
       octet__262144 array;
 
       int64 time;
