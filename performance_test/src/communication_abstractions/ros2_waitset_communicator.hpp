@@ -63,10 +63,8 @@ public:
       const std::lock_guard<decltype(this->get_lock())> lock(this->get_lock());
       for (const auto msg : loaned_msg) {
         if (msg.info().valid()) {
-          if (this->m_ec.is_zero_copy_transfer() &&
-            !m_polling_subscription->is_data_consistent(msg))
-          {
-            throw std::runtime_error("Zero copy transfer, received data is not consistent");
+          if (this->m_ec.is_zero_copy_transfer()) {
+            verify_data_consistency(m_polling_subscription, msg);
           }
           this->template callback(msg.data());
         }
@@ -75,8 +73,30 @@ public:
   }
 
 private:
-  std::shared_ptr<::rclcpp::PollingSubscription<DataType>> m_polling_subscription;
+  using PollingSubscriptionType = ::rclcpp::PollingSubscription<DataType>;
+  std::shared_ptr<PollingSubscriptionType> m_polling_subscription;
   std::unique_ptr<rclcpp::Waitset<>> m_waitset;
+
+  template<typename C, typename = void>
+  struct RequiresVerification : std::false_type {};
+
+  template<typename C>
+  struct RequiresVerification<C, std::void_t<decltype(&C::is_data_consistent)>>: std::true_type {};
+
+  template<typename P, typename M>
+  std::enable_if_t<!RequiresVerification<PollingSubscriptionType>::value, void>
+  verify_data_consistency(P &, M &)
+  {
+  }
+
+  template<typename P, typename M>
+  std::enable_if_t<RequiresVerification<PollingSubscriptionType>::value, void>
+  verify_data_consistency(P & p, M & msg)
+  {
+    if (!p->is_data_consistent(msg)) {
+      throw std::runtime_error("Zero copy transfer, received data is not consistent");
+    }
+  }
 };
 
 }  // namespace performance_test
