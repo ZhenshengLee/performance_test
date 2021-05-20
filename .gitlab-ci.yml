@@ -194,7 +194,7 @@ build_ros1:
 test:
   stage: test
   image: osrf/ros:foxy-desktop
-  dependencies:
+  needs:
     - build_cyclonedds
   script:
     - tar xf opt.tar.gz -C /
@@ -238,7 +238,7 @@ test:
 smoke_test_fastrtps:
   extends:
     - .smoke_test
-  dependencies:
+  needs:
     - build_fastrtps
   variables:
     COMMUNICATION_MEAN: FastRTPS
@@ -246,7 +246,7 @@ smoke_test_fastrtps:
 smoke_test_cyclonedds:
   extends:
     - .smoke_test
-  dependencies:
+  needs:
     - build_cyclonedds
   variables:
     COMMUNICATION_MEAN: CycloneDDS
@@ -258,7 +258,7 @@ smoke_test_cyclonedds:
 smoke_test_iceoryx:
   extends:
     - .smoke_test
-  dependencies:
+  needs:
     - build_iceoryx
   variables:
     COMMUNICATION_MEAN: iceoryx
@@ -273,7 +273,7 @@ smoke_test_iceoryx:
 smoke_test_opendds:
   extends:
     - .smoke_test
-  dependencies:
+  needs:
     - build_opendds
   variables:
     COMMUNICATION_MEAN: OpenDDS
@@ -284,7 +284,7 @@ smoke_test_opendds:
 test_security_fast_dds:
   stage: test
   image: osrf/ros:foxy-desktop
-  dependencies:
+  needs:
     - build_fastrtps
   before_script:
     - apt-get update
@@ -309,7 +309,7 @@ test_security_fast_dds:
 test_security_cyclone_dds:
   stage: test
   image: osrf/ros:foxy-desktop
-  dependencies:
+  needs:
     - build_cyclonedds
   before_script:
     - apt-get update
@@ -340,7 +340,7 @@ volume:
   image: docker
   services:
     - docker:dind
-  dependencies:
+  needs:
     - build_cyclonedds
   before_script:
     - ''
