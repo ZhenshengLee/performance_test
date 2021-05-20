@@ -341,8 +341,8 @@ For interprocess communication, it is recommended to provide different prefixes 
 the log files:
 
 ```bash
-perf_test -c ROS2 -t Array1k -p 1 -s 0 -l log_pub
-perf_test -c ROS2 -t Array1k -p 0 -s 1 -l log_sub
+perf_test -c ROS2 --msg Array1k -p 1 -s 0 -l log_pub
+perf_test -c ROS2 --msg Array1k -p 0 -s 1 -l log_sub
 ```
 
 Then, to plot the latency metrics, invoke perfplot on the subscriber's log file.

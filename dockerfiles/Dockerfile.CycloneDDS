@@ -1,6 +1,6 @@
 # docker build . -f dockerfiles/Dockerfile.CycloneDDS -t performance_test_cyclone_dds
 # docker run -it performance_test_cyclone_dds bash
-# /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test_topic --msg Array1k
+# /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS --msg Array1k
 
 FROM osrf/ros:foxy-desktop
 

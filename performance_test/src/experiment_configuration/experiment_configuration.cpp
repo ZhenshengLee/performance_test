@@ -84,11 +84,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     "ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, "
     "iceoryx, OpenDDS, ROS2PollingSubscription)")(
     "topic,t",
-    po::value<std::string>()->required(),  // TODO(erik.snider): make this default to "test_topic"
-    "(REQUIRED) Specify a topic name to use. "
-    "Only the pub/sub with the same topic name can communicate with each other.")(
+    po::value<std::string>()->default_value("test_topic"),
+    "Specify a topic name to use. "
+    "Only pubs/subs with the same topic name can communicate with each other.")(
     "msg",
-    po::value<std::string>(),  // TODO(erik.snider): make this required
+    po::value<std::string>()->required(),
     "(REQUIRED) Msg to use. Use --msg_list to get a list.")(
     "msg_list", "Prints list of available msg types and exits.")(
     "dds_domain_id", po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")(
@@ -180,14 +180,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     po::notify(vm);
 
     m_topic_name = vm["topic"].as<std::string>();
-    if (vm.count("msg")) {
-      m_msg_name = vm["msg"].as<std::string>();
-    } else {
-      m_msg_name = vm["topic"].as<std::string>();
-      std::cout << "Warning: using the topic name as the message name! It's recommended to "
-        "separate the concept of topics and message types." << std::endl;
-    }
-
+    m_msg_name = vm["msg"].as<std::string>();
     m_rate = vm["rate"].as<uint32_t>();
 
     if (vm.count("check_memory")) {

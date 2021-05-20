@@ -54,7 +54,7 @@ cd perf_test_ws/src
 git clone https://github.com/ApexAI/performance_test.git
 cd ..
 colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_ODB_SQLITE=ON
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log -t Array1k --max_runtime 10
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k --max_runtime 10
 ```
 
 The default name of the resulting database is "db_name", you can change it by using `--db_name`

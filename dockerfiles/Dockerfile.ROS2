@@ -1,6 +1,6 @@
 # docker build . -f dockerfiles/Dockerfile.ROS2 -t performance_test_ros2
 # docker run -it performance_test_ros2 bash
-# /opt/performance_test/lib/performance_test/perf_test -c ROS2 -t test_topic --msg Array1k
+# /opt/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k
 
 FROM osrf/ros:foxy-desktop
 
