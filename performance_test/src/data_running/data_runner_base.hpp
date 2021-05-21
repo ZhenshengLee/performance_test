@@ -15,7 +15,6 @@
 #ifndef DATA_RUNNING__DATA_RUNNER_BASE_HPP_
 #define DATA_RUNNING__DATA_RUNNER_BASE_HPP_
 
-#include <boost/core/noncopyable.hpp>
 #include <string>
 
 #ifdef PERFORMANCE_TEST_MEMORYTOOLS_ENABLED
@@ -40,9 +39,12 @@ enum class RunType
 
 /// Interface for generic object which effectively executes the experiment and collects the
 /// experiment results.
-class DataRunnerBase : boost::noncopyable
+class DataRunnerBase
 {
 public:
+  DataRunnerBase(const DataRunnerBase &) = delete;
+  DataRunnerBase & operator=(const DataRunnerBase &) = delete;
+
   DataRunnerBase()
   : m_ec(ExperimentConfiguration::get())
   {
