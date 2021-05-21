@@ -14,13 +14,14 @@
 
 #include "experiment_configuration.hpp"
 
-#include <boost/program_options.hpp>
+#include <tclap/CmdLine.h>
 #include <rmw/rmw.h>
 
 #include <iostream>
 #include <iomanip>
 #include <exception>
 #include <string>
+#include <vector>
 
 #include "topics.hpp"
 
@@ -70,96 +71,204 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
 
 void ExperimentConfiguration::setup(int argc, char ** argv)
 {
-  namespace po = ::boost::program_options;
+  std::string comm_str;
+  bool print_msg_list = false;
+  bool reliable_qos = false;
+  bool transient_qos = false;
+  bool keep_last_qos = false;
+  uint32_t history_depth = 0;
+  bool disable_async = false;
+  int32_t prio = 0;
+  uint32_t cpus = 0;
+  std::string roundtrip_mode_str;
+  try {
+    TCLAP::CmdLine cmd("Apex.AI performance_test");
 
-  po::options_description desc("Allowed options");
-  desc.add_options()("help,h", "Print usage message.")(
-    "logfile,l", po::value<std::string>(),
-    "Optionally specify a logfile.")(
-    "rate,r", po::value<uint32_t>()->default_value(1000),
-    "The rate data should be published. Defaults to 1000 Hz. 0 means publish as fast as possible.")(
-    "communication,c", po::value<std::string>()->required(),
-    "(REQUIRED) Communication plugin to use ( "
-    "ROS2, FastRTPS, ConnextDDS, ConnextDDSMicro, CycloneDDS, "
-    "iceoryx, OpenDDS, ROS2PollingSubscription)")(
-    "topic,t",
-    po::value<std::string>()->default_value("test_topic"),
-    "Specify a topic name to use. "
-    "Only pubs/subs with the same topic name can communicate with each other.")(
-    "msg",
-    po::value<std::string>()->required(),
-    "(REQUIRED) Msg to use. Use --msg_list to get a list.")(
-    "msg_list", "Prints list of available msg types and exits.")(
-    "dds_domain_id", po::value<uint32_t>()->default_value(0), "Sets the DDS domain id.")(
-    "reliable", "Enable reliable QOS. Default is best effort.")(
-    "transient", "Enable transient QOS. Default is volatile.")(
-    "keep_last", "Enable keep last QOS. Default is keep all.")(
-    "history_depth", po::value<uint32_t>()->default_value(1000),
-    "Set history depth QOS. Defaults to 1000.")(
-    "disable_async",
-    "Disables async. pub/sub.")(
-    "max_runtime",
-    po::value<uint64_t>()->default_value(0),
-    "Maximum number of seconds to run before exiting. Default (0) is to run forever.")(
-    "num_pub_threads,p", po::value<uint32_t>()->default_value(1),
-    "Maximum number of publisher threads.")(
-    "num_sub_threads,s",
-    po::value<uint32_t>()->default_value(1),
-    "Maximum number of subscriber threads.")(
-    "check_memory",
-    "Prints backtrace of all memory operations performed by the middleware. "
-    "This will slow down the application!")(
-    "use_rt_prio", po::value<int32_t>()->default_value(0),
-    "Set RT priority. "
-    "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
-    "use_rt_cpus", po::value<uint32_t>()->default_value(0),
-    "Set RT cpu affinity mask. "
-    "Only certain platforms (i.e. Drive PX) have the right configuration to support this.")(
-    "use_single_participant",
-    "**DEPRECATED** Uses only one participant per process. By default every thread has its own.")(
-    "with_security", "Make nodes with deterministic names for use with security")(
-    "zero_copy", "Use zero copy transfer")(
-    "roundtrip_mode",
-    po::value<std::string>()->default_value("None"),
-    "Selects the round trip mode (None, Main, Relay).")(
-    "ignore",
-    po::value<uint32_t>()->default_value(0),
-    "Ignores first n seconds of the experiment.")(
-    "disable_logging",
-    "Disables experiment logging to stdout.")(
-    "expected_num_pubs",
-    po::value<uint32_t>()->default_value(0), "Expected number of publishers for "
-    "wait_for_matched")(
-    "expected_num_subs",
-    po::value<uint32_t>()->default_value(0), "Expected number of subscribers for "
-    "wait_for_matched")(
-    "wait_for_matched_timeout",
-    po::value<uint32_t>()->default_value(30),
-    "Maximum time[s] to wait for matching publishers/subscribers. Defaults to 30s")
+    // ROS eloquent adds by default --ros-args to ros2 launch and no value for that argument
+    // is valid, so we allow unregistered options.
+    cmd.ignoreUnmatched(true);
+
+    TCLAP::ValueArg<std::string> logfileArg("l", "logfile",
+      "Optionally specify a logfile.", false, "", "name", cmd);
+
+    TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
+      "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
+
+    std::vector<std::string> allowedCommunications;
+#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
+    allowedCommunications.push_back("ROS2");
+#endif
+#ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
+    allowedCommunications.push_back("ROS2PollingSubscription");
+#endif
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+    allowedCommunications.push_back("FastRTPS");
+#endif
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+    allowedCommunications.push_back("ConnextDDSMicro");
+#endif
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+    allowedCommunications.push_back("ConnextDDS");
+#endif
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+    allowedCommunications.push_back("CycloneDDS");
+#endif
+#ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+    allowedCommunications.push_back("iceoryx");
+#endif
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+    allowedCommunications.push_back("OpenDDS");
+#endif
+    TCLAP::ValuesConstraint<std::string> allowedCommunicationVals(allowedCommunications);
+    TCLAP::ValueArg<std::string> communicationArg("c", "communication",
+      "Which communication plugin to use.", false, allowedCommunications[0],
+      &allowedCommunicationVals, cmd);
+
+    TCLAP::ValueArg<std::string> topicArg("t", "topic",
+      "The topic name.", false, "test_topic", "topic", cmd);
+
+    TCLAP::ValueArg<std::string> msgArg("m", "msg",
+      "The message type. Use --msg_list to list the options.", false, "Array1k", "type", cmd);
+
+    TCLAP::SwitchArg msgListArg("", "msg_list",
+      "Print the list of available msg types and exit.", cmd, false);
+
+    TCLAP::ValueArg<uint32_t> ddsDomainIdArg("", "dds_domain_id",
+      "The DDS domain id.", false, 0, "id", cmd);
+
+    TCLAP::SwitchArg reliableArg("", "reliable",
+      "Enable reliable QOS. Default is best effort.", cmd, false);
+
+    TCLAP::SwitchArg transientArg("", "transient",
+      "Enable transient local QOS. Default is volatile.", cmd, false);
+
+    TCLAP::SwitchArg keepLastArg("", "keep_last",
+      "Enable keep last QOS. Default is keep all.", cmd, false);
+
+    TCLAP::ValueArg<uint32_t> historyDepthArg("", "history_depth",
+      "The history depth QOS.", false, 1000, "N", cmd);
+
+    TCLAP::SwitchArg disableAsyncArg("", "disable_async",
+      "Disable asynchronous pub/sub.", cmd, false);
+
+    TCLAP::ValueArg<uint64_t> maxRuntimeArg("", "max_runtime",
+      "Run N seconds, then exit. 0 means run forever.", false, 0, "N", cmd);
+
+    TCLAP::ValueArg<uint32_t> numPubsArg("p", "num_pub_threads",
+      "Number of publisher threads.", false, 1, "N", cmd);
+
+    TCLAP::ValueArg<uint32_t> numSubsArg("s", "num_sub_threads",
+      "Number of subscriber threads.", false, 1, "N", cmd);
+
+    TCLAP::SwitchArg checkMemoryArg("", "check_memory",
+      "Print backtrace of all memory operations performed by the middleware. "
+      "This will slow down the application!", cmd, false);
+
+    TCLAP::ValueArg<int32_t> useRtPrioArg("", "use_rt_prio",
+      "Set RT priority. "
+      "Only certain platforms (i.e. Drive PX) have the right configuration to support this.",
+      false, 0, "N", cmd);
+
+    TCLAP::ValueArg<uint32_t> useRtCpusArg("", "use_rt_cpus",
+      "Set RT CPU affinity mask. "
+      "Only certain platforms (i.e. Drive PX) have the right configuration to support this.",
+      false, 0, "N", cmd);
+
+    TCLAP::SwitchArg useSingleParticipantArg("", "use_single_participant",
+      "**DEPRECATED** Uses only one participant per process. By default every thread has its own.",
+      cmd, false);
+
+    TCLAP::SwitchArg withSecurityArg("", "with_security",
+      "Make nodes with deterministic names for use with security.", cmd, false);
+
+    std::vector<std::string> allowedRelayModes{{"None", "Main", "Relay"}};
+    TCLAP::ValuesConstraint<std::string> allowedRelayModeVals(allowedRelayModes);
+    TCLAP::ValueArg<std::string> relayModeArg("", "roundtrip_mode",
+      "Select the round trip mode.", false, "None",
+      &allowedRelayModeVals, cmd);
+
+    TCLAP::ValueArg<uint32_t> ignoreArg("", "ignore",
+      "Ignore the first N seconds of the experiment.", false, 0, "N", cmd);
+
+    TCLAP::SwitchArg disableLoggingArg("", "disable_logging",
+      "Disable experiment logging to stdout.", cmd, false);
+
+    TCLAP::ValueArg<uint32_t> expectedNumPubsArg("", "expected_num_pubs",
+      "Expected number of publishers for wait_for_matched.", false, 0, "N", cmd);
+
+    TCLAP::ValueArg<uint32_t> expectedNumSubsArg("", "expected_num_subs",
+      "Expected number of subscribers for wait_for_matched.", false, 0, "N", cmd);
+
+    TCLAP::ValueArg<uint32_t> waitForMatchedTimeoutArg("", "wait_for_matched_timeout",
+      "Maximum time in seconds to wait for matched pubs/subs.", false, 30, "N", cmd);
+
+    TCLAP::SwitchArg zeroCopyArg("", "zero_copy",
+      "Use zero copy transfer.", cmd, false);
+
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  ("db_name", po::value<std::string>()->default_value("db_name"),
-  "Name of the SQL database.")
+    TCLAP::ValueArg<std::string> dbNameArg("", "db_name",
+      "Name of the SQL database.", false, "db_name", "db", cmd);
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-  ("db_user", po::value<std::string>(),
-  "User name to login to the SQL database.")(
-    "db_password",
-    po::value<std::string>(),
-    "Password to login to the SQL database.")(
-    "db_host",
-    po::value<std::string>(), "IP address of SQL server.")(
-    "db_port",
-    po::value<unsigned int>(), "Port for SQL protocol.")
+    TCLAP::ValueArg<std::string> dbUserArg("", "db_user",
+      "User name to login to the SQL database.", false, "", "user", cmd);
+
+    TCLAP::ValueArg<std::string> dbPasswordArg("", "db_password",
+      "Password to login to the SQL database.", false, "", "pw", cmd);
+
+    TCLAP::ValueArg<std::string> dbHostArg("", "db_host",
+      "IP address of the SQL server.", false, "", "host", cmd);
+
+    TCLAP::ValueArg<std::string> dbPortArg("", "db_port",
+      "Port for SQL protocol.", false, "", "port", cmd);
 #endif
 #endif
-  ;
-  po::variables_map vm;
-  // ROS eloquent adds by default --ros-args to ros2 launch and no value for that argument
-  // is valid, so we allow unregistered options so boost doesn't complain about it.
-  po::store(po::command_line_parser(argc, argv).options(desc).allow_unregistered().run(), vm);
+
+    cmd.parse(argc, argv);
+
+    m_logfile = logfileArg.getValue();
+    m_rate = rateArg.getValue();
+    comm_str = communicationArg.getValue();
+    m_topic_name = topicArg.getValue();
+    m_msg_name = msgArg.getValue();
+    print_msg_list = msgListArg.getValue();
+    m_dds_domain_id = ddsDomainIdArg.getValue();
+    reliable_qos = reliableArg.getValue();
+    transient_qos = transientArg.getValue();
+    keep_last_qos = keepLastArg.getValue();
+    history_depth = historyDepthArg.getValue();
+    disable_async = disableAsyncArg.getValue();
+    m_max_runtime = maxRuntimeArg.getValue();
+    m_number_of_publishers = numPubsArg.getValue();
+    m_number_of_subscribers = numSubsArg.getValue();
+    m_check_memory = checkMemoryArg.getValue();
+    prio = useRtPrioArg.getValue();
+    cpus = useRtCpusArg.getValue();
+    m_use_single_participant = useSingleParticipantArg.getValue();
+    m_with_security = withSecurityArg.getValue();
+    roundtrip_mode_str = relayModeArg.getValue();
+    m_rows_to_ignore = ignoreArg.getValue();
+    m_disable_logging = disableLoggingArg.getValue();
+    m_expected_num_pubs = expectedNumPubsArg.getValue();
+    m_expected_num_subs = expectedNumSubsArg.getValue();
+    m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
+    m_is_zero_copy_transfer = zeroCopyArg.getValue();
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+    m_db_name = dbNameArg.getValue();
+#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
+    m_db_user = dbUserArg.getValue();
+    m_db_password = dbPasswordArg.getValue();
+    m_db_host = dbHostArg.getValue();
+    m_db_port = dbPortArg.getValue();
+#endif
+#endif
+  } catch (TCLAP::ArgException & e) {
+    std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+  }
+
   m_perf_test_version = version;
 
   try {
-    if (vm.count("msg_list")) {
+    if (print_msg_list) {
       for (const auto & s : topics::supported_msg_names()) {
         std::cout << s << std::endl;
       }
@@ -167,148 +276,99 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       exit(0);
     }
 
-    if (vm.count("help")) {
-      std::cout << "Version: " << perf_test_version() << "\n";
-      std::cout << desc << "\n";
-      exit(0);
-    }
-
-    // validate arguments and raise an error if invalid
-    po::notify(vm);
-
-    m_topic_name = vm["topic"].as<std::string>();
-    m_msg_name = vm["msg"].as<std::string>();
-    m_rate = vm["rate"].as<uint32_t>();
-
-    if (vm.count("check_memory")) {
-      m_check_memory = true;
-    }
-
-    if (vm["communication"].as<std::string>() == "ROS2") {
+    if (comm_str == "ROS2") {
       m_com_mean = CommunicationMean::ROS2;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "ROS2";
       #endif
-    } else if (vm["communication"].as<std::string>() == "ROS2PollingSubscription") {
+    }
 #ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
+    if (comm_str == "ROS2PollingSubscription") {
       m_com_mean = CommunicationMean::ROS2PollingSubscription;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "ROS2PollingSubscription";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED flag as ON to "
-              "enable it as communication mean.");
+    }
 #endif
-    } else if (vm["communication"].as<std::string>() == "FastRTPS") {
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+    if (comm_str == "FastRTPS") {
       m_com_mean = CommunicationMean::FASTRTPS;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "FASTRTPS";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with FastRTPS support to enable it as communication mean.");
+    }
 #endif
-    } else if (vm["communication"].as<std::string>() == "ConnextDDSMicro") {
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+    if (comm_str == "ConnextDDSMicro") {
       m_com_mean = CommunicationMean::CONNEXTDDSMICRO;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "CONNEXTDDSMICRO";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with ConnextDDSMicro support to enable it as communication mean.");
+    }
 #endif
-    } else if (vm["communication"].as<std::string>() == "ConnextDDS") {
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+    if (comm_str == "ConnextDDS") {
       m_com_mean = CommunicationMean::CONNEXTDDS;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "CONNEXTDDS";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with ConnextDDSMicro support to enable it as communication mean.");
+    }
 #endif
-    } else if (vm["communication"].as<std::string>() == "CycloneDDS") {
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+    if (comm_str == "CycloneDDS") {
       m_com_mean = CommunicationMean::CYCLONEDDS;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "CYCLONEDDS";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with CycloneDDS support to enable it as communication mean.");
+    }
 #endif
-    } else if (vm["communication"].as<std::string>() == "iceoryx") {
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
+    if (comm_str == "iceoryx") {
       m_com_mean = CommunicationMean::ICEORYX;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "ICEORYX";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with iceoryx support to enable it as communication mean.");
+    }
 #endif
-    } else if (vm["communication"].as<std::string>() == "OpenDDS") {
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+    if (comm_str == "OpenDDS") {
       m_com_mean = CommunicationMean::OPENDDS;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
       m_com_mean_str = "OPENDDS";
       #endif
-#else
-      throw std::invalid_argument(
-              "You must compile with OpenDDS support to enable it as communication mean");
-#endif
-    } else {
-      throw std::invalid_argument("Selected communication mean not supported!");
     }
+#endif
 
-    m_dds_domain_id = vm["dds_domain_id"].as<uint32_t>();
-
-    if (vm.count("reliable")) {
+    if (reliable_qos) {
       m_qos.reliability = QOSAbstraction::Reliability::RELIABLE;
     } else {
       m_qos.reliability = QOSAbstraction::Reliability::BEST_EFFORT;
     }
-    if (vm.count("transient")) {
+    if (transient_qos) {
       m_qos.durability = QOSAbstraction::Durability::TRANSIENT_LOCAL;
     } else {
       m_qos.durability = QOSAbstraction::Durability::VOLATILE;
     }
-    if (vm.count("keep_last")) {
+    if (keep_last_qos) {
       m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_LAST;
     } else {
       m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_ALL;
     }
-    m_qos.history_depth = vm["history_depth"].as<uint32_t>();
-    if (vm.count("disable_async")) {
+    m_qos.history_depth = history_depth;
+    if (disable_async) {
       if (m_com_mean == CommunicationMean::ROS2) {
         throw std::invalid_argument("ROS 2 does not support disabling async. publishing.");
       }
       m_qos.sync_pubsub = true;
     }
 
-    m_max_runtime = vm["max_runtime"].as<uint64_t>();
-    m_rows_to_ignore = vm["ignore"].as<uint32_t>();
-
-    m_number_of_publishers = vm["num_pub_threads"].as<uint32_t>();
-    m_number_of_subscribers = vm["num_sub_threads"].as<uint32_t>();
-
     if (m_number_of_publishers > 1) {
       throw std::invalid_argument("More than one publisher is not supported at the moment");
     }
 
-    m_expected_num_pubs = vm["expected_num_pubs"].as<uint32_t>();
-    m_expected_num_subs = vm["expected_num_subs"].as<uint32_t>();
-    m_wait_for_matched_timeout = vm["wait_for_matched_timeout"].as<uint32_t>();
-
     if (m_expected_num_pubs > 1) {
       throw std::invalid_argument("More than one publisher is not supported at the moment");
     }
-
-    int32_t prio = vm["use_rt_prio"].as<int32_t>();
-    uint32_t cpus = vm["use_rt_cpus"].as<uint32_t>();
 
     if (prio != 0 || cpus != 0) {
 #if PERFORMANCE_TEST_RT_ENABLED
@@ -318,36 +378,27 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       throw std::invalid_argument("Built with RT optimizations disabled");
 #endif
     }
-    m_use_single_participant = false;
-    if (vm.count("use_single_participant")) {
+    if (m_use_single_participant) {
       if (m_com_mean == CommunicationMean::ROS2) {
         throw std::invalid_argument("ROS2 does not support single participant mode!");
-      } else {
-        m_use_single_participant = true;
       }
     }
 
-    m_with_security = false;
-    if (vm.count("with_security")) {
+    if (m_with_security) {
       if (m_com_mean != CommunicationMean::ROS2) {
         throw std::invalid_argument("Only ROS2 supports security!");
-      } else {
-        m_with_security = true;
       }
     }
 
-    m_is_zero_copy_transfer = false;
-    if (vm.count("zero_copy")) {
+    if (m_is_zero_copy_transfer) {
       if (m_number_of_publishers > 0 && m_number_of_subscribers > 0) {
         throw std::invalid_argument(
                 "Zero copy transfer only makes sense for interprocess communication!");
-      } else {
-        m_is_zero_copy_transfer = true;
       }
     }
 
     m_roundtrip_mode = RoundTripMode::NONE;
-    const auto mode = vm["roundtrip_mode"].as<std::string>();
+    const auto mode = roundtrip_mode_str;
     if (mode == "None") {
       m_roundtrip_mode = RoundTripMode::NONE;
     } else if (mode == "Main") {
@@ -360,22 +411,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_rmw_implementation = rmw_get_implementation_identifier();
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    m_db_name = vm["db_name"].as<std::string>();
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-    if (vm.count("db_user")) {
-      m_db_user = vm["db_user"].as<std::string>();
-    }
-    if (vm.count("db_password")) {
-      m_db_password = vm["db_password"].as<std::string>();
-    }
-    if (vm.count("db_host")) {
-      m_db_host = vm["db_host"].as<std::string>();
-    }
-    if (vm.count("db_port")) {
-      m_db_port = vm["db_port"].as<unsigned int>();
-    }
-    if (!vm.count("db_user") || !vm.count("db_password") || !vm.count("db_host") ||
-      !vm.count("db_port"))
+    if (m_db_user.empty() || m_db_password.empty() || m_db_host.empty() ||
+      m_db_port.empty())
     {
       m_use_odb = false;
       std::cout <<
@@ -387,19 +425,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_is_setup = true;
     // Logfile needs to be opened at the end, as the experiment configuration influences the
     // filename.
-    if (vm.count("logfile")) {
-      m_logfile = vm["logfile"].as<std::string>();
+    if (!m_logfile.empty()) {
       open_file();
-    }
-    // If we need to disable logging to stdout
-    if (vm.count("disable_logging")) {
-      m_disable_logging = true;
     }
   } catch (const std::exception & e) {
     std::cerr << "ERROR: ";
     std::cerr << e.what() << std::endl;
-    std::cerr << "Check below on how to use this tool:" << std::endl;
-    std::cerr << desc << "\n";
     exit(1);
   }
 }

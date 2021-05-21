@@ -24,7 +24,7 @@ set(OPTIONAL_LIBRARIES)
 
 # Default to C++14
 set(CMAKE_CXX_STANDARD 14)
-find_package(Boost COMPONENTS program_options timer REQUIRED)
+find_package(Boost COMPONENTS timer REQUIRED)
 find_package(ament_cmake REQUIRED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -288,6 +288,23 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   list(APPEND sources src/communication_abstractions/opendds_communicator.hpp)
 endif()
 
+include(ExternalProject)
+set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
+externalproject_add(
+  tclap
+  GIT_REPOSITORY http://git.code.sf.net/p/tclap/code
+  GIT_TAG 1.4.0-rc1
+  GIT_SHALLOW TRUE
+  PREFIX ${EXTERNAL_INSTALL_LOCATION}
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/tclap
+  CMAKE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  UPDATE_COMMAND ""
+  INSTALL_COMMAND ""
+  BUILD_COMMAND ""
+)
+include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tclap/include)
+
 # Use ODB support to create SQL database
 option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)
 option(PERFORMANCE_TEST_ODB_MYSQL "Enable ODB with MYSQL" OFF)
@@ -327,6 +344,7 @@ endif()
 
 set(EXE_NAME perf_test)
 add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
+add_dependencies(${EXE_NAME} tclap)
 
 
 set_compile_options(${EXE_NAME})
