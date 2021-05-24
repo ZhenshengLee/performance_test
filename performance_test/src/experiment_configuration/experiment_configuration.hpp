@@ -15,6 +15,9 @@
 #ifndef EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_
 #define EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_
 
+#include <boost/uuid/uuid_generators.hpp>
+#include <boost/uuid/uuid_io.hpp>
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -155,6 +158,9 @@ public:
   std::string pub_topic_postfix() const;
   /// \returns Returns the subscribing topic postfix.
   std::string sub_topic_postfix() const;
+  /// \returns Returns the randomly generated unique ID of the experiment. This will throw if the
+  /// experiment configuration is not set up.
+  boost::uuids::uuid id() const;
   /// Logs \param msg to stdout and the configured log file. This will throw if the experiment
   /// configuration is not set up.
   void log(const std::string & msg) const;
@@ -184,7 +190,8 @@ public:
 
 private:
   ExperimentConfiguration()
-  : m_is_setup(false),
+  : m_id(boost::uuids::random_generator()()),
+    m_is_setup(false),
     m_dds_domain_id(),
     m_rate(),
     m_max_runtime(),
@@ -217,6 +224,7 @@ private:
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db id
 #endif
+  boost::uuids::uuid m_id;
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient
 #endif
