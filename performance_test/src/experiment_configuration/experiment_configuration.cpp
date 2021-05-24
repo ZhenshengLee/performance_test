@@ -45,8 +45,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
 {
   if (e.is_setup()) {
     return stream <<
-           "Experiment id: " << e.id() <<
-           "\nPerformance Test Version: " << e.perf_test_version() <<
+           "Performance Test Version: " << e.perf_test_version() <<
            "\nLogfile name: " << e.logfile_name() <<
            "\nCommunication mean: " << e.com_mean() <<
            "\nRMW Implementation: " << e.rmw_implementation() <<
@@ -595,11 +594,6 @@ std::string ExperimentConfiguration::sub_topic_postfix() const
     fix = "main";
   }
   return fix;
-}
-
-boost::uuids::uuid ExperimentConfiguration::id() const
-{
-  return m_id;
 }
 
 void ExperimentConfiguration::log(const std::string & msg) const
