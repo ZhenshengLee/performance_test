@@ -15,7 +15,8 @@
 #ifndef UTILITIES__CPU_USAGE_TRACKER_HPP_
 #define UTILITIES__CPU_USAGE_TRACKER_HPP_
 
-#include <boost/timer/timer.hpp>
+#include <sys/times.h>
+#include <unistd.h>
 #include <thread>
 
 #if defined(QNX)
@@ -64,15 +65,14 @@ private:
 ///  Calculate the CPU usage for the running experiment in the performance test
 class CPUsageTracker
 {
-protected:
-  boost::timer::cpu_timer m_cpu_timer;
-
 public:
   CPUsageTracker()
-  : m_cpu_timer()
   {
 #if defined(QNX)
     m_tot_cpu_cores = _syspage_ptr->num_cpu;
+#else
+    m_cpu_cores = std::thread::hardware_concurrency();
+    m_ticks_to_ns = 1000000000LL / ::sysconf(_SC_CLK_TCK);
 #endif
   }
 
@@ -114,23 +114,39 @@ public:
     CpuInfo cpu_info_local{m_tot_cpu_cores, cpu_usage_local};
     return cpu_info_local;
 #else
-    auto times = m_cpu_timer.elapsed();
-    m_cpu_timer.start();
+    auto wall_time = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+    tms tm;
+    ::times(&tm);
+    auto system_time = (tm.tms_stime + tm.tms_cstime) * m_ticks_to_ns;
+    auto user_time = (tm.tms_utime + tm.tms_cutime) * m_ticks_to_ns;
 
-    auto cpu_cores = std::thread::hardware_concurrency();
+    auto wall_diff = wall_time - m_wall_time;
+    auto system_diff = system_time - m_system_time;
+    auto user_diff = user_time - m_user_time;
+
+    m_wall_time = wall_time;
+    m_system_time = system_time;
+    m_user_time = user_time;
+
     return CpuInfo(
-      cpu_cores,
-      100.0F * static_cast<float>(times.user + times.system) /
-      static_cast<float>(times.wall * cpu_cores)
+      m_cpu_cores,
+      100.0F * static_cast<float>(user_diff + system_diff) /
+      static_cast<float>(wall_diff * m_cpu_cores)
     );
 #endif  // defined(QNX)
   }
-#if defined(QNX)
 
 private:
+#if defined(QNX)
   int64_t m_prev_active_time;
   int64_t m_prev_total_time;
   uint32_t m_tot_cpu_cores;
+#else
+  unsigned int m_cpu_cores;
+  int64_t m_ticks_to_ns;
+  int64_t m_user_time;
+  int64_t m_system_time;
+  int64_t m_wall_time;
 #endif  // defined(QNX)
 };
 }  // namespace performance_test

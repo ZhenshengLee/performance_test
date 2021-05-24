@@ -24,7 +24,7 @@ set(OPTIONAL_LIBRARIES)
 
 # Default to C++14
 set(CMAKE_CXX_STANDARD 14)
-find_package(Boost COMPONENTS timer REQUIRED)
+find_package(Boost REQUIRED)
 find_package(ament_cmake REQUIRED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
