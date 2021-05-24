@@ -305,6 +305,25 @@ externalproject_add(
 )
 include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tclap/include)
 
+externalproject_add(
+  rapidjson
+  GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
+  GIT_TAG v1.1.0
+  GIT_SHALLOW TRUE
+  PREFIX ${EXTERNAL_INSTALL_LOCATION}
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/rapidjson
+  CMAKE_COMMAND ""
+  CMAKE_ARGS
+    -DRAPIDJSON_BUILD_TESTS=OFF
+    -DRAPIDJSON_BUILD_DOC=OFF
+    -DRAPIDJSON_BUILD_EXAMPLES=OFF
+  CONFIGURE_COMMAND ""
+  UPDATE_COMMAND ""
+  INSTALL_COMMAND ""
+  BUILD_COMMAND ""
+)
+include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/rapidjson/include)
+
 # Use ODB support to create SQL database
 option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)
 option(PERFORMANCE_TEST_ODB_MYSQL "Enable ODB with MYSQL" OFF)
@@ -344,7 +363,7 @@ endif()
 
 set(EXE_NAME perf_test)
 add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
-add_dependencies(${EXE_NAME} tclap)
+add_dependencies(${EXE_NAME} tclap rapidjson)
 
 
 set_compile_options(${EXE_NAME})

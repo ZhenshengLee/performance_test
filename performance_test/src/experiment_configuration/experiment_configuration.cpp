@@ -219,8 +219,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::ValueArg<std::string> dbHostArg("", "db_host",
       "IP address of the SQL server.", false, "", "host", cmd);
 
-    TCLAP::ValueArg<std::string> dbPortArg("", "db_port",
-      "Port for SQL protocol.", false, "", "port", cmd);
+    TCLAP::ValueArg<unsigned int> dbPortArg("", "db_port",
+      "Port for SQL protocol.", false, 0, "port", cmd);
 #endif
 #endif
 
@@ -414,7 +414,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
     if (m_db_user.empty() || m_db_password.empty() || m_db_host.empty() ||
-      m_db_port.empty())
+      m_db_port == 0)
     {
       m_use_odb = false;
       std::cout <<

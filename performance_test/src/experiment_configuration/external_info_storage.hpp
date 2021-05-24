@@ -15,9 +15,6 @@
 #ifndef EXPERIMENT_CONFIGURATION__EXTERNAL_INFO_STORAGE_HPP_
 #define EXPERIMENT_CONFIGURATION__EXTERNAL_INFO_STORAGE_HPP_
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/exceptions.hpp>
 #include <iostream>
 #include <string>
 
@@ -42,12 +39,7 @@ public:
 private:
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   friend class odb::access;
-
-  /**
-  * \brief Assigns values to the provided member variables if they exist in environment variable.
-  * \param pt property tree with the values extracted from environment variable
-  */
-  void save_to_db(boost::property_tree::ptree pt);
+#endif
 
   #pragma db default()
   std::string m_githash;
@@ -59,7 +51,6 @@ private:
   std::string m_architecture;
   #pragma db default()
   std::string m_ci;
-#endif
 };
 }  // namespace performance_test
 #endif  // EXPERIMENT_CONFIGURATION__EXTERNAL_INFO_STORAGE_HPP_

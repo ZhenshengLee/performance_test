@@ -12,6 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <rapidjson/document.h>
 #include <string>
 #include "external_info_storage.hpp"
 
@@ -22,48 +23,32 @@ ExternalInfoStorage::ExternalInfoStorage()
 {
   const auto ptr = std::getenv("APEX_PERFORMANCE_TEST");
   if (ptr) {
-    std::stringstream ss;
-    ss.str(ptr);
-    boost::property_tree::ptree pt;
-    boost::property_tree::read_json(ss, pt);
-    for (boost::property_tree::ptree::iterator iter = pt.begin(); iter != pt.end(); iter++) {
-      m_to_log += iter->first + ": " + iter->second.data() + "\n";
+    rapidjson::Document document;
+    document.Parse(ptr);
+
+    for (auto & m : document.GetObject()) {
+      m_to_log = m_to_log + m.name.GetString() + ": " + m.value.GetString() + "\n";
     }
-  #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    save_to_db(pt);
-  #endif
+
+    if (document["Githash"].IsString()) {
+      m_githash = document["Githash"].GetString();
+    }
+
+    if (document["Platform"].IsString()) {
+      m_platform = document["Platform"].GetString();
+    }
+
+    if (document["Branch"].IsString()) {
+      m_branch = document["Branch"].GetString();
+    }
+
+    if (document["Architecture"].IsString()) {
+      m_architecture = document["Architecture"].GetString();
+    }
+
+    if (document["CI"].IsString()) {
+      m_ci = document["CI"].GetString();
+    }
   }
 }
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-void ExternalInfoStorage::save_to_db(boost::property_tree::ptree pt)
-{
-  try {
-    m_githash = pt.get<std::string>("Githash");
-  } catch (boost::property_tree::ptree_error & e) {
-    std::cout << e.what() << std::endl;
-  }
-  try {
-    m_platform = pt.get<std::string>("Platform");
-  } catch (boost::property_tree::ptree_error & e) {
-    std::cout << e.what() << std::endl;
-  }
-  try {
-    m_branch = pt.get<std::string>("Branch");
-  } catch (boost::property_tree::ptree_error & e) {
-    std::cout << e.what() << std::endl;
-  }
-  try {
-    m_architecture = pt.get<std::string>("Architecture");
-  } catch (boost::property_tree::ptree_error & e) {
-    std::cout << e.what() << std::endl;
-  }
-  try {
-    m_ci = pt.get<std::string>("CI");
-  } catch (boost::property_tree::ptree_error & e) {
-    std::cout << e.what() << std::endl;
-  }
-}
-#endif
-
 }  // namespace performance_test
