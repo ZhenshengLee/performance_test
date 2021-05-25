@@ -32,7 +32,7 @@ build_cyclonedds:
     - apt-get update
     - apt-get install -y bison maven default-jdk python3-pip libcunit1-dev libssl-dev
     - pip3 install -U colcon-common-extensions pytest
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta4 --depth 1
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta5 --depth 1
     - cd cyclonedds
     - mkdir -p build
     - cd build

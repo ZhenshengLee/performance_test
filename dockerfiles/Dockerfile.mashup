@@ -13,7 +13,7 @@ RUN apt-get update && \
 RUN source /opt/ros/foxy/setup.bash && \
     mkdir -p /cyclone_iceoryx_ws/src && \
     cd /cyclone_iceoryx_ws/src && \
-    git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b iceoryx --depth 1 && \
+    git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta5 --depth 1 && \
     git clone https://github.com/eclipse-iceoryx/iceoryx.git -b release_1.0 --depth 1 && \
     cd /cyclone_iceoryx_ws && \
     colcon build \
