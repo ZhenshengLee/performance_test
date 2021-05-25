@@ -345,7 +345,13 @@ if(PERFORMANCE_TEST_ODB_SQLITE OR PERFORMANCE_TEST_ODB_MYSQL OR PERFORMANCE_TEST
   include(${ODB_USE_FILE})
 
   # Get the setup.sh to update the LD_LIBRARY_PATH
+  if(APPLE)
+    set(ENV_VAR_NAME "DYLD_LIBRARY_PATH")
+  else()
+    set(ENV_VAR_NAME "LD_LIBRARY_PATH")
+  endif()
   get_filename_component(ODB_LIBRARY_DIRECTORY ${ODB_LIBODB_LIBRARIES} DIRECTORY)
+  ament_environment_hooks(env_hook/odb_library_path.dsv.in)
   ament_environment_hooks(env_hook/odb_library_path.sh.in)
 
   odb_compile(${PROJECT_NAME}_SOURCES FILES ${${PROJECT_NAME}_HEADERS} DB "${DB_TYPE}"
