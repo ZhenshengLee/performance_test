@@ -23,10 +23,6 @@
   #include "../communication_abstractions/ros2_callback_communicator.hpp"
 #endif
 
-#ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
-  #include "../communication_abstractions/ros2_waitset_communicator.hpp"
-#endif
-
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   #include "../communication_abstractions/fast_rtps_communicator.hpp"
 #endif
@@ -73,11 +69,6 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
 #ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
         if (com_mean == CommunicationMean::ROS2) {
           ptr = std::make_shared<DataRunner<ROS2CallbackCommunicator<T>>>(run_type);
-        }
-#endif
-#ifdef PERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED
-        if (com_mean == CommunicationMean::ROS2PollingSubscription) {
-          ptr = std::make_shared<DataRunner<ROS2WaitsetCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
