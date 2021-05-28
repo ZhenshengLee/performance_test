@@ -282,8 +282,8 @@ currently implemented:
 #### Apex.OS Polling Subscription
 
 - [Apex.OS Polling Subscription with wait-set](https://apexai.pages.apex.ai/grand_central/docs/latest/using-read-and-take.html)
-- CMake build flag: `-DPERFORMANCE_TEST_POLLING_SUBSCRIPTION_ENABLED=ON`
-- Communication plugin: `-c ROS2PollingSubscription`
+- CMake build flag: `-DPERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED=ON`
+- Communication plugin: `-c ApexOSPollingSubscription`
 - Zero copy transport (`--zero_copy`): yes
 - Docker file: Not available
 - Default transports: depends on underlying DDS implementation

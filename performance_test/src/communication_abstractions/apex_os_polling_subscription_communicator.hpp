@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMMUNICATION_ABSTRACTIONS__ROS2_WAITSET_COMMUNICATOR_HPP_
-#define COMMUNICATION_ABSTRACTIONS__ROS2_WAITSET_COMMUNICATOR_HPP_
+#ifndef COMMUNICATION_ABSTRACTIONS__APEX_OS_POLLING_SUBSCRIPTION_COMMUNICATOR_HPP_
+#define COMMUNICATION_ABSTRACTIONS__APEX_OS_POLLING_SUBSCRIPTION_COMMUNICATOR_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -31,16 +31,16 @@
 namespace performance_test
 {
 
-/// Communication plugin for ROS 2 using waitsets for the subscription side.
+/// Communication plugin for Apex.OS using waitsets for the subscription side.
 template<class Msg>
-class ROS2WaitsetCommunicator : public ROS2Communicator<Msg>
+class ApexOSPollingSubscriptionCommunicator : public ROS2Communicator<Msg>
 {
 public:
   /// The data type to publish and subscribe to.
   using DataType = typename ROS2Communicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit ROS2WaitsetCommunicator(SpinLock & lock)
+  explicit ApexOSPollingSubscriptionCommunicator(SpinLock & lock)
   : ROS2Communicator<Msg>(lock),
     m_polling_subscription(nullptr) {}
 
@@ -101,4 +101,4 @@ private:
 
 }  // namespace performance_test
 
-#endif  // COMMUNICATION_ABSTRACTIONS__ROS2_WAITSET_COMMUNICATOR_HPP_
+#endif  // COMMUNICATION_ABSTRACTIONS__APEX_OS_POLLING_SUBSCRIPTION_COMMUNICATOR_HPP_
