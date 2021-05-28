@@ -281,7 +281,7 @@ smoke_test_opendds:
         tar xzf opt-opendds.tar.gz -C /;
     '
 
-test_security_fast_dds:
+.test_security_fast_dds:
   stage: test
   image: osrf/ros:foxy-desktop
   needs:
