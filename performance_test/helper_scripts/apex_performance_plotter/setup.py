@@ -37,9 +37,6 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 with io.open(os.path.join(NAME.replace('-', '_'), '__init__.py'), encoding='utf8') as f:
     VERSION = re.search(r'^__version__ = \'(.*?)\'', f.read(), flags=re.MULTILINE).group(1)
 
-with io.open(os.path.join('README.rst'), 'rt', encoding='utf8') as f:
-    README = f.read()
-
 
 def read_requirements_in(path):
     """Read requirements from requirements.in file."""
@@ -60,7 +57,6 @@ EXTRAS_REQUIRE = {}
 setup(name=NAME,
       version=VERSION,
       description=DESCRIPTION,
-      long_description=README,
       author='Ternaris',
       author_email='team@ternaris.com',
       maintainer='Apex.AI',
