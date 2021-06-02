@@ -271,7 +271,17 @@ smoke_test_opendds:
         tar xzf opt-opendds.tar.gz -C /;
     '
 
-.test_security_fast_dds:
+test_plotter:
+  stage: test
+  image: osrf/ros:foxy-desktop
+  script:
+    - cd performance_test/helper_scripts/apex_performance_plotter
+    - apt-get update
+    - apt-get install -y python3-pip
+    - pip3 install .
+    - perfplot --help
+
+test_security_fast_dds:
   stage: test
   image: osrf/ros:foxy-desktop
   needs:
