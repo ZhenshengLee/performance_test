@@ -249,10 +249,6 @@ if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
   list(APPEND sources src/communication_abstractions/ros2_callback_communicator.hpp)
 endif()
 
-if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
-  list(APPEND sources src/communication_abstractions/ros2_communicator.hpp)
-endif()
-
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   list(APPEND sources src/communication_abstractions/fast_rtps_communicator.hpp)
 endif()

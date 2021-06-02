@@ -263,12 +263,12 @@ currently implemented:
 - [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 - CMake build flag: `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (on by default)
 - Communication plugin: `-c ROS2`
-- Zero copy transport (`--zero_copy`): no
+- Zero copy transport (`--zero_copy`): yes
 - Docker file: [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2)
 - This plugin will use the ROS 2 RMW implementation that is configured on your system.
   - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
     - Follow [these instructions](https://docs.ros.org/en/foxy/Guides/Working-with-multiple-RMW-implementations.html)
-    to use a different RMW implementation with ROS 2.
+      to use a different RMW implementation with ROS 2.
     - You can find a list of several other middleware options
       [here](https://docs.ros.org/en/foxy/Concepts/About-Different-Middleware-Vendors.html).
 - Default transports: depends on underlying DDS implementation
