@@ -27,9 +27,6 @@ build_cross_image:
 build_cyclonedds:
   stage: build
   image: osrf/ros:foxy-desktop
-  before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   script:
     - source /opt/ros/foxy/setup.bash
     - apt-get update
@@ -69,13 +66,10 @@ build_cyclonedds:
 build_iceoryx:
   stage: build
   image: osrf/ros:foxy-desktop
-  before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   script:
     - source /opt/ros/foxy/setup.bash
-    - apt-get update
     - rosdep update
+    - apt-get update
     - rosdep install --from performance_test --ignore-src -y
     - apt-get install -y python3-pip libacl1-dev libncurses5-dev
     - pip3 install -U colcon-common-extensions pytest
@@ -119,9 +113,6 @@ build_iceoryx:
 build_opendds:
   stage: build
   image: osrf/ros:foxy-desktop
-  before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   script:
     - source /opt/ros/foxy/setup.bash
     - apt-get update
@@ -162,9 +153,6 @@ build_opendds:
 build_fastrtps:
   stage: build
   image: osrf/ros:foxy-desktop
-  before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
   script:
     - apt-get update
     - '
@@ -194,8 +182,6 @@ build_fastrtps:
 build_ros1:
   stage: build
   image: osrf/ros:melodic-desktop
-  before_script:
-    - curl -s https://raw.githubusercontent.com/ros/rosdistro/master/ros.asc | apt-key add -
   script:
     - source /opt/ros/melodic/setup.bash
     - apt-get update
@@ -229,8 +215,6 @@ test:
   stage: test
   image: osrf/ros:foxy-desktop
   before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
     - apt-get update
     - apt-get install -y ros-foxy-osrf-testing-tools-cpp
   script:
@@ -303,8 +287,6 @@ test_security_fast_dds:
   needs:
     - build_fastrtps
   before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
     - apt-get update
     - apt-get install -y ros-foxy-osrf-testing-tools-cpp
   script:
@@ -330,8 +312,6 @@ test_security_cyclone_dds:
   needs:
     - build_cyclonedds
   before_script:
-    # ToDo(lander.usategui) Remove this
-    - apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys C1CF6E31E6BADE8868B172B4F42ED6FBAB17C654
     - apt-get update
     - apt-get install -y ros-foxy-osrf-testing-tools-cpp ros-foxy-rmw-cyclonedds-cpp
   script:
