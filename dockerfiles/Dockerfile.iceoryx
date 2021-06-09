@@ -2,32 +2,13 @@
 # docker run -it --shm-size 2G performance_test_iceoryx bash
 # /opt/performance_test/lib/performance_test/perf_test -c iceoryx --msg Array1k
 
-FROM osrf/ros:foxy-desktop
+FROM osrf/ros:galactic-desktop
 
 SHELL ["/bin/bash", "-c"]
 
-RUN apt-get update && \
-    apt-get install -y libacl1-dev
-
-RUN source /opt/ros/foxy/setup.bash && \
-    mkdir -p iceoryx_ws/src && \
-    cd $_ && \
-    git clone https://github.com/eclipse-iceoryx/iceoryx.git -b release_1.0 --depth 1 && \
-    cd .. && \
-    colcon build \
-      --install-base /opt/iceoryx \
-      --cmake-args \
-        -DIOX_MAX_PUBLISHERS=32 \
-        -DIOX_MAX_SUBSCRIBERS=32 && \
-    cd src/iceoryx && \
-    cmake -Bbuild -Hiceoryx_meta && \
-    cd build && \
-    make
-
 ADD . /perf_test_ws/src/performance_test
 
-RUN source /opt/ros/foxy/setup.bash && \
-    source /opt/iceoryx/setup.bash && \
+RUN source /opt/ros/galactic/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
       --install-base /opt/performance_test \
@@ -37,9 +18,8 @@ RUN source /opt/ros/foxy/setup.bash && \
         -DCMAKE_BUILD_TYPE=Release \
         -DPERFORMANCE_TEST_ICEORYX_ENABLED=ON
 
-RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
-RUN echo "source /opt/iceoryx/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/galactic/setup.bash" >> /root/.bashrc
 RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
 
 ADD dockerfiles/roudi_config.toml /etc/iceoryx/roudi_config.toml
-RUN echo "/opt/iceoryx/iceoryx_posh/bin/iox-roudi -c /etc/iceoryx/roudi_config.toml &" >> /root/.bashrc
+RUN echo "iox-roudi -c /etc/iceoryx/roudi_config.toml &" >> /root/.bashrc

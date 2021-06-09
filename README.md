@@ -39,14 +39,14 @@ This example shows how to test the non-functional performance of the following c
 | Topic name                 | test_topic  |
 | Duration of the experiment | 30s         |
 
-1. Install [ROS 2](https://docs.ros.org/en/foxy/index.html)
+1. Install [ROS 2](https://docs.ros.org/en/galactic/index.html)
 
 2. Install [Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds) to /opt/cyclonedds
 
 3. Build performance_test with the [CMake build flag](#eclipse-cyclone-dds) for Cyclone DDS:
 
 ```bash
-source /opt/ros/foxy/setup.bash
+source /opt/ros/galactic/setup.bash
 cd ~/perf_test_ws
 colcon build --cmake-args -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
 source ./install/setup.bash
@@ -75,7 +75,7 @@ The performance_test tool is structured as a ROS 2 package, so `colcon` is used 
 Therefore, you must source a ROS 2 installation:
 
 ```bash
-source /opt/ros/foxy/setup.bash
+source /opt/ros/galactic/setup.bash
 ```
 
 Select a middleware plugin from [this list](#middleware-plugins).
@@ -260,17 +260,17 @@ currently implemented:
 
 #### ROS 2 Callback Executor
 
-- [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
+- [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/galactic/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 - CMake build flag: `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (on by default)
 - Communication plugin: `-c ROS2`
 - Zero copy transport (`--zero_copy`): no
 - Docker file: [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2)
 - This plugin will use the ROS 2 RMW implementation that is configured on your system.
-  - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
-    - Follow [these instructions](https://docs.ros.org/en/foxy/Guides/Working-with-multiple-RMW-implementations.html)
+  - ROS 2 Galactic is pre-configured to use rmw_cyclonedds_cpp.
+    - Follow [these instructions](https://docs.ros.org/en/galactic/Guides/Working-with-multiple-RMW-implementations.html)
     to use a different RMW implementation with ROS 2.
     - You can find a list of several other middleware options
-      [here](https://docs.ros.org/en/foxy/Concepts/About-Different-Middleware-Vendors.html).
+      [here](https://docs.ros.org/en/galactic/Concepts/About-Different-Middleware-Vendors.html).
 - Default transports: depends on underlying DDS implementation
 
 ## Analyze the results
