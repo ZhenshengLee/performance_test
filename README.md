@@ -317,15 +317,6 @@ The performance_test tool provides several tools to plot the generated results:
 1. Results rendered in a Jupyter notebook: used to compare multiple experiments
     <img src="performance_test/helper_scripts/apex_performance_plotter/example_plot_two_experiments.png"  width="1000">
 
-| RAW Plugin | Supported subscription | Supported transports | `--cmake-args` to pass when building performance_test | Communication mean (-c) to pass when running experiments | Supports zero copy? |
-|----------------|------------------------|----------------------|-------------------------------------------------------|----------------------------------------------------------|---------------------|
-| [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON` | FastRTPS | No |
-| [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional) <sup>1</sup> | Native DDS Code | SHMEM, UDP | `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON` | ConnextDDS | No |
-| [Connext DDS Micro 3.0.2](https://www.rti.com/products/connext-dds-micro) | Native DDS Code | INTRA, SHMEM | `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON` | ConnextDDSMicro | Yes |
-| [Eclipse Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta5) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON` | CycloneDDS | Yes<sup>2</sup> |
-| [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2) | Native DDS Code | UDP | `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON` | OpenDDS | No |
-| [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)<sup>3</sup> | iceoryx Posh subscriber | SHMEM | `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON` | iceoryx | Yes |
-
 The plot tool requires python3 and texlive. On an Ubuntu system you will need to
 install the following packages:
 
