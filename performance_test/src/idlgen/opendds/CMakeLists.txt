@@ -19,8 +19,18 @@ set(ACE_ROOT ${DDS_ROOT}/../ace)
 set(MPC_ROOT ${DDS_ROOT}/MPC)
 set(TAO_ROOT ${DDS_ROOT}/../tao)
 
-set(TAO_IDL DDS_ROOT=${DDS_ROOT} ACE_ROOT=${ACE_ROOT} TAO_ROOT=${TAO_ROOT} MPC_ROOT=${MPC_ROOT} LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):${ACE_ROOT}/lib:${DDS_ROOT}/lib ${ACE_ROOT}/bin/tao_idl)
-set(OPENDDS_IDL DDS_ROOT=${DDS_ROOT} ACE_ROOT=${ACE_ROOT} TAO_ROOT=${TAO_ROOT} MPC_ROOT=${MPC_ROOT} LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):${ACE_ROOT}/lib:${DDS_ROOT}/lib ${DDS_ROOT}/bin/opendds_idl)
+set(TAO_IDL
+  DDS_ROOT=${DDS_ROOT}
+  ACE_ROOT=${ACE_ROOT}
+  TAO_ROOT=${TAO_ROOT}
+  MPC_ROOT=${MPC_ROOT}
+  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):${ACE_ROOT}/lib:${DDS_ROOT}/lib ${ACE_ROOT}/bin/tao_idl)
+set(OPENDDS_IDL
+  DDS_ROOT=${DDS_ROOT}
+  ACE_ROOT=${ACE_ROOT}
+  TAO_ROOT=${TAO_ROOT}
+  MPC_ROOT=${MPC_ROOT}
+  LD_LIBRARY_PATH=$(LD_LIBRARY_PATH):${ACE_ROOT}/lib:${DDS_ROOT}/lib ${DDS_ROOT}/bin/opendds_idl)
 set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 
 set(IDL_SOURCE_C
@@ -102,7 +112,12 @@ foreach(idl ${IDL_SOURCE_C})
           COMMENT "Regeneration type support plugin from ${idl}")
 
   add_custom_command(OUTPUT ${TAO_IDL_GEN_CPP_SND_STG} ${TAO_IDL_GEN_H_SCD_STG}
-          COMMAND ${TAO_IDL} -Cw -Sa -St -o ${IDL_GEN_ROOT}/. -I${CMAKE_CURRENT_SOURCE_DIR}/.. -I${DDS_ROOT}/../../include/tao -I${DDS_ROOT}/../../include/ ${IDL_GEN_ROOT}/${basename}TypeSupport.idl
+          COMMAND ${TAO_IDL} -Cw -Sa -St -o
+            ${IDL_GEN_ROOT}/.
+            -I${CMAKE_CURRENT_SOURCE_DIR}/..
+            -I${DDS_ROOT}/../../include/tao
+            -I${DDS_ROOT}/../../include/
+            ${IDL_GEN_ROOT}/${basename}TypeSupport.idl
           DEPENDS ${IDL_GEN_ROOT}/${basename}TypeSupport.idl
           COMMENT "Regeneration type support plugin from ${idl}")
 

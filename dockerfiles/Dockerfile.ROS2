@@ -2,13 +2,13 @@
 # docker run -it performance_test_ros2 bash
 # /opt/performance_test/lib/performance_test/perf_test -c ROS2 --msg Array1k
 
-FROM osrf/ros:foxy-desktop
+FROM osrf/ros:galactic-desktop
 
 SHELL ["/bin/bash", "-c"]
 
 ADD . /perf_test_ws/src/performance_test
 
-RUN source /opt/ros/foxy/setup.bash && \
+RUN source /opt/ros/galactic/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
       --install-base /opt/performance_test \
@@ -18,5 +18,5 @@ RUN source /opt/ros/foxy/setup.bash && \
         -DCMAKE_BUILD_TYPE=Release \
         -DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON
 
-RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/galactic/setup.bash" >> /root/.bashrc
 RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc

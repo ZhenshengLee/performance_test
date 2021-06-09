@@ -26,22 +26,8 @@ build_cross_image:
 
 build_cyclonedds:
   stage: build
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   script:
-    - source /opt/ros/foxy/setup.bash
-    - apt-get update
-    - apt-get install -y bison maven default-jdk python3-pip libcunit1-dev libssl-dev
-    - pip3 install -U colcon-common-extensions pytest
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta5 --depth 1
-    - cd cyclonedds
-    - mkdir -p build
-    - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SECURITY=ON ..
-    - cmake --build .
-    - cmake --build . --target install
-    - find /opt/cyclonedds
-    - cd $CI_PROJECT_DIR
-    - mkdir -p /opt/performance_test
     - '
       colcon build
           --install-base /opt/performance_test
@@ -49,10 +35,8 @@ build_cyclonedds:
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
             -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
-          --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -60,35 +44,12 @@ build_cyclonedds:
     paths:
       - log
       - build
-      - opt-cyclonedds.tar.gz
       - opt.tar.gz
 
 build_iceoryx:
   stage: build
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   script:
-    - source /opt/ros/foxy/setup.bash
-    - rosdep update
-    - apt-get update
-    - rosdep install --from performance_test --ignore-src -y
-    - apt-get install -y python3-pip libacl1-dev libncurses5-dev
-    - pip3 install -U colcon-common-extensions pytest
-    - mkdir -p /iceoryx_ws/src
-    - cd /iceoryx_ws/src/
-    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b release_1.0 --depth 1
-    - cd /iceoryx_ws
-    - '
-      colcon build
-          --install-base /opt/iceoryx
-          --cmake-args
-            -DIOX_MAX_PUBLISHERS=32
-            -DIOX_MAX_SUBSCRIBERS=32
-            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
-      '
-    - find /opt/iceoryx
-    - source /opt/iceoryx/setup.bash
-    - cd $CI_PROJECT_DIR
-    - mkdir -p /opt/performance_test
     - '
       colcon build
           --install-base /opt/performance_test
@@ -99,7 +60,6 @@ build_iceoryx:
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-iceoryx.tar.gz /opt/iceoryx
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -107,18 +67,17 @@ build_iceoryx:
     paths:
       - log
       - build
-      - opt-iceoryx.tar.gz
       - opt.tar.gz
 
 build_opendds:
   stage: build
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   script:
-    - source /opt/ros/foxy/setup.bash
+    - source /opt/ros/galactic/setup.bash
     - apt-get update
     - '
       apt-get install -y
-          ros-foxy-osrf-testing-tools-cpp
+          ros-galactic-osrf-testing-tools-cpp
           default-jdk
           wget
           python3-pip
@@ -152,12 +111,12 @@ build_opendds:
 
 build_fastrtps:
   stage: build
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   script:
     - apt-get update
     - '
       apt-get install -y
-          ros-foxy-osrf-testing-tools-cpp
+          ros-galactic-osrf-testing-tools-cpp
           default-jdk
           maven
       '
@@ -193,7 +152,7 @@ build_ros1:
 
 test:
   stage: test
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   needs:
     - build_cyclonedds
   script:
@@ -213,10 +172,10 @@ test:
 
 .smoke_test:
   stage: test
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   before_script:
     - apt-get update
-    - apt-get install -y ros-foxy-osrf-testing-tools-cpp
+    - apt-get install -y ros-galactic-osrf-testing-tools-cpp
   script:
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
@@ -250,10 +209,6 @@ smoke_test_cyclonedds:
     - build_cyclonedds
   variables:
     COMMUNICATION_MEAN: CycloneDDS
-    SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-cyclonedds.tar.gz -C /;
-        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib";
-    '
 
 smoke_test_iceoryx:
   extends:
@@ -263,11 +218,9 @@ smoke_test_iceoryx:
   variables:
     COMMUNICATION_MEAN: iceoryx
     SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-iceoryx.tar.gz -C /;
-        source /opt/iceoryx/setup.bash;
         mkdir -p /etc/iceoryx;
         printf "[general]\nversion = 1\n\n[[segment]]\n\n[[segment.mempool]]\nsize = 128\ncount = 1000\n\n[[segment.mempool]]\nsize = 1024\ncount = 1000\n\n[[segment.mempool]]\nsize = 16384\ncount = 100\n\n[[segment.mempool]]\nsize = 131072\ncount = 10" > /etc/iceoryx/roudi_config.toml;
-        /opt/iceoryx/iceoryx_posh/bin/iox-roudi -c /etc/iceoryx/roudi_config.toml &
+        iox-roudi -c /etc/iceoryx/roudi_config.toml &
     '
 
 smoke_test_opendds:
@@ -283,18 +236,19 @@ smoke_test_opendds:
 
 test_security_fast_dds:
   stage: test
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   needs:
     - build_fastrtps
   before_script:
     - apt-get update
-    - apt-get install -y ros-foxy-osrf-testing-tools-cpp
+    - apt-get install -y ros-galactic-osrf-testing-tools-cpp
   script:
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
     - cd performance_test/helper_scripts
     - source security_setup.bash enable ./demo_keys
+    - export RMW_IMPLEMENTATION=rmw_fastrtps_cpp
     # The below runs should fail:
     # Unexpected node names:
     - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'
@@ -308,21 +262,18 @@ test_security_fast_dds:
       '
 test_security_cyclone_dds:
   stage: test
-  image: osrf/ros:foxy-desktop
+  image: osrf/ros:galactic-desktop
   needs:
     - build_cyclonedds
   before_script:
     - apt-get update
-    - apt-get install -y ros-foxy-osrf-testing-tools-cpp ros-foxy-rmw-cyclonedds-cpp
+    - apt-get install -y ros-galactic-osrf-testing-tools-cpp ros-galactic-rmw-cyclonedds-cpp
   script:
     - tar xzf opt.tar.gz -C /
-    - tar xzf opt-cyclonedds.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
     - cd performance_test/helper_scripts
     - source security_setup.bash enable ./demo_keys
-    - export LD_LIBRARY_PATH=/opt/cyclonedds/lib:$LD_LIBRARY_PATH
-    - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     # The below runs should fail:
     # Unexpected node names:
     - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max_runtime 10 --rate 2 --keep_last --history_depth 10'

@@ -2,7 +2,7 @@ ARG PERFORMANCE_TEST_DOCKER_ARCH
 ARG PERFORMANCE_TEST_TARGET_ARCH
 FROM multiarch/alpine:${PERFORMANCE_TEST_TARGET_ARCH}-latest-stable AS bootstrap
 
-FROM ${PERFORMANCE_TEST_DOCKER_ARCH}/ros:foxy AS sysroot
+FROM ${PERFORMANCE_TEST_DOCKER_ARCH}/ros:galactic AS sysroot
 ARG PERFORMANCE_TEST_TARGET_ARCH
 
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -12,15 +12,15 @@ COPY --from=bootstrap /usr/bin/qemu-${PERFORMANCE_TEST_TARGET_ARCH}-static /usr/
 RUN apt-get update && apt-get install -y --no-install-recommends \
   libboost-all-dev \
   libtinyxml2-dev \
-  ros-foxy-osrf-testing-tools-cpp \
-  ros-foxy-ament-cmake-nose \
-  ros-foxy-launch-testing
+  ros-galactic-osrf-testing-tools-cpp \
+  ros-galactic-ament-cmake-nose \
+  ros-galactic-launch-testing
 
 # Convert all absolute symbolic links to relative so that they can be found when copied to the sysroot
 # hadolint ignore=SC2156
 RUN find / -depth -xdev -type l -lname '/*' -exec sh -c 'linkpath="$(readlink {})" && rm -f {} && ln -frsv "$linkpath" "{}"' \;
 
-FROM ros:foxy AS builder
+FROM ros:galactic AS builder
 ARG PERFORMANCE_TEST_TARGET_ARCH
 ARG PERFORMANCE_TEST_TARGET_PLATFORM
 
@@ -47,5 +47,5 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++-aarch64-linux-gnu \
     default-jre
 
-RUN find /sysroot/opt/ros/foxy/ -name "*.cmake" -type f -exec sed -i -e "s#/usr/lib#/sysroot/usr/lib#g" {} \;
-RUN find /sysroot/opt/ros/foxy/ -name "*.cmake" -type f -exec sed -i -e "s#/usr/include#/sysroot/usr/include#g" {} \;
+RUN find /sysroot/opt/ros/galactic/ -name "*.cmake" -type f -exec sed -i -e "s#/usr/lib#/sysroot/usr/lib#g" {} \;
+RUN find /sysroot/opt/ros/galactic/ -name "*.cmake" -type f -exec sed -i -e "s#/usr/include#/sysroot/usr/include#g" {} \;
