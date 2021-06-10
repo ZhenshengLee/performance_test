@@ -29,6 +29,7 @@ find_package(ament_cmake REQUIRED)
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
   set(PERFORMANCE_TEST_RT_ENABLED_DEFAULT ON)
+  add_definitions(-DAPEX_LINUX)
 else()
   set(PERFORMANCE_TEST_RT_ENABLED_DEFAULT OFF)
 endif()
