@@ -85,10 +85,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   try {
     TCLAP::CmdLine cmd("Apex.AI performance_test");
 
-    // ROS eloquent adds by default --ros-args to ros2 launch and no value for that argument
-    // is valid, so we allow unregistered options.
-    cmd.ignoreUnmatched(true);
-
     TCLAP::ValueArg<std::string> logfileArg("l", "logfile",
       "Optionally specify a logfile.", false, "", "name", cmd);
 
