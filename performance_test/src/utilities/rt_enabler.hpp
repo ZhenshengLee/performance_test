@@ -248,6 +248,8 @@ inline void pre_proc_rt_init(const uint32_t cpu_bit_mask_in, const int32_t prio)
         std::cerr << "proc rt init affinity mem alloc failed" << strerror(errno) << std::endl;
         throw std::runtime_error("proc rt init affinity setting failed");
       }
+#else
+      throw std::runtime_error("proc rt init affinity setting not supported on this platform");
 #endif  // APEX_LINUX
     }
   }
