@@ -170,6 +170,11 @@ option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback
 option(PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED "Option to enable Polling Subscription Plugin.
   The plugin can only work if ApexOS is present, otherwise it will fail." ON)
 
+option(APEX_CERT "Set to true if building against Apex.OS Cert" OFF)
+if(APEX_CERT)
+  add_definitions(-DAPEX_CERT)
+endif()
+
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
 
@@ -371,9 +376,7 @@ set(EXE_NAME perf_test)
 add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
 add_dependencies(${EXE_NAME} tclap rapidjson)
 
-
 set_compile_options(${EXE_NAME})
-
 
 # Try to bake the githash into the perf_test EXE:
 execute_process(
@@ -383,7 +386,13 @@ execute_process(
 )
 add_definitions(-DPERFORMANCE_TEST_VERSION="${PERF_TEST_VERSION}")
 
-rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")
+if(APEX_CERT)
+  set(TYPESUPPORT_INTERFACE rosidl_typesupport_cyclone_dds_cpp)
+else()
+  set(TYPESUPPORT_INTERFACE rosidl_typesupport_cpp)
+endif()
+
+rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} ${TYPESUPPORT_INTERFACE})
 
 ament_target_dependencies(${EXE_NAME}
     "rclcpp" ${OPTIONAL_AMENT_DEPENDENCES})
