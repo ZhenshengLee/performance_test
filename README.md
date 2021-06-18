@@ -162,7 +162,7 @@ implemented:
 
 #### Eclipse Cyclone DDS
 
-- [Eclipse Cyclone DDS 0.8.0beta5](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta5)
+- [Eclipse Cyclone DDS 0.8.0beta6](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta6)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS`
 - Zero copy transport (`--zero_copy`): yes
