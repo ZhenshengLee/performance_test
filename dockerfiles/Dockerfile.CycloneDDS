@@ -9,7 +9,7 @@ SHELL ["/bin/bash", "-c"]
 RUN apt-get update && \
     apt-get install -y bison default-jdk
 
-RUN git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta5 --depth 1 && \
+RUN git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta6 --depth 1 && \
     cd cyclonedds && \
     mkdir -p build && \
     cd build && \
