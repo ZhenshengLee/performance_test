@@ -3,13 +3,13 @@
 # /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test_topic --msg Array1k -p 0 -s 1 --zero_copy &
 # /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test_topic --msg Array1k -p 1 -s 0 --zero_copy
 
-FROM osrf/ros:galactic-desktop
+FROM osrf/ros:rolling-desktop
 
 SHELL ["/bin/bash", "-c"]
 
 ADD . /perf_test_ws/src/performance_test
 
-RUN source /opt/ros/galactic/setup.bash && \
+RUN source /opt/ros/rolling/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
       --install-base /opt/performance_test \
@@ -23,7 +23,7 @@ RUN source /opt/ros/galactic/setup.bash && \
 ADD dockerfiles/cyclonedds.xml /
 ENV CYCLONEDDS_URI=/cyclonedds.xml
 
-RUN echo "source /opt/ros/galactic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
 RUN echo "source /opt/cyclonedds/setup.bash" >> /root/.bashrc
 RUN echo 'source /opt/performance_test/setup.bash' >> /root/.bashrc
 

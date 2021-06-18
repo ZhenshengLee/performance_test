@@ -2,13 +2,13 @@
 # docker run -it --shm-size 2G performance_test_iceoryx bash
 # /opt/performance_test/lib/performance_test/perf_test -c iceoryx --msg Array1k
 
-FROM osrf/ros:galactic-desktop
+FROM osrf/ros:rolling-desktop
 
 SHELL ["/bin/bash", "-c"]
 
 ADD . /perf_test_ws/src/performance_test
 
-RUN source /opt/ros/galactic/setup.bash && \
+RUN source /opt/ros/rolling/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
       --install-base /opt/performance_test \
@@ -18,7 +18,7 @@ RUN source /opt/ros/galactic/setup.bash && \
         -DCMAKE_BUILD_TYPE=Release \
         -DPERFORMANCE_TEST_ICEORYX_ENABLED=ON
 
-RUN echo "source /opt/ros/galactic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
 RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
 
 ADD dockerfiles/roudi_config.toml /etc/iceoryx/roudi_config.toml
