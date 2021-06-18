@@ -169,8 +169,9 @@ implemented:
   - Cyclone DDS zero copy requires the
     [runtime switch](https://github.com/eclipse-cyclonedds/cyclonedds/blob/iceoryx/docs/manual/shared_memory.rst)
     to be enabled.
-  - Currently, this is only available on the
-    [`iceoryx` branch of Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/iceoryx).
+  - When the runtime switch is enabled,
+    [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
+    must be running.
   - If the runtime switch is enabled, but `--zero_copy` is not added, then the plugin will not use
     the loaned sample API, but iceoryx will still transport the samples.
   - See [Dockerfile.mashup](dockerfiles/Dockerfile.mashup)
