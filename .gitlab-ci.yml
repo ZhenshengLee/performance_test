@@ -26,7 +26,7 @@ build_cross_image:
 
 build_cyclonedds:
   stage: build
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   script:
     - '
       colcon build
@@ -48,7 +48,7 @@ build_cyclonedds:
 
 build_iceoryx:
   stage: build
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   script:
     - '
       colcon build
@@ -71,13 +71,13 @@ build_iceoryx:
 
 build_opendds:
   stage: build
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   script:
-    - source /opt/ros/galactic/setup.bash
+    - source /opt/ros/rolling/setup.bash
     - apt-get update
     - '
       apt-get install -y
-          ros-galactic-osrf-testing-tools-cpp
+          ros-rolling-osrf-testing-tools-cpp
           default-jdk
           wget
           python3-pip
@@ -111,12 +111,12 @@ build_opendds:
 
 build_fastrtps:
   stage: build
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   script:
     - apt-get update
     - '
       apt-get install -y
-          ros-galactic-osrf-testing-tools-cpp
+          ros-rolling-osrf-testing-tools-cpp
           default-jdk
           maven
       '
@@ -152,7 +152,7 @@ build_ros1:
 
 test:
   stage: test
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   needs:
     - build_cyclonedds
   script:
@@ -172,10 +172,10 @@ test:
 
 .smoke_test:
   stage: test
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   before_script:
     - apt-get update
-    - apt-get install -y ros-galactic-osrf-testing-tools-cpp
+    - apt-get install -y ros-rolling-osrf-testing-tools-cpp
   script:
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
@@ -236,12 +236,12 @@ smoke_test_opendds:
 
 test_security_fast_dds:
   stage: test
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   needs:
     - build_fastrtps
   before_script:
     - apt-get update
-    - apt-get install -y ros-galactic-osrf-testing-tools-cpp
+    - apt-get install -y ros-rolling-osrf-testing-tools-cpp
   script:
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
@@ -262,12 +262,12 @@ test_security_fast_dds:
       '
 test_security_cyclone_dds:
   stage: test
-  image: osrf/ros:galactic-desktop
+  image: osrf/ros:rolling-desktop
   needs:
     - build_cyclonedds
   before_script:
     - apt-get update
-    - apt-get install -y ros-galactic-osrf-testing-tools-cpp ros-galactic-rmw-cyclonedds-cpp
+    - apt-get install -y ros-rolling-osrf-testing-tools-cpp ros-rolling-rmw-cyclonedds-cpp
   script:
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
