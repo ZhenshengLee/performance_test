@@ -9,7 +9,6 @@ build_cross_image:
   services:
     - docker:dind
   script:
-    - apt-get update && apt-get install -y qemu-user-static
     - '
       docker build
           --build-arg PERFORMANCE_TEST_DOCKER_ARCH=arm64v8
@@ -30,9 +29,10 @@ build_cyclonedds:
   script:
     - source /opt/ros/foxy/setup.bash
     - apt-get update
-    - apt-get install -y bison maven default-jdk python3-pip libcunit1-dev libssl-dev
-    - pip3 install -U colcon-common-extensions pytest
+    - rosdep update
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.0beta6 --depth 1
+    - rosdep install --from cyclonedds --ignore-src -y --skip-key "iceoryx_utils iceoryx_posh iceoryx_binding_c"
+    - rosdep install --from performance_test --ignore-src -y
     - cd cyclonedds
     - mkdir -p build
     - cd build
@@ -71,11 +71,10 @@ build_iceoryx:
     - rosdep update
     - apt-get update
     - rosdep install --from performance_test --ignore-src -y
-    - apt-get install -y python3-pip libacl1-dev libncurses5-dev
-    - pip3 install -U colcon-common-extensions pytest
     - mkdir -p /iceoryx_ws/src
     - cd /iceoryx_ws/src/
     - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b release_1.0 --depth 1
+    - rosdep install --from iceoryx --ignore-src -y
     - cd /iceoryx_ws
     - '
       colcon build
@@ -116,14 +115,9 @@ build_opendds:
   script:
     - source /opt/ros/foxy/setup.bash
     - apt-get update
-    - '
-      apt-get install -y
-          ros-foxy-osrf-testing-tools-cpp
-          default-jdk
-          wget
-          python3-pip
-      '
-    - pip3 install -U colcon-common-extensions pytest
+    - apt-get install -y wget
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opt-opendds-3.13.2.tar.gz
     - tar -xzf opt-opendds-3.13.2.tar.gz -C /
     - find /opt/opendds
@@ -155,12 +149,8 @@ build_fastrtps:
   image: osrf/ros:foxy-desktop
   script:
     - apt-get update
-    - '
-      apt-get install -y
-          ros-foxy-osrf-testing-tools-cpp
-          default-jdk
-          maven
-      '
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - '
       colcon build
           --install-base /opt/performance_test
@@ -214,10 +204,10 @@ test:
 .smoke_test:
   stage: test
   image: osrf/ros:foxy-desktop
-  before_script:
-    - apt-get update
-    - apt-get install -y ros-foxy-osrf-testing-tools-cpp
   script:
+    - apt-get update
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
@@ -286,10 +276,10 @@ smoke_test_opendds:
   image: osrf/ros:foxy-desktop
   needs:
     - build_fastrtps
-  before_script:
-    - apt-get update
-    - apt-get install -y ros-foxy-osrf-testing-tools-cpp
   script:
+    - apt-get update
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
@@ -311,10 +301,11 @@ test_security_cyclone_dds:
   image: osrf/ros:foxy-desktop
   needs:
     - build_cyclonedds
-  before_script:
-    - apt-get update
-    - apt-get install -y ros-foxy-osrf-testing-tools-cpp ros-foxy-rmw-cyclonedds-cpp
   script:
+    - apt-get update
+    - apt-get install -y ros-foxy-rmw-cyclonedds-cpp
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - tar xzf opt.tar.gz -C /
     - tar xzf opt-cyclonedds.tar.gz -C /
     - source /opt/performance_test/setup.bash
