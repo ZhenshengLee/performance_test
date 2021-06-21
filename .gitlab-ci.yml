@@ -9,7 +9,6 @@ build_cross_image:
   services:
     - docker:dind
   script:
-    - apt-get update && apt-get install -y qemu-user-static
     - '
       docker build
           --build-arg PERFORMANCE_TEST_DOCKER_ARCH=arm64v8
@@ -75,14 +74,9 @@ build_opendds:
   script:
     - source /opt/ros/rolling/setup.bash
     - apt-get update
-    - '
-      apt-get install -y
-          ros-rolling-osrf-testing-tools-cpp
-          default-jdk
-          wget
-          python3-pip
-      '
-    - pip3 install -U colcon-common-extensions pytest
+    - apt-get install -y wget
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opt-opendds-3.13.2.tar.gz
     - tar -xzf opt-opendds-3.13.2.tar.gz -C /
     - find /opt/opendds
@@ -114,12 +108,8 @@ build_fastrtps:
   image: osrf/ros:rolling-desktop
   script:
     - apt-get update
-    - '
-      apt-get install -y
-          ros-rolling-osrf-testing-tools-cpp
-          default-jdk
-          maven
-      '
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - '
       colcon build
           --install-base /opt/performance_test
@@ -173,10 +163,10 @@ test:
 .smoke_test:
   stage: test
   image: osrf/ros:rolling-desktop
-  before_script:
-    - apt-get update
-    - apt-get install -y ros-rolling-osrf-testing-tools-cpp
   script:
+    - apt-get update
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
@@ -239,10 +229,10 @@ test_security_fast_dds:
   image: osrf/ros:rolling-desktop
   needs:
     - build_fastrtps
-  before_script:
-    - apt-get update
-    - apt-get install -y ros-rolling-osrf-testing-tools-cpp
   script:
+    - apt-get update
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
@@ -265,10 +255,10 @@ test_security_cyclone_dds:
   image: osrf/ros:rolling-desktop
   needs:
     - build_cyclonedds
-  before_script:
-    - apt-get update
-    - apt-get install -y ros-rolling-osrf-testing-tools-cpp ros-rolling-rmw-cyclonedds-cpp
   script:
+    - apt-get update
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
