@@ -47,14 +47,14 @@ This example shows how to test the non-functional performance of the following c
 | Topic name                 | test_topic  |
 | Duration of the experiment | 30s         |
 
-1. Install [ROS 2](https://docs.ros.org/en/galactic/index.html)
+1. Install [ROS 2](https://docs.ros.org/en/rolling/index.html)
 
 2. Install [Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds) to /opt/cyclonedds
 
 3. Build performance_test with the [CMake build flag](#eclipse-cyclone-dds) for Cyclone DDS:
 
 ```bash
-source /opt/ros/galactic/setup.bash
+source /opt/ros/rolling/setup.bash
 cd ~/perf_test_ws
 colcon build --cmake-args -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
 source ./install/setup.bash
@@ -83,7 +83,7 @@ The performance_test tool is structured as a ROS 2 package, so `colcon` is used 
 Therefore, you must source a ROS 2 installation:
 
 ```bash
-source /opt/ros/galactic/setup.bash
+source /opt/ros/rolling/setup.bash
 ```
 
 Select a middleware plugin from [this list](#middleware-plugins).
@@ -270,7 +270,7 @@ implemented:
 The performance test tool can also measure the performance of a variety of RMW implementations,
 through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
 
-- [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/galactic/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
+- [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/rolling/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 - CMake build flag: `-DPERFORMANCE_TEST_RCLCPP_ENABLED=ON` (on by default)
 - Communication plugin:
   - Callback with Single Threaded Executor: `-c rclcpp-single-threaded-executor`
@@ -279,11 +279,11 @@ through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
 - Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp)
 - These plugins will use the ROS 2 RMW implementation that is configured on your system.
-  - ROS 2 Galactic is pre-configured to use rmw_cyclonedds_cpp.
-    - Follow [these instructions](https://docs.ros.org/en/galactic/Guides/Working-with-multiple-RMW-implementations.html)
+  - ROS 2 Rolling is pre-configured to use rmw_cyclonedds_cpp.
+    - Follow [these instructions](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html)
       to use a different RMW implementation with ROS 2.
     - You can find a list of several other middleware options
-      [here](https://docs.ros.org/en/galactic/Concepts/About-Different-Middleware-Vendors.html).
+      [here](https://docs.ros.org/en/rolling/Concepts/About-Different-Middleware-Vendors.html).
 - Default transports: depends on underlying RMW implementation
 
 ## Analyze the results
