@@ -227,6 +227,7 @@ smoke_test_opendds:
 test_plotter:
   stage: test
   image: osrf/ros:rolling-desktop
+  needs: []
   script:
     - cd performance_test/helper_scripts/apex_performance_plotter
     - apt-get update
