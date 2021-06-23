@@ -189,7 +189,7 @@ implemented:
 #### Eclipse iceoryx
 
 - [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
-- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- CMake build flag: `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON`
 - Communication plugin: `-c iceoryx`
 - Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.iceoryx](dockerfiles/Dockerfile.iceoryx)
@@ -198,6 +198,7 @@ implemented:
 - To run with the iceoryx plugin,
   [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
   must be running.
+- Default transports:
   | INTRA     | IPC on same machine | Distributed system                |
   |-----------|---------------------|-----------------------------------|
   | zero copy | zero copy           | Not supported by performance_test |
@@ -217,7 +218,7 @@ implemented:
 #### OCI OpenDDS
 
 - [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
-- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- CMake build flag: `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON`
 - Communication plugin: `-c OpenDDS`
 - Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.OpenDDS](dockerfiles/Dockerfile.OpenDDS)
@@ -274,7 +275,7 @@ currently implemented:
 - Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp)
 - These plugins will use the ROS 2 RMW implementation that is configured on your system.
-  - ROS 2 Galactic is pre-configured to use rmw_cyclonedds_cpp.
+  - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
     - Follow [these instructions](https://docs.ros.org/en/foxy/Guides/Working-with-multiple-RMW-implementations.html)
       to use a different RMW implementation with ROS 2.
     - You can find a list of several other middleware options
@@ -282,7 +283,7 @@ currently implemented:
   - Apex.OS is pre-configured to use Apex.Middleware.
     - Apex.OS Cert does not support the ROS 2 Callback Executor. When building performance_test with
       Apex.OS Cert, you must explicitly disable the ROS 2 Callback communicator by setting
-      `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=OFF`.
+      `-DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF`.
 - Default transports: depends on underlying DDS implementation
 
 #### Apex.OS Polling Subscription
