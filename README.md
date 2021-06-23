@@ -119,8 +119,9 @@ For running tests on a single machine, you can choose between the following opti
    interprocess communication, two instances of the performance_test must be run, e.g.
 
     ```bash
-    perf_test <options> --num_sub_threads 0 --num_pub_threads 1 &
-    perf_test <options> --num_sub_threads 1 --num_pub_threads 0
+    perf_test <options> --num_sub_threads 1 --num_pub_threads 0 &
+    sleep 1  # give the subscriber time to finish initializing
+    perf_test <options> --num_sub_threads 0 --num_pub_threads 1
     ```
 
     1. :point_up: CPU and Resident Memory measurements are logged separately for the publisher and
@@ -132,6 +133,8 @@ For running tests on a single machine, you can choose between the following opti
        subscriber reads the sample from that same location. When running, use the `--zero_copy`
        argument for both the publisher and subscriber processes.
     1. :memo: The transport is dependent on the middleware
+    1. It is recommended to start the subscriber process first, and delay for a short amount of time,
+       so that there isn't a full queue for it to process right from the start.
 
 On a distributed system, testing latency is difficult, because the clocks are probably not
 perfectly synchronized between the two devices. To work around this, the performance_test tool
@@ -333,8 +336,8 @@ For interprocess communication, it is recommended to provide different prefixes 
 the log files:
 
 ```bash
-perf_test -c ROS2 --msg Array1k -p 1 -s 0 -l log_pub
 perf_test -c ROS2 --msg Array1k -p 0 -s 1 -l log_sub
+perf_test -c ROS2 --msg Array1k -p 1 -s 0 -l log_pub
 ```
 
 Then, to plot the latency metrics, invoke perfplot on the subscriber's log file.
