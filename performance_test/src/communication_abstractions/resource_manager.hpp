@@ -79,7 +79,7 @@ public:
   ResourceManager & operator=(ResourceManager &&) = delete;
 
   /// Returns the ROS 2 node.
-  std::shared_ptr<rclcpp::Node> ros2_node() const;
+  std::shared_ptr<rclcpp::Node> rclcpp_node() const;
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   /// Returns FastRTPS participant.

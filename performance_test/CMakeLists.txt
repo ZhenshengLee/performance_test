@@ -164,8 +164,11 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   include_directories(${OPENDDS_IDL_INCLUDE_DIR} ${PARENT_DDS_ROOT_INCLUDE})
 endif()
 
-# ROS2 Callback and Executor
-option(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED "Option to enable the Callback and Executor Plugin." ON)
+# ROS2 rclcpp plugins
+option(PERFORMANCE_TEST_RCLCPP_ENABLED "" ON)
+if(PERFORMANCE_TEST_RCLCPP_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_RCLCPP_ENABLED)
+endif()
 
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
@@ -245,13 +248,9 @@ if(PERFORMANCE_TEST_RT_ENABLED)
   list(APPEND sources src/utilities/rt_enabler.hpp)
 endif()
 
-if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
-  add_definitions(-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
-  list(APPEND sources src/communication_abstractions/ros2_callback_communicator.hpp)
-endif()
-
-if(PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED)
-  list(APPEND sources src/communication_abstractions/ros2_communicator.hpp)
+if(PERFORMANCE_TEST_RCLCPP_ENABLED)
+  list(APPEND sources src/communication_abstractions/rclcpp_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/rclcpp_callback_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)

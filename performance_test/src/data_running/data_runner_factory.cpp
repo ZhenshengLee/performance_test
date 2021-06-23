@@ -19,8 +19,8 @@
 #include <string>
 #include <memory>
 
-#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
-  #include "../communication_abstractions/ros2_callback_communicator.hpp"
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  #include "../communication_abstractions/rclcpp_callback_communicator.hpp"
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
@@ -66,9 +66,14 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         if (ptr) {
           throw std::runtime_error("It seems that two msgs have the same name");
         }
-#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
-        if (com_mean == CommunicationMean::ROS2) {
-          ptr = std::make_shared<DataRunner<ROS2CallbackCommunicator<T>>>(run_type);
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+        if (com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
+          ptr = std::make_shared<DataRunner<
+            RclcppSingleThreadedExecutorCommunicator<T>>>(run_type);
+        }
+        if (com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
+          ptr = std::make_shared<DataRunner<
+            RclcppStaticSingleThreadedExecutorCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED

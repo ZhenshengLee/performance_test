@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMMUNICATION_ABSTRACTIONS__ROS2_COMMUNICATOR_HPP_
-#define COMMUNICATION_ABSTRACTIONS__ROS2_COMMUNICATOR_HPP_
+#ifndef COMMUNICATION_ABSTRACTIONS__RCLCPP_COMMUNICATOR_HPP_
+#define COMMUNICATION_ABSTRACTIONS__RCLCPP_COMMUNICATOR_HPP_
 
 
 #include <rclcpp/rclcpp.hpp>
@@ -79,16 +79,16 @@ private:
 
 /// Communication plugin interface for ROS 2 for the subscription side.
 template<class Msg>
-class ROS2Communicator : public Communicator
+class RclcppCommunicator : public Communicator
 {
 public:
   /// The data type to publish and subscribe to.
   using DataType = typename Msg::RosType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit ROS2Communicator(SpinLock & lock)
+  explicit RclcppCommunicator(SpinLock & lock)
   : Communicator(lock),
-    m_node(ResourceManager::get().ros2_node()),
+    m_node(ResourceManager::get().rclcpp_node()),
     m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()),
     m_data_copy(std::make_unique<DataType>()) {}
 
@@ -182,4 +182,4 @@ private:
   std::unique_ptr<DataType> m_data_copy;
 };
 }  // namespace performance_test
-#endif  // COMMUNICATION_ABSTRACTIONS__ROS2_COMMUNICATOR_HPP_
+#endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_COMMUNICATOR_HPP_

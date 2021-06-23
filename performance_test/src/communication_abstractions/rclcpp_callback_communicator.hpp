@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMMUNICATION_ABSTRACTIONS__ROS2_CALLBACK_COMMUNICATOR_HPP_
-#define COMMUNICATION_ABSTRACTIONS__ROS2_CALLBACK_COMMUNICATOR_HPP_
+#ifndef COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
+#define COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -22,22 +22,22 @@
 
 #include "../experiment_configuration/topics.hpp"
 
-#include "ros2_communicator.hpp"
+#include "rclcpp_communicator.hpp"
 #include "resource_manager.hpp"
 
 namespace performance_test
 {
 /// Communication plugin for ROS 2 using ROS 2 callbacks for the subscription side.
-template<class Msg>
-class ROS2CallbackCommunicator : public ROS2Communicator<Msg>
+template<class Msg, class Executor>
+class RclcppCallbackCommunicator : public RclcppCommunicator<Msg>
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename ROS2Communicator<Msg>::DataType;
+  using DataType = typename RclcppCommunicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit ROS2CallbackCommunicator(SpinLock & lock)
-  : ROS2Communicator<Msg>(lock),
+  explicit RclcppCallbackCommunicator(SpinLock & lock)
+  : RclcppCommunicator<Msg>(lock),
     m_subscription(nullptr)
   {
     m_executor.add_node(this->m_node);
@@ -57,10 +57,17 @@ public:
   }
 
 private:
-  rclcpp::executors::SingleThreadedExecutor m_executor;
+  Executor m_executor;
   std::shared_ptr<::rclcpp::Subscription<DataType>> m_subscription;
 };
 
+template<class Msg>
+using RclcppSingleThreadedExecutorCommunicator =
+  RclcppCallbackCommunicator<Msg, rclcpp::executors::SingleThreadedExecutor>;
+
+template<class Msg>
+using RclcppStaticSingleThreadedExecutorCommunicator =
+  RclcppCallbackCommunicator<Msg, rclcpp::executors::StaticSingleThreadedExecutor>;
 
 }  // namespace performance_test
-#endif  // COMMUNICATION_ABSTRACTIONS__ROS2_CALLBACK_COMMUNICATOR_HPP_
+#endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
