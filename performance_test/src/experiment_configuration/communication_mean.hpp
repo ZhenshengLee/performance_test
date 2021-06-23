@@ -23,59 +23,73 @@ namespace performance_test
  */
 enum class CommunicationMean
 {
-  ROS2
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  RCLCPP_SINGLE_THREADED_EXECUTOR,
+  RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR,
+#endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  , FASTRTPS
+  FASTRTPS,
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  , CONNEXTDDSMICRO
+  CONNEXTDDSMICRO,
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  , CONNEXTDDS
+  CONNEXTDDS,
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  , CYCLONEDDS
+  CYCLONEDDS,
 #endif
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
-  , ICEORYX
+  ICEORYX,
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
-  , OPENDDS
+  OPENDDS,
 #endif
+  INVALID
 };
 
 /// Outstream operator for CommunicationMean.
 inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean cm)
 {
-  if (cm == CommunicationMean::ROS2) {
-    return stream << "ROS2";
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  if (cm == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
+    return stream << "RCLCPP_SINGLE_THREADED_EXECUTOR";
+  }
+  if (cm == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
+    return stream << "RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR";
+  }
+#endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  } else if (cm == CommunicationMean::FASTRTPS) {
+  if (cm == CommunicationMean::FASTRTPS) {
     return stream << "FASTRTPS";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  } else if (cm == CommunicationMean::CONNEXTDDSMICRO) {
+  if (cm == CommunicationMean::CONNEXTDDSMICRO) {
     return stream << "CONNEXTDDSMICRO";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  } else if (cm == CommunicationMean::CONNEXTDDS) {
+  if (cm == CommunicationMean::CONNEXTDDS) {
     return stream << "CONNEXTDDS";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  } else if (cm == CommunicationMean::CYCLONEDDS) {
+  if (cm == CommunicationMean::CYCLONEDDS) {
     return stream << "CYCLONEDDS";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
-  } else if (cm == CommunicationMean::ICEORYX) {
+  if (cm == CommunicationMean::ICEORYX) {
     return stream << "ICEORYX";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
-  } else if (cm == CommunicationMean::OPENDDS) {
+  if (cm == CommunicationMean::OPENDDS) {
     return stream << "OpenDDS";
-#endif
-  } else {
-    throw std::invalid_argument("Enum value not supported!");
   }
+#endif
+  throw std::invalid_argument("Enum value not supported!");
 }
 
 }  // namespace performance_test

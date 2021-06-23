@@ -17,7 +17,6 @@ RUN source /opt/ros/rolling/setup.bash && \
       --cmake-clean-cache \
       --cmake-args \
         -DCMAKE_BUILD_TYPE=Release \
-        -DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=OFF \
         -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
 
 ADD dockerfiles/cyclonedds.xml /
