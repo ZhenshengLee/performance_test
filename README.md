@@ -187,7 +187,7 @@ implemented:
 #### Eclipse iceoryx
 
 - [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
-- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- CMake build flag: `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON`
 - Communication plugin: `-c iceoryx`
 - Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.iceoryx](dockerfiles/Dockerfile.iceoryx)
@@ -196,6 +196,7 @@ implemented:
 - To run with the iceoryx plugin,
   [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
   must be running.
+- Default transports:
   | INTRA     | IPC on same machine | Distributed system                |
   |-----------|---------------------|-----------------------------------|
   | zero copy | zero copy           | Not supported by performance_test |
@@ -215,7 +216,7 @@ implemented:
 #### OCI OpenDDS
 
 - [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
-- CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
+- CMake build flag: `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON`
 - Communication plugin: `-c OpenDDS`
 - Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.OpenDDS](dockerfiles/Dockerfile.OpenDDS)
@@ -277,7 +278,7 @@ currently implemented:
       to use a different RMW implementation with ROS 2.
     - You can find a list of several other middleware options
       [here](https://docs.ros.org/en/galactic/Concepts/About-Different-Middleware-Vendors.html).
-- Default transports: depends on underlying DDS implementation
+- Default transports: depends on underlying RMW implementation
 
 ## Analyze the results
 
