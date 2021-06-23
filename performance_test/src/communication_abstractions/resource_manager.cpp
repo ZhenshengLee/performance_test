@@ -36,7 +36,7 @@ void ResourceManager::shutdown()
 #endif
 }
 
-std::shared_ptr<rclcpp::Node> ResourceManager::ros2_node() const
+std::shared_ptr<rclcpp::Node> ResourceManager::rclcpp_node() const
 {
   /* Temporarely commented out until ROS2 waitsets are available. As of now every ROS2 thread needs a node in the
    * current architecture.

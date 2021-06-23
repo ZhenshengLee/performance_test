@@ -69,7 +69,7 @@ that starts with `log`.
 
 ## Building the performance_test tool
 
-For a simple example, see [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2).
+For a simple example, see [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp).
 
 The performance_test tool is structured as a ROS 2 package, so `colcon` is used to build it.
 Therefore, you must source a ROS 2 installation:
@@ -264,17 +264,19 @@ The performance test tool can also measure the performance of a variety of RMW i
 through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API. The following plugins are
 currently implemented:
 
-#### ROS 2 Callback Executor
+#### ROS 2 Callbacks
 
 - [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
-- CMake build flag: `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (on by default)
-- Communication plugin: `-c ROS2`
-- Zero copy transport (`--zero-copy`): no
-- Docker file: [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2)
-- This plugin will use the ROS 2 RMW implementation that is configured on your system.
-  - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
+- CMake build flag: `-DPERFORMANCE_TEST_RCLCPP_ENABLED=ON` (on by default)
+- Communication plugin:
+  - Callback with Single Threaded Executor: `-c rclcpp-single-threaded-executor`
+  - Callback with Static Single Threaded Executor: `-c rclcpp-static-single-threaded-executor`
+- Zero copy transport (`--zero-copy`): yes
+- Docker file: [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp)
+- These plugins will use the ROS 2 RMW implementation that is configured on your system.
+  - ROS 2 Galactic is pre-configured to use rmw_cyclonedds_cpp.
     - Follow [these instructions](https://docs.ros.org/en/foxy/Guides/Working-with-multiple-RMW-implementations.html)
-    to use a different RMW implementation with ROS 2.
+      to use a different RMW implementation with ROS 2.
     - You can find a list of several other middleware options
       [here](https://docs.ros.org/en/foxy/Concepts/About-Different-Middleware-Vendors.html).
   - Apex.OS is pre-configured to use Apex.Middleware.
@@ -351,8 +353,8 @@ For interprocess communication, it is recommended to provide different prefixes 
 the log files:
 
 ```bash
-perf_test -c ROS2 --msg Array1k -p 0 -s 1 -l log_sub
-perf_test -c ROS2 --msg Array1k -p 1 -s 0 -l log_pub
+perf_test -c rclcpp-single-threaded-executor --msg Array1k -p 0 -s 1 -l log_sub
+perf_test -c rclcpp-single-threaded-executor --msg Array1k -p 1 -s 0 -l log_pub
 ```
 
 Then, to plot the latency metrics, invoke perfplot on the subscriber's log file.

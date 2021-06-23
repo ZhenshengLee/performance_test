@@ -64,7 +64,7 @@
     <table name="ExperimentConfiguration" options="ENGINE=InnoDB" kind="object">
       <column name="id" type="BINARY(16)" null="false"/>
       <column name="final_logfile_name" type="TEXT" null="false"/>
-      <column name="com_mean" type="ENUM('ROS2')" null="false"/>
+      <column name="com_mean" type="ENUM('RCLCPP_SINGLE_THREADED_EXECUTOR')" null="false"/>
       <column name="dds_domain_id" type="INT UNSIGNED" null="false"/>
       <column name="qos_reliability" type="ENUM('BEST_EFFORT', 'RELIABLE')" null="false"/>
       <column name="qos_durability" type="ENUM('VOLATILE', 'TRANSIENT_LOCAL')" null="false"/>

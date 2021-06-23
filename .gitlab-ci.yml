@@ -298,11 +298,11 @@ test_security_fast_dds:
     - source security_setup.bash enable ./demo_keys
     # The below runs should fail:
     # Unexpected node names:
-    - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max-runtime 10 --rate 2 --keep-last --history-depth 10'
+    - '! ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Array1k -t Array1k --max-runtime 10 --rate 2 --keep-last --history-depth 10'
     # Unexpected msg types
-    - '! ros2 run performance_test perf_test -c ROS2 --msg Struct16 -t test_topic --max-runtime 10 --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test'
+    - '! ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Struct16 -t test_topic --max-runtime 10 --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test'
     # This should pass (time-out)
-    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 --msg Array16k -t Array16k --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test ||
+    - 'timeout 30 ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Array16k -t Array16k --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test ||
        if [ $? -eq 124 ]; then echo "OK";
        else exit 1;
        fi
@@ -327,11 +327,11 @@ test_security_cyclone_dds:
     - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     # The below runs should fail:
     # Unexpected node names:
-    - '! ros2 run performance_test perf_test -c ROS2 --msg Array1k -t Array1k --max-runtime 10 --rate 2 --keep-last --history-depth 10'
+    - '! ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Array1k -t Array1k --max-runtime 10 --rate 2 --keep-last --history-depth 10'
     # Unexpected msg types
-    - '! ros2 run performance_test perf_test -c ROS2 --msg Struct16 -t test_topic --max-runtime 10 --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test'
+    - '! ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Struct16 -t test_topic --max-runtime 10 --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test'
     # This should pass (time-out)
-    - 'timeout 30 ros2 run performance_test perf_test -c ROS2 --msg Array16k -t Array16k --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test ||
+    - 'timeout 30 ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Array16k -t Array16k --rate 2 --keep-last --history-depth 10 --with-security -- --ros-args -e /performance_test ||
        if [ $? -eq 124 ]; then echo "OK";
        else exit 1;
        fi

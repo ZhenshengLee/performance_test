@@ -92,8 +92,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
 
     std::vector<std::string> allowedCommunications;
-#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
-    allowedCommunications.push_back("ROS2");
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+    allowedCommunications.push_back("rclcpp-single-threaded-executor");
+    allowedCommunications.push_back("rclcpp-static-single-threaded-executor");
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     allowedCommunications.push_back("ApexOSPollingSubscription");
@@ -122,7 +123,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       &allowedCommunicationVals, cmd);
 
     TCLAP::ValueArg<std::string> topicArg("t", "topic",
-      "The topic name.", false, "test-topic", "topic", cmd);
+      "The topic name.", false, "test_topic", "topic", cmd);
 
     TCLAP::ValueArg<std::string> msgArg("m", "msg",
       "The message type. Use --msg-list to list the options.", false, "Array1k", "type", cmd);
@@ -273,12 +274,20 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       exit(0);
     }
 
-    if (comm_str == "ROS2") {
-      m_com_mean = CommunicationMean::ROS2;
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+    if (comm_str == "rclcpp-single-threaded-executor") {
+      m_com_mean = CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR;
       #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "ROS2";
+      m_com_mean_str = "RCLCPP_SINGLE_THREADED_EXECUTOR";
       #endif
     }
+    if (comm_str == "rclcpp-static-single-threaded-executor") {
+      m_com_mean = CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR";
+      #endif
+    }
+#endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     if (comm_str == "ApexOSPollingSubscription") {
       m_com_mean = CommunicationMean::ApexOSPollingSubscription;
@@ -353,7 +362,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     }
     m_qos.history_depth = history_depth;
     if (disable_async) {
-      if (m_com_mean == CommunicationMean::ROS2) {
+      if (use_ros2_layers()) {
         throw std::invalid_argument("ROS 2 does not support disabling async. publishing.");
       }
       m_qos.sync_pubsub = true;
@@ -376,13 +385,13 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #endif
     }
     if (m_use_single_participant) {
-      if (m_com_mean == CommunicationMean::ROS2) {
+      if (use_ros2_layers()) {
         throw std::invalid_argument("ROS2 does not support single participant mode!");
       }
     }
 
     if (m_with_security) {
-      if (m_com_mean != CommunicationMean::ROS2) {
+      if (!use_ros2_layers()) {
         throw std::invalid_argument("Only ROS2 supports security!");
       }
     }
@@ -443,8 +452,10 @@ CommunicationMean ExperimentConfiguration::com_mean() const
 }
 bool ExperimentConfiguration::use_ros2_layers() const
 {
-#ifdef PERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED
-  if (com_mean() == CommunicationMean::ROS2) {
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  if (m_com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR ||
+    m_com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR)
+  {
     return true;
   }
 #endif

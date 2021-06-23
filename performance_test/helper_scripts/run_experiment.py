@@ -111,7 +111,7 @@ class Instance:
 
         if not os.path.exists(dir_name):
             os.makedirs(dir_name)
-        fixed_args = ' --communication ROS2 '
+        fixed_args = ' --communication rclcpp-single-threaded-executor '
         dyn_args = "-l '{}/log' --msg {} --rate {} -s {} {} {}".format(
             dir_name, c[0], c[1], c[2], c[3], c[4]
         )

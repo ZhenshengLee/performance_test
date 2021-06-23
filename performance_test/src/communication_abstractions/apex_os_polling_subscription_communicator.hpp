@@ -25,7 +25,7 @@
 #include "../experiment_configuration/topics.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
 
-#include "ros2_communicator.hpp"
+#include "rclcpp_communicator.hpp"
 #include "resource_manager.hpp"
 
 namespace performance_test
@@ -33,15 +33,15 @@ namespace performance_test
 
 /// Communication plugin for Apex.OS using waitsets for the subscription side.
 template<class Msg>
-class ApexOSPollingSubscriptionCommunicator : public ROS2Communicator<Msg>
+class ApexOSPollingSubscriptionCommunicator : public RclcppCommunicator<Msg>
 {
 public:
   /// The data type to publish and subscribe to.
-  using DataType = typename ROS2Communicator<Msg>::DataType;
+  using DataType = typename RclcppCommunicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit ApexOSPollingSubscriptionCommunicator(SpinLock & lock)
-  : ROS2Communicator<Msg>(lock),
+  : RclcppCommunicator<Msg>(lock),
     m_polling_subscription(nullptr) {}
 
   /// Reads received data from ROS 2 using waitsets
