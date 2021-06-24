@@ -118,7 +118,13 @@ public:
           {iox_sub_service, iox_sub_instance, iox_sub_event},
           subscriberOptions));
       m_waitset = std::unique_ptr<iox::popo::WaitSet<>>(new iox::popo::WaitSet<>());
-      m_waitset->attachEvent(*m_subscriber.get(), iox::popo::SubscriberEvent::DATA_RECEIVED);
+      m_waitset->attachEvent(*m_subscriber.get(), iox::popo::SubscriberEvent::DATA_RECEIVED)
+      .or_else(
+        [](
+          auto) {
+          std::cerr << "unable to attach Event DATA_RECEIVED to iceoryx Waitset" << std::endl;
+          std::exit(EXIT_FAILURE);
+        });
     }
 
     if (m_subscriber->getSubscriptionState() == iox::SubscribeState::SUBSCRIBED) {
