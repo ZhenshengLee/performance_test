@@ -122,15 +122,15 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       &allowedCommunicationVals, cmd);
 
     TCLAP::ValueArg<std::string> topicArg("t", "topic",
-      "The topic name.", false, "test_topic", "topic", cmd);
+      "The topic name.", false, "test-topic", "topic", cmd);
 
     TCLAP::ValueArg<std::string> msgArg("m", "msg",
-      "The message type. Use --msg_list to list the options.", false, "Array1k", "type", cmd);
+      "The message type. Use --msg-list to list the options.", false, "Array1k", "type", cmd);
 
-    TCLAP::SwitchArg msgListArg("", "msg_list",
+    TCLAP::SwitchArg msgListArg("", "msg-list",
       "Print the list of available msg types and exit.", cmd, false);
 
-    TCLAP::ValueArg<uint32_t> ddsDomainIdArg("", "dds_domain_id",
+    TCLAP::ValueArg<uint32_t> ddsDomainIdArg("", "dds-domain_id",
       "The DDS domain id.", false, 0, "id", cmd);
 
     TCLAP::SwitchArg reliableArg("", "reliable",
@@ -139,83 +139,83 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::SwitchArg transientArg("", "transient",
       "Enable transient local QOS. Default is volatile.", cmd, false);
 
-    TCLAP::SwitchArg keepLastArg("", "keep_last",
+    TCLAP::SwitchArg keepLastArg("", "keep-last",
       "Enable keep last QOS. Default is keep all.", cmd, false);
 
-    TCLAP::ValueArg<uint32_t> historyDepthArg("", "history_depth",
+    TCLAP::ValueArg<uint32_t> historyDepthArg("", "history-depth",
       "The history depth QOS.", false, 1000, "N", cmd);
 
-    TCLAP::SwitchArg disableAsyncArg("", "disable_async",
+    TCLAP::SwitchArg disableAsyncArg("", "disable-async",
       "Disable asynchronous pub/sub.", cmd, false);
 
-    TCLAP::ValueArg<uint64_t> maxRuntimeArg("", "max_runtime",
+    TCLAP::ValueArg<uint64_t> maxRuntimeArg("", "max-runtime",
       "Run N seconds, then exit. 0 means run forever.", false, 0, "N", cmd);
 
-    TCLAP::ValueArg<uint32_t> numPubsArg("p", "num_pub_threads",
+    TCLAP::ValueArg<uint32_t> numPubsArg("p", "num-pub-threads",
       "Number of publisher threads.", false, 1, "N", cmd);
 
-    TCLAP::ValueArg<uint32_t> numSubsArg("s", "num_sub_threads",
+    TCLAP::ValueArg<uint32_t> numSubsArg("s", "num-sub-threads",
       "Number of subscriber threads.", false, 1, "N", cmd);
 
-    TCLAP::SwitchArg checkMemoryArg("", "check_memory",
+    TCLAP::SwitchArg checkMemoryArg("", "check-memory",
       "Print backtrace of all memory operations performed by the middleware. "
       "This will slow down the application!", cmd, false);
 
-    TCLAP::ValueArg<int32_t> useRtPrioArg("", "use_rt_prio",
+    TCLAP::ValueArg<int32_t> useRtPrioArg("", "use-rt-prio",
       "Set RT priority. "
       "Only certain platforms (i.e. Drive PX) have the right configuration to support this.",
       false, 0, "N", cmd);
 
-    TCLAP::ValueArg<uint32_t> useRtCpusArg("", "use_rt_cpus",
+    TCLAP::ValueArg<uint32_t> useRtCpusArg("", "use-rt-cpus",
       "Set RT CPU affinity mask. "
       "Only certain platforms (i.e. Drive PX) have the right configuration to support this.",
       false, 0, "N", cmd);
 
-    TCLAP::SwitchArg useSingleParticipantArg("", "use_single_participant",
+    TCLAP::SwitchArg useSingleParticipantArg("", "use-single-participant",
       "**DEPRECATED** Uses only one participant per process. By default every thread has its own.",
       cmd, false);
 
-    TCLAP::SwitchArg withSecurityArg("", "with_security",
+    TCLAP::SwitchArg withSecurityArg("", "with-security",
       "Make nodes with deterministic names for use with security.", cmd, false);
 
     std::vector<std::string> allowedRelayModes{{"None", "Main", "Relay"}};
     TCLAP::ValuesConstraint<std::string> allowedRelayModeVals(allowedRelayModes);
-    TCLAP::ValueArg<std::string> relayModeArg("", "roundtrip_mode",
+    TCLAP::ValueArg<std::string> relayModeArg("", "roundtrip-mode",
       "Select the round trip mode.", false, "None",
       &allowedRelayModeVals, cmd);
 
     TCLAP::ValueArg<uint32_t> ignoreArg("", "ignore",
       "Ignore the first N seconds of the experiment.", false, 0, "N", cmd);
 
-    TCLAP::SwitchArg disableLoggingArg("", "disable_logging",
+    TCLAP::SwitchArg disableLoggingArg("", "disable-logging",
       "Disable experiment logging to stdout.", cmd, false);
 
-    TCLAP::ValueArg<uint32_t> expectedNumPubsArg("", "expected_num_pubs",
-      "Expected number of publishers for wait_for_matched.", false, 0, "N", cmd);
+    TCLAP::ValueArg<uint32_t> expectedNumPubsArg("", "expected-num-pubs",
+      "Expected number of publishers for wait-for-matched.", false, 0, "N", cmd);
 
-    TCLAP::ValueArg<uint32_t> expectedNumSubsArg("", "expected_num_subs",
-      "Expected number of subscribers for wait_for_matched.", false, 0, "N", cmd);
+    TCLAP::ValueArg<uint32_t> expectedNumSubsArg("", "expected-num-subs",
+      "Expected number of subscribers for wait-for-matched.", false, 0, "N", cmd);
 
-    TCLAP::ValueArg<uint32_t> waitForMatchedTimeoutArg("", "wait_for_matched_timeout",
+    TCLAP::ValueArg<uint32_t> waitForMatchedTimeoutArg("", "wait-for-matched-timeout",
       "Maximum time in seconds to wait for matched pubs/subs.", false, 30, "N", cmd);
 
-    TCLAP::SwitchArg zeroCopyArg("", "zero_copy",
+    TCLAP::SwitchArg zeroCopyArg("", "zero-copy",
       "Use zero copy transfer.", cmd, false);
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    TCLAP::ValueArg<std::string> dbNameArg("", "db_name",
-      "Name of the SQL database.", false, "db_name", "db", cmd);
+    TCLAP::ValueArg<std::string> dbNameArg("", "db-name",
+      "Name of the SQL database.", false, "db-name", "db", cmd);
 #if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-    TCLAP::ValueArg<std::string> dbUserArg("", "db_user",
+    TCLAP::ValueArg<std::string> dbUserArg("", "db-user",
       "User name to login to the SQL database.", false, "", "user", cmd);
 
-    TCLAP::ValueArg<std::string> dbPasswordArg("", "db_password",
+    TCLAP::ValueArg<std::string> dbPasswordArg("", "db-password",
       "Password to login to the SQL database.", false, "", "pw", cmd);
 
-    TCLAP::ValueArg<std::string> dbHostArg("", "db_host",
+    TCLAP::ValueArg<std::string> dbHostArg("", "db-host",
       "IP address of the SQL server.", false, "", "host", cmd);
 
-    TCLAP::ValueArg<unsigned int> dbPortArg("", "db_port",
+    TCLAP::ValueArg<unsigned int> dbPortArg("", "db-port",
       "Port for SQL protocol.", false, 0, "port", cmd);
 #endif
 #endif

@@ -30,8 +30,8 @@ count = 30
 
 [[segment.mempool]]
 size = 4194304
-count = 16
+count = 20
 
 [[segment.mempool]]
 size = 16777216
-count = 16
+count = 20

@@ -15,7 +15,7 @@
 import subprocess
 
 cmd = 'ros2 run performance_test perf_test --communication ApexOSPollingSubscription  \
- --max_runtime 10 --disable_logging '
+ --max-runtime 10 --disable-logging '
 
 db_args = ''  # set the db parameters to upload the result to the database
 

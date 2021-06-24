@@ -60,7 +60,7 @@ mkdir experiment
                                                           --msg Array1k
                                                           --rate 100
                                                           --topic test_topic
-                                                          --max_runtime 30
+                                                          --max-runtime 30
                                                           --logfile experiment/log
 ```
 
@@ -106,7 +106,7 @@ To find the available settings, run with `--help` (note the required and default
 - The `-c` argument should match the selected [middleware plugin](#middleware-plugins)
   from the build phase.
 - The `--msg` argument should be one of the supported message types, which can be listed
-  by running with `--msg_list`.
+  by running with `--msg-list`.
 
 ### Single machine or distributed system?
 
@@ -121,9 +121,9 @@ For running tests on a single machine, you can choose between the following opti
    interprocess communication, two instances of the performance_test must be run, e.g.
 
     ```bash
-    perf_test <options> --num_sub_threads 1 --num_pub_threads 0 &
+    perf_test <options> --num-sub-threads 1 --num-pub-threads 0 &
     sleep 1  # give the subscriber time to finish initializing
-    perf_test <options> --num_sub_threads 0 --num_pub_threads 1
+    perf_test <options> --num-sub-threads 0 --num-pub-threads 1
     ```
 
     1. :point_up: CPU and Resident Memory measurements are logged separately for the publisher and
@@ -132,7 +132,7 @@ For running tests on a single machine, you can choose between the following opti
        sample is received.
     1. Some plugins also support zero copy transfer. With zero copy transfer, the publisher
        requests a loan from a pre-allocated shared memory pool, where it writes the sample. The
-       subscriber reads the sample from that same location. When running, use the `--zero_copy`
+       subscriber reads the sample from that same location. When running, use the `--zero-copy`
        argument for both the publisher and subscriber processes.
     1. :memo: The transport is dependent on the middleware
     1. It is recommended to start the subscriber process first, and delay for a short amount of time,
@@ -144,10 +144,10 @@ supports relay mode, which allows for a round-trip style of communication:
 
 ```bash
 # On the main machine
-perf_test <options> --roundtrip_mode Main
+perf_test <options> --roundtrip-mode Main
 
 # On the relay machine:
-perf_test <options> --roundtrip_mode Relay
+perf_test <options> --roundtrip-mode Relay
 ```
 
 In relay mode, the Main machine sends messages to the Relay machine, which immediately sends the
@@ -170,13 +170,14 @@ implemented:
 - [Eclipse Cyclone DDS 0.8.0beta6](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta6)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS`
-- Zero copy transport (`--zero_copy`): yes
+- Zero copy transport (`--zero-copy`): yes
   - Cyclone DDS zero copy requires the
     [runtime switch](https://github.com/eclipse-cyclonedds/cyclonedds/blob/iceoryx/docs/manual/shared_memory.rst)
     to be enabled.
-  - Currently, this is only available on the
-    [`iceoryx` branch of Cyclone DDS](https://github.com/eclipse-cyclonedds/cyclonedds/tree/iceoryx).
-  - If the runtime switch is enabled, but `--zero_copy` is not added, then the plugin will not use
+  - When the runtime switch is enabled,
+    [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
+    must be running.
+  - If the runtime switch is enabled, but `--zero-copy` is not added, then the plugin will not use
     the loaned sample API, but iceoryx will still transport the samples.
   - See [Dockerfile.mashup](dockerfiles/Dockerfile.mashup)
 - Docker file: [Dockerfile.CycloneDDS](dockerfiles/Dockerfile.CycloneDDS)
@@ -190,7 +191,7 @@ implemented:
 - [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c iceoryx`
-- Zero copy transport (`--zero_copy`): yes
+- Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.iceoryx](dockerfiles/Dockerfile.iceoryx)
 - The iceoryx plugin is not a DDS implementation.
   - The DDS-specific options (such as domain ID, durability, and reliability) do not apply.
@@ -206,7 +207,7 @@ implemented:
 - [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c FastRTPS`
-- Zero copy transport (`--zero_copy`): no
+- Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
 - Default transports:
   | INTRA | IPC on same machine | Distributed system |
@@ -218,7 +219,7 @@ implemented:
 - [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c OpenDDS`
-- Zero copy transport (`--zero_copy`): no
+- Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.OpenDDS](dockerfiles/Dockerfile.OpenDDS)
 - Default transports:
   | INTRA | IPC on same machine | Distributed system |
@@ -230,7 +231,7 @@ implemented:
 - [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON`
 - Communication plugin: `-c ConnextDDS`
-- Zero copy transport (`--zero_copy`): no
+- Zero copy transport (`--zero-copy`): no
 - Docker file: Not available
 - A license is required
 - You need to source an RTI Connext DDS environment.
@@ -249,7 +250,7 @@ implemented:
 - [Connext DDS Micro 3.0.3](https://www.rti.com/products/connext-dds-micro)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON`
 - Communication plugin: `-c ConnextDDSMicro`
-- Zero copy transport (`--zero_copy`): no
+- Zero copy transport (`--zero-copy`): no
 - Docker file: Not available
 - A license is required
 - Default transports:
@@ -268,7 +269,7 @@ currently implemented:
 - [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 - CMake build flag: `-DPERFORMANCE_TEST_CALLBACK_EXECUTOR_ENABLED=ON` (on by default)
 - Communication plugin: `-c ROS2`
-- Zero copy transport (`--zero_copy`): no
+- Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.ROS2](dockerfiles/Dockerfile.ROS2)
 - This plugin will use the ROS 2 RMW implementation that is configured on your system.
   - ROS 2 Foxy is pre-configured to use rmw_fastrtps_cpp.
@@ -389,7 +390,7 @@ describes how to design a fair and unbiased performance test, and is the basis f
 - Using Connext DDS Micro INTRA transport with `reliable` QoS and history kind set to `keep_all`
   [is not supported with Connext
   Micro](https://community.rti.com/static/documentation/connext-micro/3.0.3/doc/html/usersmanual/transports/INTRA.html#reliability-and-durability).
-  Set `keep_last` as QoS history kind always when using `reliable`.
+  Set `keep-last` as QoS history kind always when using `reliable`.
 
 Possible additional communication which could be implemented are:
 
