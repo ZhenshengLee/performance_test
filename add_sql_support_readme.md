@@ -54,12 +54,12 @@ cd perf_test_ws/src
 git clone https://github.com/ApexAI/performance_test.git
 cd ..
 colcon build --cmake-clean-cache --cmake-args -DCMAKE_BUILD_TYPE=Release -DPERFORMANCE_TEST_ODB_SQLITE=ON
-./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k --max_runtime 10
+./install/performance_test/lib/performance_test/perf_test -c ROS2 -l log --msg Array1k --max-runtime 10
 ```
 
-The default name of the resulting database is "db_name", you can change it by using `--db_name`
-argument in when executing performance_test. For MySQL or PostgreSQL databases, you can also specify `--db_user`,
-`--db_password`, `--db_host` and `--db_port` to connect to your database.
+The default name of the resulting database is "db_name", you can change it by using `--db-name`
+argument in when executing performance_test. For MySQL or PostgreSQL databases, you can also specify `--db-user`,
+`--db-password`, `--db-host` and `--db-port` to connect to your database.
 
 In order to run the performance test with MySQL or PostgreSQL support, you can use
 `-DPERFORMANCE_TEST_ODB_MYSQL=ON` or `-DPERFORMANCE_TEST_ODB_PGSQL=ON` instead of
