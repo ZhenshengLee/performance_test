@@ -24,7 +24,11 @@ int main(int argc, char ** argv)
   ec.setup(argc, argv);
 
   if (ec.use_ros2_layers()) {
+#ifdef APEX_CERT
+    rclcpp::init(argc, argv, rclcpp::InitOptions{}, false);
+#else
     rclcpp::init(argc, argv);
+#endif
   }
 
   {
