@@ -16,7 +16,8 @@
 cmake_minimum_required(VERSION 3.5)
 project(performance_test)
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}")
+list(INSERT CMAKE_MODULE_PATH 0  "${CMAKE_CURRENT_SOURCE_DIR}")
+list(INSERT CMAKE_MODULE_PATH 0  ${CMAKE_CURRENT_LIST_DIR}/cmake/Modules)
 include(compile_options)
 
 set(OPTIONAL_AMENT_DEPENDENCES)
@@ -328,43 +329,16 @@ endif()
 include(ExternalProject)
 
 set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
-externalproject_add(
-  tclap
-  GIT_REPOSITORY http://git.code.sf.net/p/tclap/code
-  GIT_TAG 1.4.0-rc1
-  GIT_SHALLOW TRUE
-  PREFIX ${EXTERNAL_INSTALL_LOCATION}
-  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/tclap
-  CMAKE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  UPDATE_COMMAND ""
-  INSTALL_COMMAND ""
-  BUILD_COMMAND ""
-)
-include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tclap/include)
 
-externalproject_add(
-  rapidjson
-  GIT_REPOSITORY https://github.com/Tencent/rapidjson.git
-  GIT_TAG v1.1.0
-  GIT_SHALLOW TRUE
-  PREFIX ${EXTERNAL_INSTALL_LOCATION}
-  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/rapidjson
-  CMAKE_COMMAND ""
-  CMAKE_ARGS
-    -DRAPIDJSON_BUILD_TESTS=OFF
-    -DRAPIDJSON_BUILD_DOC=OFF
-    -DRAPIDJSON_BUILD_EXAMPLES=OFF
-  CONFIGURE_COMMAND ""
-  UPDATE_COMMAND ""
-  INSTALL_COMMAND ""
-  BUILD_COMMAND ""
-)
-include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/rapidjson/include)
+find_package(TCLAP REQUIRED)
+include_directories(${TCLAP_INCLUDE_DIR})
+
+find_package(Rapidjson REQUIRED)
+include_directories(${Rapidjson_INCLUDE_DIRS})
 
 externalproject_add(
   tabulate
-  GIT_REPOSITORY https://github.com/p-ranav/tabulate.git
+  GIT_REPOSITORY https://gitee.com/zhenshenglee/tabulate.git
   GIT_TAG v1.4
   GIT_SHALLOW TRUE
   PREFIX ${EXTERNAL_INSTALL_LOCATION}
@@ -386,7 +360,7 @@ include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tabulate/include)
 
 externalproject_add(
   sole
-  GIT_REPOSITORY https://github.com/r-lyeh-archived/sole.git
+  GIT_REPOSITORY https://gitee.com/zhenshenglee/sole.git
   GIT_TAG 1.0.2
   GIT_SHALLOW TRUE
   PREFIX ${EXTERNAL_INSTALL_LOCATION}
@@ -404,7 +378,7 @@ include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION})
 
 set(EXE_NAME perf_test)
 add_executable(${EXE_NAME} ${sources})
-add_dependencies(${EXE_NAME} tclap rapidjson tabulate sole)
+add_dependencies(${EXE_NAME} tabulate sole)
 
 
 set_compile_options(${EXE_NAME})
