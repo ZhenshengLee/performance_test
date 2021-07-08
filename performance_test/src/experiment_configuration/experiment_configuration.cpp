@@ -95,6 +95,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
     allowedCommunications.push_back("rclcpp-single-threaded-executor");
     allowedCommunications.push_back("rclcpp-static-single-threaded-executor");
+    allowedCommunications.push_back("rclcpp-waitset");
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     allowedCommunications.push_back("FastRTPS");
@@ -284,6 +285,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean_str = "RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR";
       #endif
     }
+    if (comm_str == "rclcpp-waitset") {
+      m_com_mean = CommunicationMean::RCLCPP_WAITSET;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "RCLCPP_WAITSET";
+      #endif
+    }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     if (comm_str == "FastRTPS") {
@@ -443,7 +450,8 @@ bool ExperimentConfiguration::use_ros2_layers() const
 {
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   if (m_com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR ||
-    m_com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR)
+    m_com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR ||
+    m_com_mean == CommunicationMean::RCLCPP_WAITSET)
   {
     return true;
   }
