@@ -26,6 +26,7 @@ enum class CommunicationMean
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   RCLCPP_SINGLE_THREADED_EXECUTOR,
   RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR,
+  RCLCPP_WAITSET,
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
   ApexOSPollingSubscription,
@@ -65,6 +66,9 @@ inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean 
   }
   if (cm == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
     return stream << "RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR";
+  }
+  if (cm == CommunicationMean::RCLCPP_WAITSET) {
+    return stream << "RCLCPP_WAITSET";
   }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED

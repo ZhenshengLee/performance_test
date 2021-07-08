@@ -58,9 +58,7 @@ public:
       }
 #endif
     }
-    this->lock();
     m_executor.spin_once(std::chrono::milliseconds(100));
-    this->unlock();
   }
 
 private:

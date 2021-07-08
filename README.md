@@ -272,6 +272,7 @@ currently implemented:
 - Communication plugin:
   - Callback with Single Threaded Executor: `-c rclcpp-single-threaded-executor`
   - Callback with Static Single Threaded Executor: `-c rclcpp-static-single-threaded-executor`
+  - [`rclcpp::WaitSet`](https://github.com/ros2/rclcpp/pull/1047): `-c rclcpp-waitset`
 - Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp)
 - These plugins will use the ROS 2 RMW implementation that is configured on your system.

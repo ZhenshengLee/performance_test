@@ -21,6 +21,7 @@
 
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   #include "../communication_abstractions/rclcpp_callback_communicator.hpp"
+  #include "../communication_abstractions/rclcpp_waitset_communicator.hpp"
 #endif
 
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
@@ -78,6 +79,9 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         if (com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
           ptr = std::make_shared<DataRunner<
             RclcppStaticSingleThreadedExecutorCommunicator<T>>>(run_type);
+        }
+        if (com_mean == CommunicationMean::RCLCPP_WAITSET) {
+          ptr = std::make_shared<DataRunner<RclcppWaitsetCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED

@@ -116,6 +116,9 @@ public:
 #endif
     }
     if (m_ec.is_zero_copy_transfer()) {
+      if (!m_publisher->can_loan_messages()) {
+        throw std::runtime_error("RMW implementation does not support zero copy!");
+      }
       auto borrowed_message{m_publisher->borrow_loaned_message()};
       lock();
       borrowed_message.get().time = time;
@@ -173,15 +176,15 @@ protected:
     }
 
     if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-      unlock();
       publish(data.time);
-      lock();
     } else {
+      lock();
       m_prev_timestamp = data.time;
       update_lost_samples_counter(data.id);
       add_latency_to_statistics(data.time);
+      increment_received();
+      unlock();
     }
-    increment_received();
   }
 
 private:

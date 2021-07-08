@@ -259,6 +259,7 @@ endif()
 
 if(PERFORMANCE_TEST_RCLCPP_ENABLED)
   list(APPEND sources src/communication_abstractions/rclcpp_callback_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/rclcpp_waitset_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED)
