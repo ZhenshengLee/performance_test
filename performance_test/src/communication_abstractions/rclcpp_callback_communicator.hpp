@@ -51,9 +51,7 @@ public:
         this->m_ec.topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter,
         [this](const typename DataType::SharedPtr data) {this->callback(data);});
     }
-    this->lock();
     m_executor.spin_once(std::chrono::milliseconds(100));
-    this->unlock();
   }
 
 private:
