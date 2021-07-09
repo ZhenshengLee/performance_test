@@ -70,7 +70,6 @@ build_cyclonedds:
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
             -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
-            -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
       '
     - cp LICENSE /opt/performance_test
     - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
@@ -359,7 +358,7 @@ test_security_cyclone_dds:
   stage: test
   image: osrf/ros:foxy-desktop
   needs:
-    - build_rclcpp
+    - build_cyclonedds
   script:
     - apt-get update
     - apt-get install -y ros-foxy-rmw-cyclonedds-cpp
