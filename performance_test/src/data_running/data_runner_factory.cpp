@@ -76,10 +76,6 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
           ptr = std::make_shared<DataRunner<
             RclcppSingleThreadedExecutorCommunicator<T>>>(run_type);
         }
-        if (com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
-          ptr = std::make_shared<DataRunner<
-            RclcppStaticSingleThreadedExecutorCommunicator<T>>>(run_type);
-        }
         if (com_mean == CommunicationMean::RCLCPP_WAITSET) {
           ptr = std::make_shared<DataRunner<RclcppWaitsetCommunicator<T>>>(run_type);
         }

@@ -70,9 +70,5 @@ template<class Msg>
 using RclcppSingleThreadedExecutorCommunicator =
   RclcppCallbackCommunicator<Msg, rclcpp::executors::SingleThreadedExecutor>;
 
-template<class Msg>
-using RclcppStaticSingleThreadedExecutorCommunicator =
-  RclcppCallbackCommunicator<Msg, rclcpp::executors::StaticSingleThreadedExecutor>;
-
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
