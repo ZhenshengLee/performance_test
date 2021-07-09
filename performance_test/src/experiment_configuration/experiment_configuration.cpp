@@ -94,7 +94,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     std::vector<std::string> allowedCommunications;
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
     allowedCommunications.push_back("rclcpp-single-threaded-executor");
-    allowedCommunications.push_back("rclcpp-waitset");
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     allowedCommunications.push_back("ApexOSPollingSubscription");
@@ -281,12 +280,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean_str = "RCLCPP_SINGLE_THREADED_EXECUTOR";
       #endif
     }
-    if (comm_str == "rclcpp-waitset") {
-      m_com_mean = CommunicationMean::RCLCPP_WAITSET;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "RCLCPP_WAITSET";
-      #endif
-    }
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     if (comm_str == "ApexOSPollingSubscription") {
@@ -453,9 +446,7 @@ CommunicationMean ExperimentConfiguration::com_mean() const
 bool ExperimentConfiguration::use_ros2_layers() const
 {
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-  if (m_com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR ||
-    m_com_mean == CommunicationMean::RCLCPP_WAITSET)
-  {
+  if (m_com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
     return true;
   }
 #endif

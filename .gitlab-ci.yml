@@ -256,14 +256,6 @@ smoke_test_rclcpp_ste:
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
 
-smoke_test_rclcpp_waitset:
-  extends:
-    - .smoke_test
-  needs:
-    - build_rclcpp
-  variables:
-    COMMUNICATION_MEAN: rclcpp-waitset
-
 smoke_test_fastrtps:
   extends:
     - .smoke_test
