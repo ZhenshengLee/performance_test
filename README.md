@@ -262,10 +262,7 @@ implemented:
 ### ROS 2 Middleware plugins
 
 The performance test tool can also measure the performance of a variety of RMW implementations,
-through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API. The following plugins are
-currently implemented:
-
-#### ROS 2 Callbacks
+through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
 
 - [ROS 2 `rclcpp::publisher` and `rclcpp::subscriber`](https://docs.ros.org/en/foxy/Tutorials/Writing-A-Simple-Cpp-Publisher-And-Subscriber.html)
 - CMake build flag: `-DPERFORMANCE_TEST_RCLCPP_ENABLED=ON` (on by default)
