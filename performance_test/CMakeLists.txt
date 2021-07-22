@@ -171,6 +171,12 @@ if(PERFORMANCE_TEST_RCLCPP_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_RCLCPP_ENABLED)
 endif()
 
+# ROS2 rclcpp events executor plugin
+option(PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED "" OFF)
+if(PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED)
+endif()
+
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
 

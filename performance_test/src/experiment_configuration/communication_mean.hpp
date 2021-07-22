@@ -27,6 +27,9 @@ enum class CommunicationMean
   RCLCPP_SINGLE_THREADED_EXECUTOR,
   RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR,
   RCLCPP_WAITSET,
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+  RCLCPP_EVENTS_EXECUTOR,
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   FASTRTPS,
@@ -62,6 +65,11 @@ inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean 
   if (cm == CommunicationMean::RCLCPP_WAITSET) {
     return stream << "RCLCPP_WAITSET";
   }
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+  if (cm == CommunicationMean::RCLCPP_EVENTS_EXECUTOR) {
+    return stream << "RCLCPP_EVENTS_EXECUTOR";
+  }
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   if (cm == CommunicationMean::FASTRTPS) {

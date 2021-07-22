@@ -96,6 +96,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     allowedCommunications.push_back("rclcpp-single-threaded-executor");
     allowedCommunications.push_back("rclcpp-static-single-threaded-executor");
     allowedCommunications.push_back("rclcpp-waitset");
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+    allowedCommunications.push_back("rclcpp-events-executor");
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     allowedCommunications.push_back("FastRTPS");
@@ -291,6 +294,14 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean_str = "RCLCPP_WAITSET";
       #endif
     }
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+    if (comm_str == "rclcpp-events-executor") {
+      m_com_mean = CommunicationMean::RCLCPP_EVENTS_EXECUTOR;
+      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+      m_com_mean_str = "RCLCPP_EVENTS_EXECUTOR";
+      #endif
+    }
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     if (comm_str == "FastRTPS") {
@@ -456,6 +467,12 @@ bool ExperimentConfiguration::use_ros2_layers() const
     return true;
   }
 #endif
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+  if (m_com_mean == CommunicationMean::RCLCPP_EVENTS_EXECUTOR)
+  {
+    return true;
+  }
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
   return false;
 }
 uint32_t ExperimentConfiguration::dds_domain_id() const

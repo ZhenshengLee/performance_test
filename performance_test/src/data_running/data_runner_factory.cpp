@@ -79,6 +79,11 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         if (com_mean == CommunicationMean::RCLCPP_WAITSET) {
           ptr = std::make_shared<DataRunner<RclcppWaitsetCommunicator<T>>>(run_type);
         }
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+        if (com_mean == CommunicationMean::RCLCPP_EVENTS_EXECUTOR) {
+          ptr = std::make_shared<DataRunner<RclcppEventsExecutorCommunicator<T>>>(run_type);
+        }
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
         if (com_mean == CommunicationMean::FASTRTPS) {

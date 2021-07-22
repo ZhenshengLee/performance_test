@@ -16,6 +16,9 @@
 #define COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
 
 #include <rclcpp/rclcpp.hpp>
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+#include "rclcpp/executors/events_executor.hpp"
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 
 #include <memory>
 #include <atomic>
@@ -66,6 +69,12 @@ using RclcppSingleThreadedExecutorCommunicator =
 template<class Msg>
 using RclcppStaticSingleThreadedExecutorCommunicator =
   RclcppCallbackCommunicator<Msg, rclcpp::executors::StaticSingleThreadedExecutor>;
+
+#ifdef PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
+  template<class Msg>
+  using RclcppEventsExecutorCommunicator =
+    RclcppCallbackCommunicator<Msg, rclcpp::executors::EventsExecutor>;
+#endif // PERFORMANCE_TEST_RCLCPP_EVENTS_EXECUTOR_ENABLED
 
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
