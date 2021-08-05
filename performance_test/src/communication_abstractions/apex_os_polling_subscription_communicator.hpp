@@ -60,7 +60,6 @@ public:
     const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100), false);
     if (wait_ret.any()) {
       const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
-      const std::lock_guard<decltype(this->get_lock())> lock(this->get_lock());
       for (const auto msg : loaned_msg) {
         if (msg.info().valid()) {
           if (this->m_ec.is_zero_copy_transfer()) {
