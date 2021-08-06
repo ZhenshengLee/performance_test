@@ -240,6 +240,7 @@ set(sources
     src/data_running/data_runner_factory.hpp
     src/experiment_execution/analyze_runner.hpp
     src/experiment_execution/analysis_result.cpp
+    src/experiment_configuration/communication_mean.cpp
     src/experiment_configuration/communication_mean.hpp
     src/experiment_configuration/qos_abstraction.cpp
     src/experiment_configuration/qos_abstraction.hpp
@@ -250,6 +251,7 @@ set(sources
     src/utilities/statistics_tracker.hpp
     src/utilities/cpu_usage_tracker.hpp
     src/utilities/qnx_res_usage.hpp
+    src/utilities/json_logger.hpp
 )
 
 if(PERFORMANCE_TEST_RT_ENABLED)

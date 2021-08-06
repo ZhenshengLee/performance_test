@@ -12,55 +12,56 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXPERIMENT_CONFIGURATION__COMMUNICATION_MEAN_HPP_
-#define EXPERIMENT_CONFIGURATION__COMMUNICATION_MEAN_HPP_
+#include "communication_mean.hpp"
 
 #include <string>
-#include <ostream>
 
 namespace performance_test
 {
 
-/**
- * \brief Available means of communication.
- */
-enum class CommunicationMean
+std::string to_string(const CommunicationMean cm)
 {
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-  RCLCPP_SINGLE_THREADED_EXECUTOR,
-#endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-  ApexOSPollingSubscription,
+  if (cm == CommunicationMean::ApexOSPollingSubscription) {
+    return "ApexOSPollingSubscription";
+  }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  if (cm == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
+    return "RCLCPP_SINGLE_THREADED_EXECUTOR";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  FASTRTPS,
+  if (cm == CommunicationMean::FASTRTPS) {
+    return "FASTRTPS";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  CONNEXTDDSMICRO,
+  if (cm == CommunicationMean::CONNEXTDDSMICRO) {
+    return "CONNEXTDDSMICRO";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  CONNEXTDDS,
+  if (cm == CommunicationMean::CONNEXTDDS) {
+    return "CONNEXTDDS";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  CYCLONEDDS,
+  if (cm == CommunicationMean::CYCLONEDDS) {
+    return "CYCLONEDDS";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
-  ICEORYX,
+  if (cm == CommunicationMean::ICEORYX) {
+    return "ICEORYX";
+  }
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
-  OPENDDS,
+  if (cm == CommunicationMean::OPENDDS) {
+    return "OpenDDS";
+  }
 #endif
-  INVALID
-};
-
-std::string to_string(const CommunicationMean cm);
-
-/// Outstream operator for CommunicationMean.
-inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean cm)
-{
-  return stream << to_string(cm);
+  throw std::invalid_argument("Enum value not supported!");
 }
 
 }  // namespace performance_test
-
-#endif  // EXPERIMENT_CONFIGURATION__COMMUNICATION_MEAN_HPP_

@@ -36,7 +36,6 @@ public:
   #pragma db transient
   std::string m_to_log;
 
-private:
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   friend class odb::access;
 #endif

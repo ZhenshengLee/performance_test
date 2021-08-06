@@ -31,17 +31,22 @@
 namespace performance_test
 {
 
+std::string to_string(const ExperimentConfiguration::RoundTripMode e)
+{
+  if (e == ExperimentConfiguration::RoundTripMode::MAIN) {
+    return "MAIN";
+  } else if (e == ExperimentConfiguration::RoundTripMode::RELAY) {
+    return "RELAY";
+  } else {
+    return "NONE";
+  }
+}
+
 std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration::RoundTripMode & e)
 {
-  if (e == ExperimentConfiguration::RoundTripMode::NONE) {
-    stream << "NONE";
-  } else if (e == ExperimentConfiguration::RoundTripMode::MAIN) {
-    stream << "MAIN";
-  } else if (e == ExperimentConfiguration::RoundTripMode::RELAY) {
-    stream << "RELAY";
-  }
-  return stream;
+  return stream << to_string(e);
 }
+
 std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration & e)
 {
   if (e.is_setup()) {
@@ -87,6 +92,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     TCLAP::ValueArg<std::string> logfileArg("l", "logfile",
       "Optionally specify a logfile.", false, "", "name", cmd);
+
+    TCLAP::ValueArg<std::string> jsonLogfileArg("", "json-logfile",
+      "Optionally specify a logfile (JSON format).", false, "", "name", cmd);
 
     TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
       "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
@@ -223,6 +231,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     cmd.parse(argc, argv);
 
     m_logfile = logfileArg.getValue();
+    m_json_logfile = jsonLogfileArg.getValue();
     m_rate = rateArg.getValue();
     comm_str = communicationArg.getValue();
     m_topic_name = topicArg.getValue();
@@ -644,6 +653,12 @@ void ExperimentConfiguration::log(const std::string & msg) const
 std::string ExperimentConfiguration::logfile_name() const
 {
   return m_final_logfile_name;
+}
+
+std::string ExperimentConfiguration::json_logfile() const
+{
+  check_setup();
+  return m_json_logfile;
 }
 
 void ExperimentConfiguration::check_setup() const

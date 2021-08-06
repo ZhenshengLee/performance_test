@@ -137,6 +137,12 @@ public:
     return m_mean;
   }
 
+  /// The second moment
+  double m2() const
+  {
+    return m_M2;
+  }
+
   /// The variance over all samples added.
   double variance() const
   {

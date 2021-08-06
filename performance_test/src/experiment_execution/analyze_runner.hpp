@@ -48,12 +48,13 @@ public:
 
 private:
   /**
-   * \brief Analyezes and logs the state of the experiment.
+   * \brief Analyzes and logs the state of the experiment.
    * \param loop_diff_start
    * \param experiment_diff_start
+   * \return The analysis result
    */
 
-  void analyze(
+  std::shared_ptr<AnalysisResult> analyze(
     const std::chrono::nanoseconds loop_diff_start,
     const std::chrono::nanoseconds experiment_diff_start);
 
