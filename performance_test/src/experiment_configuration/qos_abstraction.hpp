@@ -16,6 +16,7 @@
 #define EXPERIMENT_CONFIGURATION__QOS_ABSTRACTION_HPP_
 
 #include <ostream>
+#include <string>
 
 namespace performance_test
 {
@@ -62,6 +63,10 @@ struct QOSAbstraction
   /// Use synchronous pub/sub.
   bool sync_pubsub;
 };
+
+std::string to_string(const QOSAbstraction::Reliability e);
+std::string to_string(const QOSAbstraction::Durability e);
+std::string to_string(const QOSAbstraction::HistoryKind e);
 
 /// Outstream operator for QOSAbstraction::Reliability.
 std::ostream & operator<<(std::ostream & stream, const QOSAbstraction::Reliability e);

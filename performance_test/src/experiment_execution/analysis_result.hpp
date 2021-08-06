@@ -275,7 +275,6 @@ public:
   }
 #endif
 
-private:
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   friend class odb::access;
 #pragma db not_null

@@ -14,40 +14,57 @@
 
 #include "qos_abstraction.hpp"
 
+#include <string>
+
 namespace performance_test
 {
 
-std::ostream & operator<<(std::ostream & stream, const QOSAbstraction::Reliability e)
+std::string to_string(const QOSAbstraction::Reliability e)
 {
   if (e == QOSAbstraction::Reliability::BEST_EFFORT) {
-    return stream << "BEST_EFFORT";
+    return "BEST_EFFORT";
   } else if (e == QOSAbstraction::Reliability::RELIABLE) {
-    return stream << "RELIABLE";
+    return "RELIABLE";
   } else {
     throw std::invalid_argument("Enum value not supported!");
   }
+}
+
+std::string to_string(const QOSAbstraction::Durability e)
+{
+  if (e == QOSAbstraction::Durability::VOLATILE) {
+    return "VOLATILE";
+  } else if (e == QOSAbstraction::Durability::TRANSIENT_LOCAL) {
+    return "TRANSIENT_LOCAL";
+  } else {
+    throw std::invalid_argument("Enum value not supported!");
+  }
+}
+
+std::string to_string(const QOSAbstraction::HistoryKind e)
+{
+  if (e == QOSAbstraction::HistoryKind::KEEP_ALL) {
+    return "KEEP_ALL";
+  } else if (e == QOSAbstraction::HistoryKind::KEEP_LAST) {
+    return "KEEP_LAST";
+  } else {
+    throw std::invalid_argument("Enum value not supported!");
+  }
+}
+
+std::ostream & operator<<(std::ostream & stream, const QOSAbstraction::Reliability e)
+{
+  return stream << to_string(e);
 }
 
 std::ostream & operator<<(std::ostream & stream, const QOSAbstraction::Durability e)
 {
-  if (e == QOSAbstraction::Durability::VOLATILE) {
-    return stream << "VOLATILE";
-  } else if (e == QOSAbstraction::Durability::TRANSIENT_LOCAL) {
-    return stream << "TRANSIENT_LOCAL";
-  } else {
-    throw std::invalid_argument("Enum value not supported!");
-  }
+  return stream << to_string(e);
 }
 
 std::ostream & operator<<(std::ostream & stream, const QOSAbstraction::HistoryKind e)
 {
-  if (e == QOSAbstraction::HistoryKind::KEEP_ALL) {
-    return stream << "KEEP_ALL";
-  } else if (e == QOSAbstraction::HistoryKind::KEEP_LAST) {
-    return stream << "KEEP_LAST";
-  } else {
-    throw std::invalid_argument("Enum value not supported!");
-  }
+  return stream << to_string(e);
 }
 
 std::ostream & operator<<(std::ostream & stream, const QOSAbstraction e)

@@ -22,6 +22,7 @@
 #include "analyze_runner.hpp"
 
 #include "analysis_result.hpp"
+#include "../utilities/json_logger.hpp"
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #include <odb/database.hxx>
@@ -143,6 +144,8 @@ void AnalyzeRunner::run()
     t.reset(m_db->begin());
   }
   #endif
+
+  std::vector<std::shared_ptr<AnalysisResult>> results;
   while (!check_exit(experiment_start)) {
     const auto loop_start = std::chrono::steady_clock::now();
 
@@ -162,7 +165,14 @@ void AnalyzeRunner::run()
     auto now = std::chrono::steady_clock::now();
     auto loop_diff_start = now - loop_start;
     auto experiment_diff_start = now - experiment_start;
-    analyze(loop_diff_start, experiment_diff_start);
+    auto result = analyze(loop_diff_start, experiment_diff_start);
+    results.push_back(result);
+  }
+
+  if (!m_ec.json_logfile().empty()) {
+    std::ofstream ofs(m_ec.json_logfile(), std::ofstream::out);
+    JsonLogger::log(m_ec, results, ofs);
+    ofs.close();
   }
 
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -180,7 +190,7 @@ void AnalyzeRunner::run()
   #endif
 }
 
-void AnalyzeRunner::analyze(
+std::shared_ptr<AnalysisResult> AnalyzeRunner::analyze(
   const std::chrono::nanoseconds loop_diff_start,
   const std::chrono::nanoseconds experiment_diff_start)
 {
@@ -247,6 +257,7 @@ void AnalyzeRunner::analyze(
     }
   #endif
   }
+  return result;
 }
 
 bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_start) const

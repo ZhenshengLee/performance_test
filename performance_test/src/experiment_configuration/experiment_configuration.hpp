@@ -166,6 +166,9 @@ public:
   void log(const std::string & msg) const;
   /// The configured logfile name. This will throw if the experiment configuration is not set up.
   std::string logfile_name() const;
+  /// The configured JSON logfile name.
+  /// This will throw if the experiment configuration is not set up.
+  std::string json_logfile() const;
   /// \return Returns true if the user requested the application to exit.
   bool exit_requested() const;
   ExternalInfoStorage get_external_info() const
@@ -233,6 +236,10 @@ private:
   #pragma db transient
 #endif
   std::string m_logfile;
+#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
+  #pragma db transient
+#endif
+  std::string m_json_logfile;
   std::string m_final_logfile_name;
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -307,6 +314,7 @@ private:
 #endif
 };
 
+std::string to_string(const ExperimentConfiguration::RoundTripMode e);
 /// Outstream operator for RoundTripMode.
 std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration::RoundTripMode & e);
 
