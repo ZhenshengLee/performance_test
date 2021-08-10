@@ -25,6 +25,8 @@
 
 #include "qos_abstraction.hpp"
 #include "communication_mean.hpp"
+#include "../outputs/output.hpp"
+
 #if PERFORMANCE_TEST_RT_ENABLED
 #include "../utilities/rt_enabler.hpp"
 #endif
@@ -41,8 +43,8 @@ namespace performance_test
 /**
  * \brief Represents the configuration of an experiment.
  *
- * This experiment configuration could be created from various sources. At the moment, only
- * configuration by command line arguments are supported.
+ * This experiment configuration could be created from various sources. At the
+ * moment, only configuration by command line arguments are supported.
  */
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
 #pragma db model version(1, 11, closed)
@@ -76,6 +78,14 @@ public:
     NONE,  /// No roundtrip. Samples are only sent from sender to reciever.
     MAIN,  /// Sends packages to the relay and receives packages from the relay.
     RELAY  /// Relays packages from MAIN back to MAIN.
+  };
+
+  /// Specfies the supported output implementations.
+  enum class SupportedOutput
+  {
+    STDOUT,  // print results to stdout in readable format
+    CSV,     // print results to file in csv format
+    JSON     // print results to file in json format
   };
 
   /**
@@ -137,9 +147,6 @@ public:
   /// affinity or thread priority is overridden by the caller. This will throw if the experiment
   /// configuration is not set up.
   bool is_rt_init_required() const;
-  /// \returns Returns if logging of performance_test results is disabled for stdout.
-  /// This will throw if the experiment configuration is not set up.
-  bool disable_logging() const;
   /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
   /// of communication is not ROS2.
   bool is_with_security() const;
@@ -161,14 +168,14 @@ public:
   /// \returns Returns the randomly generated unique ID of the experiment. This will throw if the
   /// experiment configuration is not set up.
   boost::uuids::uuid id() const;
-  /// Logs \param msg to stdout and the configured log file. This will throw if the experiment
-  /// configuration is not set up.
-  void log(const std::string & msg) const;
   /// The configured logfile name. This will throw if the experiment configuration is not set up.
-  std::string logfile_name() const;
+  std::string csv_logfile() const;
   /// The configured JSON logfile name.
   /// This will throw if the experiment configuration is not set up.
   std::string json_logfile() const;
+  /// The configured outputs types.
+  const std::vector<ExperimentConfiguration::SupportedOutput> & configured_output_types() const;
+  const std::vector<std::shared_ptr<Output>> & configured_outputs() const;
   /// \return Returns true if the user requested the application to exit.
   bool exit_requested() const;
   ExternalInfoStorage get_external_info() const
@@ -208,7 +215,6 @@ private:
     m_use_single_participant(false),
     m_is_rt_init_required(false),
     m_is_zero_copy_transfer(false),
-    m_disable_logging(false),
     m_roundtrip_mode(RoundTripMode::NONE)
   {}
 
@@ -218,10 +224,6 @@ private:
 
   /// Throws #std::runtime_error if the experiment is not set up.
   void check_setup() const;
-
-  /// Generates filename from the experiment configuration and opens a file accordingly. This will
-  /// throw if the experiment configuration is not set up.
-  void open_file();
 
   // Using the GUID of the experiment as ID.
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -240,12 +242,14 @@ private:
   #pragma db transient
 #endif
   std::string m_json_logfile;
-  std::string m_final_logfile_name;
+  std::string m_csv_logfile;
+  std::vector<SupportedOutput> m_configured_output_types{};
+  std::vector<std::shared_ptr<Output>> m_configured_outputs{};
+
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient
 #endif
-  mutable std::ofstream m_os;
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient
@@ -284,7 +288,6 @@ private:
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #pragma db transient
 #endif
-  bool m_disable_logging;
 
   RoundTripMode m_roundtrip_mode;
 
@@ -317,7 +320,6 @@ private:
 std::string to_string(const ExperimentConfiguration::RoundTripMode e);
 /// Outstream operator for RoundTripMode.
 std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration::RoundTripMode & e);
-
 
 /// Outstream operator for ExperimentConfiguration.
 std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration & e);

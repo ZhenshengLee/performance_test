@@ -224,6 +224,9 @@ set(sources
     src/communication_abstractions/communicator.cpp
     src/communication_abstractions/resource_manager.cpp
     src/communication_abstractions/resource_manager.hpp
+    src/outputs/stdout_output.cpp
+    src/outputs/csv_output.cpp
+    src/outputs/json_output.cpp
     src/experiment_configuration/topics.hpp
     src/data_running/data_runner.hpp
     src/data_running/data_runner_base.hpp
@@ -277,6 +280,7 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
 endif()
 
 include(ExternalProject)
+
 set(EXTERNAL_INSTALL_LOCATION ${CMAKE_BINARY_DIR}/external)
 externalproject_add(
   tclap
@@ -311,6 +315,21 @@ externalproject_add(
   BUILD_COMMAND ""
 )
 include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/rapidjson/include)
+
+externalproject_add(
+  tabulate
+  GIT_REPOSITORY https://github.com/p-ranav/tabulate.git
+  GIT_TAG v1.4
+  GIT_SHALLOW TRUE
+  PREFIX ${EXTERNAL_INSTALL_LOCATION}
+  SOURCE_DIR ${EXTERNAL_INSTALL_LOCATION}/tabulate
+  CMAKE_COMMAND ""
+  CONFIGURE_COMMAND ""
+  UPDATE_COMMAND ""
+  INSTALL_COMMAND ""
+  BUILD_COMMAND ""
+)
+include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tabulate/include)
 
 # Use ODB support to create SQL database
 option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)
@@ -351,7 +370,7 @@ endif()
 
 set(EXE_NAME perf_test)
 add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
-add_dependencies(${EXE_NAME} tclap rapidjson)
+add_dependencies(${EXE_NAME} tclap rapidjson tabulate)
 
 
 set_compile_options(${EXE_NAME})

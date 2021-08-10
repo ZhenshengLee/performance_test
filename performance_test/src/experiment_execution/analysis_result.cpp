@@ -18,7 +18,6 @@
 
 #include <iomanip>
 #include <string>
-#include <iostream>
 
 #include "../utilities/qnx_res_usage.hpp"
 
@@ -29,7 +28,6 @@ std::ostream & operator<<(std::ostream & stream, const timeval & e)
 {
   return stream << double(e.tv_sec) + double(e.tv_usec) / 1000000.0;
 }
-
 AnalysisResult::AnalysisResult(
   const std::chrono::nanoseconds experiment_start,
   const std::chrono::nanoseconds loop_start,
@@ -67,13 +65,13 @@ AnalysisResult::AnalysisResult(
     throw std::runtime_error("Could not get system resource usage.");
   }
   if (m_num_samples_received != static_cast<uint64_t>(m_latency.n())) {
-    // TODO(andreas.pasternak): Commented out flaky assertion. Need to check if it actually a bug.
+    // TODO(andreas.pasternak): Commented out flaky assertion. Need to check if
+    // it actually a bug.
     /*throw std::runtime_error("Statistics result sample size does not match: "
                              + std::to_string(m_num_samples_received) + " / "
                              + std::to_string(m_latency.n()));*/
   }
 }
-
 
 std::string AnalysisResult::csv_header(const bool pretty_print, std::string st)
 {
@@ -123,7 +121,7 @@ std::string AnalysisResult::csv_header(const bool pretty_print, std::string st)
   ss << "ru_nvcsw" << st;
   ss << "ru_nivcsw" << st;
 
-  ss << "cpu_usage (%)" << st;
+  ss << "cpu_usage (%)";
 
   return ss.str();
 }
@@ -146,7 +144,7 @@ std::string AnalysisResult::to_csv_string(const bool pretty_print, std::string s
   ss << std::setprecision(2);
   ss << static_cast<double>(m_num_samples_lost) / static_cast<double>(m_num_samples_sent) << st;
 
-  ss << m_total_data_received << st;
+  ss << std::to_string(m_total_data_received) << st;
 
   ss << std::setprecision(4);
   ss << std::defaultfloat;
@@ -166,28 +164,28 @@ std::string AnalysisResult::to_csv_string(const bool pretty_print, std::string s
   ss << m_sub_loop_time_reserve.mean() * 1000.0 << st;
   ss << m_sub_loop_time_reserve.variance() * 1000.0 << st;
 
-  /* See http://www.gnu.org/software/libc/manual/html_node/Resource-Usage.html for a detailed explanation of the
-   * output below
+  /* See http://www.gnu.org/software/libc/manual/html_node/Resource-Usage.html
+   * for a detailed explanation of the output below
    */
 
   ss << m_sys_usage.ru_utime << st;
   ss << m_sys_usage.ru_stime << st;
-  ss << m_sys_usage.ru_maxrss << st;
-  ss << m_sys_usage.ru_ixrss << st;
-  ss << m_sys_usage.ru_idrss << st;
-  ss << m_sys_usage.ru_isrss << st;
-  ss << m_sys_usage.ru_minflt << st;
-  ss << m_sys_usage.ru_majflt << st;
-  ss << m_sys_usage.ru_nswap << st;
-  ss << m_sys_usage.ru_inblock << st;
-  ss << m_sys_usage.ru_oublock << st;
-  ss << m_sys_usage.ru_msgsnd << st;
-  ss << m_sys_usage.ru_msgrcv << st;
-  ss << m_sys_usage.ru_nsignals << st;
-  ss << m_sys_usage.ru_nvcsw << st;
-  ss << m_sys_usage.ru_nivcsw << st;
+  ss << std::to_string(m_sys_usage.ru_maxrss) << st;
+  ss << std::to_string(m_sys_usage.ru_ixrss) << st;
+  ss << std::to_string(m_sys_usage.ru_idrss) << st;
+  ss << std::to_string(m_sys_usage.ru_isrss) << st;
+  ss << std::to_string(m_sys_usage.ru_minflt) << st;
+  ss << std::to_string(m_sys_usage.ru_majflt) << st;
+  ss << std::to_string(m_sys_usage.ru_nswap) << st;
+  ss << std::to_string(m_sys_usage.ru_inblock) << st;
+  ss << std::to_string(m_sys_usage.ru_oublock) << st;
+  ss << std::to_string(m_sys_usage.ru_msgsnd) << st;
+  ss << std::to_string(m_sys_usage.ru_msgrcv) << st;
+  ss << std::to_string(m_sys_usage.ru_nsignals) << st;
+  ss << std::to_string(m_sys_usage.ru_nvcsw) << st;
+  ss << std::to_string(m_sys_usage.ru_nivcsw) << st;
 
-  ss << m_cpu_info.cpu_usage() << st;
+  ss << m_cpu_info.cpu_usage();
 
   return ss.str();
 }
