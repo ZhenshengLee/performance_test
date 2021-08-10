@@ -23,6 +23,7 @@
 #include "analysis_result.hpp"
 #include "../data_running/data_runner_factory.hpp"
 #include "../experiment_configuration/experiment_configuration.hpp"
+#include "../outputs/output.hpp"
 #include "../utilities/cpu_usage_tracker.hpp"
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -42,6 +43,11 @@ public:
   AnalyzeRunner();
 
   /**
+   * \brief Bind outputs to receive the experiment results.
+   */
+  void bind_output(std::shared_ptr<Output> output);
+
+  /**
    * \brief Runs the experiment.
    */
   void run();
@@ -54,7 +60,7 @@ private:
    * \return The analysis result
    */
 
-  std::shared_ptr<AnalysisResult> analyze(
+  std::shared_ptr<const AnalysisResult> analyze(
     const std::chrono::nanoseconds loop_diff_start,
     const std::chrono::nanoseconds experiment_diff_start);
 
@@ -66,7 +72,7 @@ private:
   bool check_exit(std::chrono::steady_clock::time_point experiment_start) const;
 
   const ExperimentConfiguration & m_ec;
-
+  std::vector<std::shared_ptr<Output>> m_outputs;
   std::vector<std::shared_ptr<DataRunnerBase>> m_pub_runners;
   std::vector<std::shared_ptr<DataRunnerBase>> m_sub_runners;
   mutable bool m_is_first_entry;

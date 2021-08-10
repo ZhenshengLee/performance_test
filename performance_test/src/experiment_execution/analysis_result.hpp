@@ -79,7 +79,8 @@ private:
   from(std::chrono::nanoseconds (?))
 #pragma db value(StatisticsTracker) definition
 #pragma db value(RusageTracker) definition
-// Instead of pragma db value(timeval) definition, use platform-independent odb_timeval
+// Instead of pragma db value(timeval) definition, use platform-independent
+// odb_timeval
 #pragma db value
 struct odb_timeval
 {
@@ -91,6 +92,7 @@ struct odb_timeval
   to(odb_timeval{(?).tv_sec, (?).tv_usec}) \
   from(timeval{(?).tv_sec, (?).tv_usec})
 // Instead of pragma db value(rusage) definition, use platform-independent odb_rusage
+
 #pragma db value
 struct odb_rusage
 {
@@ -222,6 +224,7 @@ struct odb_rusage
 /// Represents the results of an experiment iteration.
 #pragma db object pointer(std::shared_ptr)
 #endif
+
 class AnalysisResult
 {
 public:
@@ -253,18 +256,18 @@ public:
   AnalysisResult() {}
 #endif
   /**
-   * \brief Returns a header for a CVS file containing the analysis result data as a string.
-   * \param pretty_print If set, inserts additional tabs to format the output nicer.
-   * \param st The data seperator.
-   * \return A string containing the CVS header.
+   * \brief Returns a header for a CVS file containing the analysis result data
+   * as a string. \param pretty_print If set, inserts additional tabs to format
+   * the output nicer. \param st The data seperator. \return A string containing
+   * the CVS header.
    */
   static std::string csv_header(const bool pretty_print = false, std::string st = ",");
 
   /**
    * \brief Returns the data contained the analysis result as a string.
-   * \param pretty_print If set, inserts additional tabs to format the output nicer.
-   * \param st The data seperator.
-   * \return A string with the contained data as CSV row.
+   * \param pretty_print If set, inserts additional tabs to format the output
+   * nicer. \param st The data seperator. \return A string with the contained
+   * data as CSV row.
    */
   std::string to_csv_string(const bool pretty_print = false, std::string st = ",") const;
 

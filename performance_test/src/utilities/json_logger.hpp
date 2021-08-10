@@ -38,7 +38,7 @@ class JsonLogger
 public:
   static void log(
     const ExperimentConfiguration & ec,
-    const std::vector<std::shared_ptr<AnalysisResult>> & ars,
+    const std::vector<std::shared_ptr<const AnalysisResult>> & ars,
     std::ostream & stream)
   {
     rapidjson::StringBuffer sb;
@@ -48,7 +48,7 @@ public:
 
     write(writer, "id", boost::uuids::to_string(ec.id()));
     write(writer, "perf_test_version", ec.perf_test_version());
-    write(writer, "final_logfile_name", ec.logfile_name());
+    write(writer, "final_logfile_name", ec.json_logfile());
     write(writer, "com_mean_str", to_string(ec.com_mean()));
     write(writer, "rmw_implementation", ec.rmw_implementation());
     write(writer, "dds_domain_id", ec.dds_domain_id());
@@ -79,8 +79,8 @@ public:
     writer.StartArray();
     for (const auto & ar : ars) {
       writer.StartObject();
-      write(writer, "experiment_start", ar->m_experiment_start.count());
-      write(writer, "loop_start", ar->m_loop_start.count());
+      write(writer, "experiment_start", ar->m_experiment_start);
+      write(writer, "loop_start", ar->m_loop_start);
       write(writer, "num_samples_received", ar->m_num_samples_received);
       write(writer, "num_samples_sent", ar->m_num_samples_sent);
       write(writer, "num_samples_lost", ar->m_num_samples_lost);
@@ -194,7 +194,14 @@ private:
     std::chrono::nanoseconds ns =
       std::chrono::seconds(val.tv_sec) +
       std::chrono::microseconds(val.tv_usec);
-    writer.Bool(ns.count());
+    writer.Int64(ns.count());
+  }
+
+  template<typename Writer>
+  static void write(Writer & writer, const char * key, const std::chrono::nanoseconds val)
+  {
+    writer.String(key);
+    writer.Int64(val.count());
   }
 };
 }  // namespace performance_test

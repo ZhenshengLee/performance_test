@@ -22,8 +22,12 @@
 #include <exception>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "topics.hpp"
+#include "../outputs/csv_output.hpp"
+#include "../outputs/stdout_output.hpp"
+#include "../outputs/json_output.hpp"
 
 #include "performance_test/version.h"
 #include <rclcpp/rclcpp.hpp> // NOLINT - This include order is required when using OpenDDS
@@ -53,7 +57,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
     return stream <<
            "Experiment id: " << e.id() <<
            "\nPerformance Test Version: " << e.perf_test_version() <<
-           "\nLogfile name: " << e.logfile_name() <<
+           "\nLogfile name: " << e.csv_logfile() <<
            "\nCommunication mean: " << e.com_mean() <<
            "\nRMW Implementation: " << e.rmw_implementation() <<
            "\nDDS domain id: " << e.dds_domain_id() <<
@@ -90,11 +94,18 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   try {
     TCLAP::CmdLine cmd("Apex.AI performance_test");
 
-    TCLAP::ValueArg<std::string> logfileArg("l", "logfile",
-      "Optionally specify a logfile.", false, "", "name", cmd);
+    std::vector<std::string> allowedOutputs{"stdout", "csv", "json"};
+    TCLAP::ValuesConstraint<std::string> allowedOutputConstraint(
+      allowedOutputs);
+    TCLAP::MultiArg<std::string> outputArg(
+      "o", "output", "Specify format to output experiment results.", false,
+      &allowedOutputConstraint, cmd);
+
+    TCLAP::ValueArg<std::string> csvLogfileArg("l", "csv-logfile",
+      "Optionally specify a file name for the csv results.", false, "", "name", cmd);
 
     TCLAP::ValueArg<std::string> jsonLogfileArg("", "json-logfile",
-      "Optionally specify a logfile (JSON format).", false, "", "name", cmd);
+      "Optionally specify a file name for the json results.", false, "", "name", cmd);
 
     TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
       "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
@@ -129,8 +140,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       "Which communication plugin to use.", false, allowedCommunications[0],
       &allowedCommunicationVals, cmd);
 
-    TCLAP::ValueArg<std::string> topicArg("t", "topic",
-      "The topic name.", false, "test_topic", "topic", cmd);
+    TCLAP::ValueArg<std::string> topicArg("t", "topic", "The topic name.",
+      false, "test_topic", "topic", cmd);
 
     TCLAP::ValueArg<std::string> msgArg("m", "msg",
       "The message type. Use --msg-list to list the options.", false, "Array1k", "type", cmd);
@@ -140,6 +151,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     TCLAP::ValueArg<uint32_t> ddsDomainIdArg("", "dds-domain_id",
       "The DDS domain id.", false, 0, "id", cmd);
+
 
     TCLAP::SwitchArg reliableArg("", "reliable",
       "Enable reliable QOS. Default is best effort.", cmd, false);
@@ -195,9 +207,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::ValueArg<uint32_t> ignoreArg("", "ignore",
       "Ignore the first N seconds of the experiment.", false, 0, "N", cmd);
 
-    TCLAP::SwitchArg disableLoggingArg("", "disable-logging",
-      "Disable experiment logging to stdout.", cmd, false);
-
     TCLAP::ValueArg<uint32_t> expectedNumPubsArg("", "expected-num-pubs",
       "Expected number of publishers for wait-for-matched.", false, 0, "N", cmd);
 
@@ -230,7 +239,30 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     cmd.parse(argc, argv);
 
-    m_logfile = logfileArg.getValue();
+    // set up configured outputs
+    for (const auto & output : outputArg.getValue()) {
+      if (output == "stdout") {
+        m_configured_output_types.push_back(SupportedOutput::STDOUT);
+        m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
+      } else if (output == "csv") {
+        m_configured_output_types.push_back(SupportedOutput::CSV);
+        m_configured_outputs.push_back(std::make_shared<CsvOutput>());
+      } else if (output == "json") {
+        m_configured_output_types.push_back(SupportedOutput::JSON);
+        m_configured_outputs.push_back(std::make_shared<JsonOutput>());
+      } else {
+        std::cerr << "Unknown output type specified: " << output << std::endl;
+        std::terminate();
+      }
+    }
+
+    // default to only stdout output
+    if (m_configured_output_types.empty()) {
+      m_configured_output_types.push_back(SupportedOutput::STDOUT);
+      m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
+    }
+
+    m_csv_logfile = csvLogfileArg.getValue();
     m_json_logfile = jsonLogfileArg.getValue();
     m_rate = rateArg.getValue();
     comm_str = communicationArg.getValue();
@@ -253,7 +285,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_with_security = withSecurityArg.getValue();
     roundtrip_mode_str = relayModeArg.getValue();
     m_rows_to_ignore = ignoreArg.getValue();
-    m_disable_logging = disableLoggingArg.getValue();
     m_expected_num_pubs = expectedNumPubsArg.getValue();
     m_expected_num_subs = expectedNumSubsArg.getValue();
     m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
@@ -278,7 +309,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       for (const auto & s : topics::supported_msg_names()) {
         std::cout << s << std::endl;
       }
-      // Exiting as we just print out some information and not running the application.
+      // Exiting as we just print out some information and not running the
+      // application.
       exit(0);
     }
 
@@ -425,17 +457,30 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     {
       m_use_odb = false;
       std::cout <<
-        "Required database information not provided, running the experiment without SQL support!" <<
+        "Required database information not provided, running the experiment without SQL support!"
+                <<
         std::endl;
     }
 #endif
 #endif
-    m_is_setup = true;
-    // Logfile needs to be opened at the end, as the experiment configuration influences the
-    // filename.
-    if (!m_logfile.empty()) {
-      open_file();
+
+    // define default output files if none specified
+    if (m_csv_logfile == "") {
+      auto t = std::time(nullptr);
+      auto tm = *std::gmtime(&t);
+      auto oss = std::ostringstream();
+      oss << "results_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S") << ".csv";
+      m_csv_logfile = oss.str();
     }
+    if (m_json_logfile == "") {
+      auto t = std::time(nullptr);
+      auto tm = *std::gmtime(&t);
+      auto oss = std::ostringstream();
+      oss << "results_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S") << ".json";
+      m_json_logfile = oss.str();
+    }
+
+    m_is_setup = true;
   } catch (const std::exception & e) {
     std::cerr << "ERROR: ";
     std::cerr << e.what() << std::endl;
@@ -588,12 +633,6 @@ bool ExperimentConfiguration::is_zero_copy_transfer() const
   return m_is_zero_copy_transfer;
 }
 
-bool ExperimentConfiguration::disable_logging() const
-{
-  check_setup();
-  return m_disable_logging;
-}
-
 ExperimentConfiguration::RoundTripMode ExperimentConfiguration::roundtrip_mode() const
 {
   check_setup();
@@ -640,19 +679,24 @@ boost::uuids::uuid ExperimentConfiguration::id() const
   return m_id;
 }
 
-void ExperimentConfiguration::log(const std::string & msg) const
+std::string ExperimentConfiguration::csv_logfile() const
 {
-  if (!m_disable_logging) {
-    std::cout << msg << std::endl;
-  }
-  if (m_os.is_open()) {
-    m_os << msg << std::endl;
-  }
+  check_setup();
+  return m_csv_logfile;
 }
 
-std::string ExperimentConfiguration::logfile_name() const
+const std::vector<ExperimentConfiguration::SupportedOutput> &
+ExperimentConfiguration::configured_output_types() const
 {
-  return m_final_logfile_name;
+  check_setup();
+  return m_configured_output_types;
+}
+
+const std::vector<std::shared_ptr<Output>> &
+ExperimentConfiguration::configured_outputs() const
+{
+  check_setup();
+  return m_configured_outputs;
 }
 
 std::string ExperimentConfiguration::json_logfile() const
@@ -666,17 +710,6 @@ void ExperimentConfiguration::check_setup() const
   if (!m_is_setup) {
     throw std::runtime_error("Experiment is not yet setup!");
   }
-}
-
-void ExperimentConfiguration::open_file()
-{
-  check_setup();
-  auto t = std::time(nullptr);
-  auto tm = *std::gmtime(&t);
-  std::ostringstream oss;
-  oss << m_logfile.c_str() << "_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S");
-  m_final_logfile_name = oss.str();
-  m_os.open(m_final_logfile_name, std::ofstream::out);
 }
 
 bool ExperimentConfiguration::exit_requested() const

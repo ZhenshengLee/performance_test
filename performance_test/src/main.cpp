@@ -14,15 +14,20 @@
 
 #include <rclcpp/rclcpp.hpp>
 
+#include <memory>
+#include <vector>
+
+#include "communication_abstractions/resource_manager.hpp"
 #include "experiment_configuration/experiment_configuration.hpp"
 #include "experiment_execution/analyze_runner.hpp"
-#include "communication_abstractions/resource_manager.hpp"
 
 int main(int argc, char ** argv)
 {
+  // parse arguments and set up experiment configuration
   auto & ec = performance_test::ExperimentConfiguration::get();
   ec.setup(argc, argv);
 
+  // initialize ros
   if (ec.use_ros2_layers()) {
 #ifdef APEX_CERT
     rclcpp::init(argc, argv, rclcpp::InitOptions{}, false);
@@ -31,10 +36,12 @@ int main(int argc, char ** argv)
 #endif
   }
 
+  // run the experiment
   {
     performance_test::AnalyzeRunner ar;
     ar.run();
   }
 
+  // shut down cleanly
   performance_test::ResourceManager::shutdown();
 }

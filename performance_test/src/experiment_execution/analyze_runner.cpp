@@ -20,9 +20,7 @@
 #include <vector>
 
 #include "analyze_runner.hpp"
-
 #include "analysis_result.hpp"
-#include "../utilities/json_logger.hpp"
 
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   #include <odb/database.hxx>
@@ -44,7 +42,6 @@
   #include "analysis_result_odb.hpp"
 #endif
 
-
 namespace performance_test
 {
 
@@ -55,21 +52,17 @@ AnalyzeRunner::AnalyzeRunner()
   , m_db()
 #endif
 {
-  std::stringstream os;
-  os << m_ec;
-  m_ec.log(os.str());
-  m_ec.log(m_ec.get_external_info().m_to_log);
-
   for (uint32_t i = 0; i < m_ec.number_of_publishers(); ++i) {
     m_pub_runners.push_back(
-      DataRunnerFactory::get(
-        m_ec.msg_name(), m_ec.com_mean(), RunType::PUBLISHER));
+      DataRunnerFactory::get(m_ec.msg_name(), m_ec.com_mean(), RunType::PUBLISHER));
   }
   for (uint32_t i = 0; i < m_ec.number_of_subscribers(); ++i) {
     m_sub_runners.push_back(
       DataRunnerFactory::get(m_ec.msg_name(), m_ec.com_mean(), RunType::SUBSCRIBER));
   }
-
+  for (const auto & output : m_ec.configured_outputs()) {
+    bind_output(output);
+  }
 #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
   if (m_ec.use_odb()) {
 #ifdef DATABASE_SQLITE
@@ -115,8 +108,8 @@ void AnalyzeRunner::apply_schema_migration()
               "Check #pragma db model version arguments; "
               "migration from this version is no longer supported.");
     }
-    for (v = odb::core::schema_catalog::next_version(*m_db, v); v <= cv; v =
-      odb::core::schema_catalog::next_version(*m_db, v))
+    for (v = odb::core::schema_catalog::next_version(*m_db, v); v <= cv;
+      v = odb::core::schema_catalog::next_version(*m_db, v))
     {
       odb::core::transaction t(m_db->begin());
       odb::core::schema_catalog::migrate_schema_pre(*m_db, v);
@@ -126,16 +119,22 @@ void AnalyzeRunner::apply_schema_migration()
     }
   } else if (v > cv) {
     throw std::invalid_argument(
-            "Check #pragma db model version arguments; old application "
-            "trying to access new database.");
+            "Check #pragma db model version arguments; "
+            "migration from this version is no longer supported.");
   }
 }
 #endif
 
+void AnalyzeRunner::bind_output(std::shared_ptr<Output> output)
+{
+  m_outputs.push_back(output);
+}
+
 void AnalyzeRunner::run()
 {
-  m_ec.log("---EXPERIMENT-START---");
-  m_ec.log(AnalysisResult::csv_header(true));
+  for (const auto & output : m_outputs) {
+    output->open();
+  }
 
   const auto experiment_start = std::chrono::steady_clock::now();
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -145,7 +144,6 @@ void AnalyzeRunner::run()
   }
   #endif
 
-  std::vector<std::shared_ptr<AnalysisResult>> results;
   while (!check_exit(experiment_start)) {
     const auto loop_start = std::chrono::steady_clock::now();
 
@@ -155,7 +153,8 @@ void AnalyzeRunner::run()
     std::for_each(m_sub_runners.begin(), m_sub_runners.end(), [](auto & a) {a->sync_reset();});
 
 #if PERFORMANCE_TEST_RT_ENABLED
-    /// If there are custom RT settings and this is the first loop, set the post RT init settings
+    /// If there are custom RT settings and this is the first loop, set the post
+    /// RT init settings
     if (m_is_first_entry && m_ec.is_rt_init_required()) {
       post_proc_rt_init();
       m_is_first_entry = false;
@@ -166,13 +165,9 @@ void AnalyzeRunner::run()
     auto loop_diff_start = now - loop_start;
     auto experiment_diff_start = now - experiment_start;
     auto result = analyze(loop_diff_start, experiment_diff_start);
-    results.push_back(result);
-  }
-
-  if (!m_ec.json_logfile().empty()) {
-    std::ofstream ofs(m_ec.json_logfile(), std::ofstream::out);
-    JsonLogger::log(m_ec, results, ofs);
-    ofs.close();
+    for (const auto & output : m_outputs) {
+      output->update(result);
+    }
   }
 
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
@@ -188,9 +183,13 @@ void AnalyzeRunner::run()
     }
   }
   #endif
+
+  for (const auto & output : m_outputs) {
+    output->close();
+  }
 }
 
-std::shared_ptr<AnalysisResult> AnalyzeRunner::analyze(
+std::shared_ptr<const AnalysisResult> AnalyzeRunner::analyze(
   const std::chrono::nanoseconds loop_diff_start,
   const std::chrono::nanoseconds experiment_diff_start)
 {
@@ -229,7 +228,7 @@ std::shared_ptr<AnalysisResult> AnalyzeRunner::analyze(
     sum_data_received += e->sum_data_received();
   }
 
-  auto result = std::make_shared<AnalysisResult>(
+  auto result = std::make_shared<const AnalysisResult>(
     experiment_diff_start,
     loop_diff_start,
     sum_received_samples,
@@ -244,7 +243,6 @@ std::shared_ptr<AnalysisResult> AnalyzeRunner::analyze(
   if (std::chrono::duration_cast<std::chrono::seconds>(experiment_diff_start).count() >
     m_ec.rows_to_ignore())
   {
-    m_ec.log(result->to_csv_string(true));
   #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
     if (m_ec.use_odb()) {
       try {
