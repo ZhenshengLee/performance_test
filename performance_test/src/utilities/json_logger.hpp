@@ -131,6 +131,18 @@ public:
   }
 
 private:
+  // Tableau parses the date and time out of the final_logfile_name column.
+  // This workaround feel bad.
+  // It would be much better if there were a dedicated datetime column.
+  static std::string tableau_final_logfile_name(const std::string & id, const std::string & topic)
+  {
+    auto t = std::time(nullptr);
+    auto tm = *std::gmtime(&t);
+    std::ostringstream oss;
+    oss << id << "_" << topic << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S");
+    return oss.str();
+  }
+
   template<typename Writer>
   static void write(Writer & writer, const char * key, const std::string & val)
   {
