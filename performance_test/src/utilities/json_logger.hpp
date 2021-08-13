@@ -170,14 +170,22 @@ private:
   static void write(Writer & writer, const char * key, float val)
   {
     writer.String(key);
-    writer.Double(val);
+    if (std::isfinite(val)) {
+      writer.Double(val);
+    } else {
+      writer.Double(0.0);
+    }
   }
 
   template<typename Writer>
   static void write(Writer & writer, const char * key, double val)
   {
     writer.String(key);
-    writer.Double(val);
+    if (std::isfinite(val)) {
+      writer.Double(val);
+    } else {
+      writer.Double(0.0);
+    }
   }
 
   template<typename Writer>
