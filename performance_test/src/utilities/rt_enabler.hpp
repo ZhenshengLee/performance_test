@@ -20,12 +20,12 @@
 #include <unistd.h>
 #include <sched.h>
 #include <sys/types.h>
-#if defined(APEX_LINUX)
+#if defined(PERFORMANCE_TEST_LINUX)
 #include <sys/syscall.h>
 #elif defined(QNX)
 #include <sys/neutrino.h>
 #include <sys/syspage.h>
-#endif  // defined(APEX_LINUX)
+#endif  // defined(PERFORMANCE_TEST_LINUX)
 
 #include <iostream>
 #include <cerrno>
@@ -95,7 +95,7 @@ inline void post_proc_rt_init()
     std::cerr << "proc rt init mem locking failed" << strerror(errno) << std::endl;
     throw std::runtime_error("proc rt init mem locking failed");
   }
-#ifdef APEX_LINUX
+#ifdef PERFORMANCE_TEST_LINUX
   //
   // Disable all the heap trimming operation using the following option.
   // This avoid releasing of free mem back to the system
@@ -117,7 +117,7 @@ inline void post_proc_rt_init()
     std::cerr << "proc rt mmap disabling failed" << strerror(errno) << std::endl;
     throw std::runtime_error("proc rt mmap disabling failed");
   }
-#endif  // APEX_LINUX
+#endif  // PERFORMANCE_TEST_LINUX
   //
   // Since all the memory is not statically allocated yet, Allocate and free
   // the memory so all pages gets mapped and locked in the process addr space
@@ -177,7 +177,7 @@ inline void pre_proc_rt_init(const uint32_t cpu_bit_mask_in, const int32_t prio)
     // Set thread-cpu affinity
     //
     if (proc_rt_info.proc_cpu_bit_mask > 0U) {
-#ifdef APEX_LINUX
+#ifdef PERFORMANCE_TEST_LINUX
       cpu_set_t set;
       uint32_t cpu_cnt = 0U;
       CPU_ZERO(&set);
@@ -250,7 +250,7 @@ inline void pre_proc_rt_init(const uint32_t cpu_bit_mask_in, const int32_t prio)
       }
 #else
       throw std::runtime_error("proc rt init affinity setting not supported on this platform");
-#endif  // APEX_LINUX
+#endif  // PERFORMANCE_TEST_LINUX
     }
   }
 }
