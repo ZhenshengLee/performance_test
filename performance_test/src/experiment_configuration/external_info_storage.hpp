@@ -18,10 +18,6 @@
 #include <iostream>
 #include <string>
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #include <odb/core.hxx>
-#endif
-
 namespace performance_test
 {
 
@@ -33,22 +29,11 @@ public:
  */
   ExternalInfoStorage();
 
-  #pragma db transient
   std::string m_to_log;
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  friend class odb::access;
-#endif
-
-  #pragma db default()
   std::string m_githash;
-  #pragma db default()
   std::string m_platform;
-  #pragma db default()
   std::string m_branch;
-  #pragma db default()
   std::string m_architecture;
-  #pragma db default()
   std::string m_ci;
 };
 }  // namespace performance_test

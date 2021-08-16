@@ -22,6 +22,7 @@
 #include <fstream>
 #include <vector>
 #include <memory>
+#include <chrono>
 
 #include "qos_abstraction.hpp"
 #include "communication_mean.hpp"
@@ -32,11 +33,6 @@
 #endif
 #include "external_info_storage.hpp"
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #include <odb/core.hxx>
-#endif
-#include <chrono>
-
 namespace performance_test
 {
 
@@ -46,13 +42,6 @@ namespace performance_test
  * This experiment configuration could be created from various sources. At the
  * moment, only configuration by command line arguments are supported.
  */
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#pragma db model version(1, 11, closed)
-class AnalysisResult;
-  #pragma db value(QOSAbstraction) definition
-  #pragma db value(ExternalInfoStorage) definition
-  #pragma db object
-#endif
 class ExperimentConfiguration
 {
 public:
@@ -182,21 +171,6 @@ public:
   {
     return m_external_info;
   }
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  std::string db_name() const;
-  bool use_odb() const;
-#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-  std::string db_user() const;
-  std::string db_password() const;
-  std::string db_host() const;
-  unsigned int db_port() const;
-#endif
-
-  std::vector<std::shared_ptr<AnalysisResult>> & get_results() const
-  {
-    return m_results;
-  }
-#endif
 
 private:
   ExperimentConfiguration()
@@ -218,42 +192,17 @@ private:
     m_roundtrip_mode(RoundTripMode::NONE)
   {}
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  friend class odb::access;
-#endif
-
   /// Throws #std::runtime_error if the experiment is not set up.
   void check_setup() const;
 
   // Using the GUID of the experiment as ID.
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db id
-#endif
   boost::uuids::uuid m_id;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   bool m_is_setup;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   std::string m_logfile;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   std::string m_json_logfile;
   std::string m_csv_logfile;
   std::vector<SupportedOutput> m_configured_output_types{};
   std::vector<std::shared_ptr<Output>> m_configured_outputs{};
-
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   CommunicationMean m_com_mean;
   uint32_t m_dds_domain_id;
   QOSAbstraction m_qos;
@@ -262,32 +211,17 @@ private:
   std::string m_msg_name;
 
   uint64_t m_max_runtime;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   uint32_t m_rows_to_ignore;
   uint32_t m_number_of_publishers;
   uint32_t m_number_of_subscribers;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   uint32_t m_expected_num_pubs;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   uint32_t m_expected_num_subs;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
   bool m_use_single_participant;
   bool m_is_rt_init_required;
   bool m_with_security;
   bool m_is_zero_copy_transfer;
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db transient
-#endif
 
   RoundTripMode m_roundtrip_mode;
 
@@ -295,26 +229,6 @@ private:
   std::string m_perf_test_version;
 
   ExternalInfoStorage m_external_info;
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #pragma db value_not_null inverse(m_configuration)
-  mutable std::vector<std::shared_ptr<AnalysisResult>> m_results;
-  #pragma db transient
-  bool m_use_odb = true;
-  #pragma db transient
-  std::string m_db_name;
-  std::string m_com_mean_str;
-#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-  #pragma db transient
-  std::string m_db_user;
-  #pragma db transient
-  std::string m_db_password;
-  #pragma db transient
-  std::string m_db_host;
-  #pragma db transient
-  unsigned int m_db_port;
-#endif
-#endif
 };
 
 std::string to_string(const ExperimentConfiguration::RoundTripMode e);
@@ -325,7 +239,4 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration::
 std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration & e);
 }  // namespace performance_test
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#include "analysis_result.hpp"
-#endif
 #endif  // EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_

@@ -295,9 +295,6 @@ export APEX_PERFORMANCE_TEST="
 "
 ```
 
-It is also possible to save the results in a SQL compatible database.
-See [Add SQL support readme](add_sql_support_readme.md) for more info.
-
 ### Plot results
 
 The performance_test tool provides several tools to plot the generated results:

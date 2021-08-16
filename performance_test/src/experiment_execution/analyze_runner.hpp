@@ -26,9 +26,6 @@
 #include "../outputs/output.hpp"
 #include "../utilities/cpu_usage_tracker.hpp"
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #include <odb/database.hxx>
-#endif
 namespace performance_test
 {
 /**
@@ -77,11 +74,6 @@ private:
   std::vector<std::shared_ptr<DataRunnerBase>> m_sub_runners;
   mutable bool m_is_first_entry;
   CPUsageTracker cpu_usage_tracker;
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  void apply_schema_migration();
-  std::unique_ptr<odb::core::database> m_db;
-#endif
 };
 
 }  // namespace performance_test

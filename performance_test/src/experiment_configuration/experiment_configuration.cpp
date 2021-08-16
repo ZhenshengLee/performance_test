@@ -218,24 +218,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::SwitchArg zeroCopyArg("", "zero-copy",
       "Use zero copy transfer.", cmd, false);
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    TCLAP::ValueArg<std::string> dbNameArg("", "db-name",
-      "Name of the SQL database.", false, "db-name", "db", cmd);
-#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-    TCLAP::ValueArg<std::string> dbUserArg("", "db-user",
-      "User name to login to the SQL database.", false, "", "user", cmd);
-
-    TCLAP::ValueArg<std::string> dbPasswordArg("", "db-password",
-      "Password to login to the SQL database.", false, "", "pw", cmd);
-
-    TCLAP::ValueArg<std::string> dbHostArg("", "db-host",
-      "IP address of the SQL server.", false, "", "host", cmd);
-
-    TCLAP::ValueArg<unsigned int> dbPortArg("", "db-port",
-      "Port for SQL protocol.", false, 0, "port", cmd);
-#endif
-#endif
-
     cmd.parse(argc, argv);
 
     // set up configured outputs
@@ -288,15 +270,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_expected_num_subs = expectedNumSubsArg.getValue();
     m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
     m_is_zero_copy_transfer = zeroCopyArg.getValue();
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    m_db_name = dbNameArg.getValue();
-#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-    m_db_user = dbUserArg.getValue();
-    m_db_password = dbPasswordArg.getValue();
-    m_db_host = dbHostArg.getValue();
-    m_db_port = dbPortArg.getValue();
-#endif
-#endif
   } catch (TCLAP::ArgException & e) {
     std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
   }
@@ -316,69 +289,42 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
     if (comm_str == "rclcpp-single-threaded-executor") {
       m_com_mean = CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "RCLCPP_SINGLE_THREADED_EXECUTOR";
-      #endif
     }
     if (comm_str == "rclcpp-static-single-threaded-executor") {
       m_com_mean = CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR";
-      #endif
     }
     if (comm_str == "rclcpp-waitset") {
       m_com_mean = CommunicationMean::RCLCPP_WAITSET;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "RCLCPP_WAITSET";
-      #endif
     }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     if (comm_str == "FastRTPS") {
       m_com_mean = CommunicationMean::FASTRTPS;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "FASTRTPS";
-      #endif
     }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
     if (comm_str == "ConnextDDSMicro") {
       m_com_mean = CommunicationMean::CONNEXTDDSMICRO;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "CONNEXTDDSMICRO";
-      #endif
     }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
     if (comm_str == "ConnextDDS") {
       m_com_mean = CommunicationMean::CONNEXTDDS;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "CONNEXTDDS";
-      #endif
     }
 #endif
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
     if (comm_str == "CycloneDDS") {
       m_com_mean = CommunicationMean::CYCLONEDDS;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "CYCLONEDDS";
-      #endif
     }
 #endif
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
     if (comm_str == "iceoryx") {
       m_com_mean = CommunicationMean::ICEORYX;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "ICEORYX";
-      #endif
     }
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
     if (comm_str == "OpenDDS") {
       m_com_mean = CommunicationMean::OPENDDS;
-      #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-      m_com_mean_str = "OPENDDS";
-      #endif
     }
 #endif
 
@@ -453,20 +399,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     }
     m_rmw_implementation = rmw_get_implementation_identifier();
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-    if (m_db_user.empty() || m_db_password.empty() || m_db_host.empty() ||
-      m_db_port == 0)
-    {
-      m_use_odb = false;
-      std::cout <<
-        "Required database information not provided, running the experiment without SQL support!"
-                <<
-        std::endl;
-    }
-#endif
-#endif
-
     // define default output files if none specified
     if (m_csv_logfile == "") {
       auto t = std::time(nullptr);
@@ -537,35 +469,6 @@ std::string ExperimentConfiguration::msg_name() const
   check_setup();
   return m_msg_name;
 }
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-std::string ExperimentConfiguration::db_name() const
-{
-  check_setup();
-  return m_db_name;
-}
-bool ExperimentConfiguration::use_odb() const
-{
-  return m_use_odb;
-}
-#if defined DATABASE_MYSQL || defined DATABASE_PGSQL
-std::string ExperimentConfiguration::db_user() const
-{
-  return m_db_user;
-}
-std::string ExperimentConfiguration::db_password() const
-{
-  return m_db_password;
-}
-std::string ExperimentConfiguration::db_host() const
-{
-  return m_db_host;
-}
-unsigned int ExperimentConfiguration::db_port() const
-{
-  return m_db_port;
-}
-#endif
-#endif
 uint64_t ExperimentConfiguration::max_runtime() const
 {
   check_setup();

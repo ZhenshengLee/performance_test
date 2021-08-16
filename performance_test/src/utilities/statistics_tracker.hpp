@@ -19,9 +19,6 @@
 #include <limits>
 #include <cmath>
 #include <iostream>
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #include <odb/core.hxx>
-#endif
 
 namespace performance_test
 {
@@ -150,9 +147,6 @@ public:
   }
 
 private:
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  friend class odb::access;
-#endif
   double m_min;
   double m_max;
   double m_n;

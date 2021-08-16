@@ -331,43 +331,6 @@ externalproject_add(
 )
 include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tabulate/include)
 
-# Use ODB support to create SQL database
-option(PERFORMANCE_TEST_ODB_SQLITE "Enable ODB with SQLITE" OFF)
-option(PERFORMANCE_TEST_ODB_MYSQL "Enable ODB with MYSQL" OFF)
-option(PERFORMANCE_TEST_ODB_PGSQL "Enable ODB with PGSQL" OFF)
-if(PERFORMANCE_TEST_ODB_SQLITE OR PERFORMANCE_TEST_ODB_MYSQL OR PERFORMANCE_TEST_ODB_PGSQL)
-  if(PERFORMANCE_TEST_ODB_SQLITE)
-    set(DB_TYPE sqlite)
-  elseif(PERFORMANCE_TEST_ODB_MYSQL)
-    set(DB_TYPE mysql)
-  elseif(PERFORMANCE_TEST_ODB_PGSQL)
-    set(DB_TYPE pgsql)
-  endif()
-
-  set(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED ON)
-  add_definitions(-DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules")
-  find_package(ODB REQUIRED COMPONENTS sqlite OPTIONAL_COMPONENTS mysql pgsql)
-  include(${ODB_USE_FILE})
-
-  # Get the setup.sh to update the LD_LIBRARY_PATH
-  get_filename_component(ODB_LIBRARY_DIRECTORY ${ODB_LIBODB_LIBRARIES} DIRECTORY)
-  ament_environment_hooks(env_hook/odb_library_path.sh.in)
-
-  odb_compile(${PROJECT_NAME}_SOURCES FILES ${${PROJECT_NAME}_HEADERS} DB "${DB_TYPE}"
-      GENERATE_QUERY GENERATE_SESSION GENERATE_SCHEMA SCHEMA_FORMAT embedded CHANGELOG_DIR
-      ${PROJECT_SOURCE_DIR}/schema_changelog INCLUDE
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
-      STANDARD c++11 PROFILE boost/uuid X_CPP_OPTION -DPERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-
-  include_directories(${CMAKE_CURRENT_BINARY_DIR}
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_configuration
-      ${CMAKE_CURRENT_SOURCE_DIR}/src/experiment_execution
-      ${ODB_INCLUDE_DIRS})
-endif()
-
 set(EXE_NAME perf_test)
 add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
 add_dependencies(${EXE_NAME} tclap rapidjson tabulate)
@@ -408,31 +371,6 @@ target_link_libraries(${EXE_NAME}
     ${Boost_LIBRARIES}
     ${OPTIONAL_LIBRARIES}
 )
-
-if(PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED)
-  foreach(header ${${PROJECT_NAME}_HEADERS})
-    get_filename_component(target_suffix ${header} NAME)
-    add_dependencies(${EXE_NAME} "generate_odb_${target_suffix}")
-  endforeach()
-  target_link_libraries(${EXE_NAME} ${ODB_LIBRARIES})
-  target_include_directories(${EXE_NAME}
-      PRIVATE
-      ${ODB_INCLUDE_DIRS}
-      ${ODB_COMPILE_OUTPUT_DIR})
-  if(PERFORMANCE_TEST_ODB_SQLITE)
-    target_compile_definitions(${EXE_NAME}
-      PRIVATE
-      DATABASE_SQLITE)
-  elseif(PERFORMANCE_TEST_ODB_MYSQL)
-    target_compile_definitions(${EXE_NAME}
-      PRIVATE
-      DATABASE_MYSQL)
-  elseif(PERFORMANCE_TEST_ODB_PGSQL)
-    target_compile_definitions(${EXE_NAME}
-      PRIVATE
-      DATABASE_PGSQL)
-  endif()
-endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   target_link_libraries(${EXE_NAME}

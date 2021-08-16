@@ -18,28 +18,15 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <memory>
 
 #include "analyze_runner.hpp"
 #include "analysis_result.hpp"
 
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  #include <odb/database.hxx>
-  #include <exception>
-  #include <memory>
-  #ifdef DATABASE_SQLITE
-    #include <odb/sqlite/database.hxx>
-  #endif
-  #ifdef DATABASE_MYSQL
-    #include <odb/mysql/database.hxx>
-  #endif
-  #ifdef DATABASE_PGSQL
-    #include <odb/pgsql/database.hxx>
-  #endif
-  #include <odb/transaction.hxx>
-  #include <odb/schema-catalog.hxx>
-
-  #include "experiment_configuration_odb.hpp"
-  #include "analysis_result_odb.hpp"
+#ifdef QNX710
+using perf_clock = std::chrono::system_clock;
+#else
+using perf_clock = std::chrono::steady_clock;
 #endif
 
 namespace performance_test
@@ -48,9 +35,6 @@ namespace performance_test
 AnalyzeRunner::AnalyzeRunner()
 : m_ec(ExperimentConfiguration::get()),
   m_is_first_entry(true)
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  , m_db()
-#endif
 {
   for (uint32_t i = 0; i < m_ec.number_of_publishers(); ++i) {
     m_pub_runners.push_back(
@@ -63,67 +47,7 @@ AnalyzeRunner::AnalyzeRunner()
   for (const auto & output : m_ec.configured_outputs()) {
     bind_output(output);
   }
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  if (m_ec.use_odb()) {
-#ifdef DATABASE_SQLITE
-    m_db = std::unique_ptr<odb::core::database>(
-      new odb::sqlite::database(
-        m_ec.db_name(), SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE));
-#elif DATABASE_MYSQL
-    m_db = std::unique_ptr<odb::core::database>(
-      new odb::mysql::database(
-        m_ec.db_user(), m_ec.db_password(), m_ec.db_name(), m_ec.db_host(), m_ec.db_port()));
-#elif DATABASE_PGSQL
-    m_db = std::unique_ptr<odb::core::database>(
-      new odb::pgsql::database(
-        m_ec.db_user(), m_ec.db_password(), m_ec.db_name(), m_ec.db_host(), m_ec.db_port()));
-#endif
-    {
-      apply_schema_migration();
-    }
-  }
-#endif
 }
-
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-static const odb::data_migration_entry<9, 1>
-migrate_is_drivepx_rt_to_is_rt_init_required_entry(
-  [](odb::database & db) {
-    db.execute("UPDATE odb_test.ExperimentConfiguration SET is_rt_init_required = is_drivepx_rt;");
-  });
-
-void AnalyzeRunner::apply_schema_migration()
-{
-  odb::core::schema_version v(m_db->schema_version());
-  odb::core::schema_version bv(odb::core::schema_catalog::base_version(*m_db));
-  odb::core::schema_version cv(odb::core::schema_catalog::current_version(*m_db));
-
-  if (v == 0) {
-    odb::core::transaction t(m_db->begin());
-    odb::core::schema_catalog::create_schema(*m_db);
-    t.commit();
-  } else if (v < cv) {
-    if (v < bv) {
-      throw std::invalid_argument(
-              "Check #pragma db model version arguments; "
-              "migration from this version is no longer supported.");
-    }
-    for (v = odb::core::schema_catalog::next_version(*m_db, v); v <= cv;
-      v = odb::core::schema_catalog::next_version(*m_db, v))
-    {
-      odb::core::transaction t(m_db->begin());
-      odb::core::schema_catalog::migrate_schema_pre(*m_db, v);
-      odb::core::schema_catalog::migrate_data(*m_db);
-      odb::core::schema_catalog::migrate_schema_post(*m_db, v);
-      t.commit();
-    }
-  } else if (v > cv) {
-    throw std::invalid_argument(
-            "Check #pragma db model version arguments; "
-            "migration from this version is no longer supported.");
-  }
-}
-#endif
 
 void AnalyzeRunner::bind_output(std::shared_ptr<Output> output)
 {
@@ -136,13 +60,7 @@ void AnalyzeRunner::run()
     output->open();
   }
 
-  const auto experiment_start = std::chrono::steady_clock::now();
-  #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  odb::core::transaction t;
-  if (m_ec.use_odb()) {
-    t.reset(m_db->begin());
-  }
-  #endif
+  const auto experiment_start = perf_clock::now();
 
   while (!check_exit(experiment_start)) {
     const auto loop_start = std::chrono::steady_clock::now();
@@ -169,20 +87,6 @@ void AnalyzeRunner::run()
       output->update(result);
     }
   }
-
-  #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  if (m_ec.use_odb()) {
-    try {
-      m_db->persist(m_ec);
-      t.commit();
-    } catch (odb::exception & e) {
-      std::cerr << "ODB exception when persisting and/or committing data: " << e.what() <<
-        std::endl;
-    } catch (...) {
-      std::cerr << "Error uploading data to database!" << std::endl;
-    }
-  }
-  #endif
 
   for (const auto & output : m_outputs) {
     output->close();
@@ -240,21 +144,6 @@ std::shared_ptr<const AnalysisResult> AnalyzeRunner::analyze(
     StatisticsTracker(ltr_sub_vec),
     cpu_usage_tracker.get_cpu_usage()
   );
-  if (std::chrono::duration_cast<std::chrono::seconds>(experiment_diff_start).count() >
-    m_ec.rows_to_ignore())
-  {
-  #ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-    if (m_ec.use_odb()) {
-      try {
-        result->set_configuration(&m_ec);
-        m_ec.get_results().push_back(result);
-        m_db->persist(result);
-      } catch (odb::exception & e) {
-        std::cerr << "Skipping storing to database: " << e.what() << std::endl;
-      }
-    }
-  #endif
-  }
   return result;
 }
 

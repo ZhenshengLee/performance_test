@@ -58,9 +58,6 @@ AnalysisResult::AnalysisResult(
   m_sys_usage.ru_maxrss =
     (static_cast<int64_t>(performance_test::qnx_res::get_proc_rss_mem()) / 1024);
 #endif
-#ifdef PERFORMANCE_TEST_ODB_FOR_SQL_ENABLED
-  m_sys_tracker = RusageTracker(m_sys_usage);
-#endif
   if (ret != 0) {
     throw std::runtime_error("Could not get system resource usage.");
   }
