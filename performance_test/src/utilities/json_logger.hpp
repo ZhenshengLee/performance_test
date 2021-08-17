@@ -18,7 +18,6 @@
 #include <rapidjson/document.h>
 #include <rapidjson/stringbuffer.h>
 #include <rapidjson/writer.h>
-#include <boost/uuid/uuid_io.hpp>
 
 #include <ostream>
 #include <string>
@@ -46,9 +45,9 @@ public:
 
     writer.StartObject();
 
-    write(writer, "id", boost::uuids::to_string(ec.id()));
+    write(writer, "id", ec.id());
     write(writer, "perf_test_version", ec.perf_test_version());
-    write(writer, "final_logfile_name", ec.json_logfile());
+    write(writer, "final_logfile_name", tableau_final_logfile_name(ec.id(), ec.topic_name()));
     write(writer, "com_mean_str", to_string(ec.com_mean()));
     write(writer, "rmw_implementation", ec.rmw_implementation());
     write(writer, "dds_domain_id", ec.dds_domain_id());

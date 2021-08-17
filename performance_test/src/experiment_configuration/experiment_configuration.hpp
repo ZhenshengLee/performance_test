@@ -15,9 +15,6 @@
 #ifndef EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_
 #define EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_
 
-#include <boost/uuid/uuid_generators.hpp>
-#include <boost/uuid/uuid_io.hpp>
-
 #include <string>
 #include <fstream>
 #include <vector>
@@ -156,7 +153,7 @@ public:
   std::string sub_topic_postfix() const;
   /// \returns Returns the randomly generated unique ID of the experiment. This will throw if the
   /// experiment configuration is not set up.
-  boost::uuids::uuid id() const;
+  std::string id() const;
   /// The configured logfile name. This will throw if the experiment configuration is not set up.
   std::string csv_logfile() const;
   /// The configured JSON logfile name.
@@ -173,30 +170,13 @@ public:
   }
 
 private:
-  ExperimentConfiguration()
-  : m_id(boost::uuids::random_generator()()),
-    m_is_setup(false),
-    m_dds_domain_id(),
-    m_rate(),
-    m_max_runtime(),
-    m_rows_to_ignore(),
-    m_number_of_publishers(),
-    m_number_of_subscribers(),
-    m_expected_num_pubs(),
-    m_expected_num_subs(),
-    m_wait_for_matched_timeout(),
-    m_check_memory(false),
-    m_use_single_participant(false),
-    m_is_rt_init_required(false),
-    m_is_zero_copy_transfer(false),
-    m_roundtrip_mode(RoundTripMode::NONE)
-  {}
+  ExperimentConfiguration();
 
   /// Throws #std::runtime_error if the experiment is not set up.
   void check_setup() const;
 
   // Using the GUID of the experiment as ID.
-  boost::uuids::uuid m_id;
+  std::string m_id;
   bool m_is_setup;
   std::string m_logfile;
   std::string m_json_logfile;

@@ -16,6 +16,7 @@
 
 #include <tclap/CmdLine.h>
 #include <rmw/rmw.h>
+#include <sole/sole.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -78,6 +79,25 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
     return stream << "ERROR: Experiment is not yet setup!";
   }
 }
+
+ExperimentConfiguration::ExperimentConfiguration()
+: m_id(sole::uuid4().str()),
+  m_is_setup(false),
+  m_dds_domain_id(),
+  m_rate(),
+  m_max_runtime(),
+  m_rows_to_ignore(),
+  m_number_of_publishers(),
+  m_number_of_subscribers(),
+  m_expected_num_pubs(),
+  m_expected_num_subs(),
+  m_wait_for_matched_timeout(),
+  m_check_memory(false),
+  m_use_single_participant(false),
+  m_is_rt_init_required(false),
+  m_is_zero_copy_transfer(false),
+  m_roundtrip_mode(RoundTripMode::NONE)
+{}
 
 void ExperimentConfiguration::setup(int argc, char ** argv)
 {
@@ -578,7 +598,7 @@ std::string ExperimentConfiguration::sub_topic_postfix() const
   return fix;
 }
 
-boost::uuids::uuid ExperimentConfiguration::id() const
+std::string ExperimentConfiguration::id() const
 {
   return m_id;
 }
