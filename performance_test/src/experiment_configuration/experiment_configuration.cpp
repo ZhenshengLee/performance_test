@@ -114,7 +114,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   try {
     TCLAP::CmdLine cmd("Apex.AI performance_test");
 
-    std::vector<std::string> allowedOutputs{"stdout", "csv", "json"};
+    std::vector<std::string> allowedOutputs{"stdout", "csv", "json", "none"};
     TCLAP::ValuesConstraint<std::string> allowedOutputConstraint(
       allowedOutputs);
     TCLAP::MultiArg<std::string> outputArg(
@@ -170,7 +170,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     TCLAP::ValueArg<uint32_t> ddsDomainIdArg("", "dds-domain_id",
       "The DDS domain id.", false, 0, "id", cmd);
-
 
     TCLAP::SwitchArg reliableArg("", "reliable",
       "Enable reliable QOS. Default is best effort.", cmd, false);
@@ -240,6 +239,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     cmd.parse(argc, argv);
 
+    // default to only stdout output
+    if (outputArg.getValue().empty()) {
+      m_configured_output_types.push_back(SupportedOutput::STDOUT);
+      m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
+    }
+
     // set up configured outputs
     for (const auto & output : outputArg.getValue()) {
       if (output == "stdout") {
@@ -251,16 +256,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       } else if (output == "json") {
         m_configured_output_types.push_back(SupportedOutput::JSON);
         m_configured_outputs.push_back(std::make_shared<JsonOutput>());
+      } else if (output == "none") {
+        // do nothing
       } else {
         std::cerr << "Unknown output type specified: " << output << std::endl;
         std::terminate();
       }
-    }
-
-    // default to only stdout output
-    if (m_configured_output_types.empty()) {
-      m_configured_output_types.push_back(SupportedOutput::STDOUT);
-      m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
     }
 
     m_csv_logfile = csvLogfileArg.getValue();
