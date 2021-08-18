@@ -2,19 +2,42 @@
 
 #include "performance_test_ros1_publisher/msg_types.hpp"
 
-#include <boost/function.hpp>
-#include <boost/mpl/for_each.hpp>
-#include <boost/program_options.hpp>
+#include <tclap/CmdLine.h>
 
 #include <memory>
+#include <tuple>
+#include <utility>
+
+/// Iterates over std::tuple types
+/**
+ * \param t tuple to be iterated
+ * \param f functor to be applied over each element
+ * \returns number of iterated elements
+ */
+template<std::size_t I = 0, typename FuncT, typename ... Tp>
+typename std::enable_if<I == sizeof...(Tp), size_t>::type
+for_each(const std::tuple<Tp...> & t, FuncT f)
+{
+  (void)t;
+  (void)f;
+  return I;
+}
+
+template<std::size_t I = 0, typename FuncT, typename ... Tp>
+typename std::enable_if<I != sizeof...(Tp), size_t>::type
+for_each(const std::tuple<Tp...> & t, FuncT f)
+{
+  f(std::get<I>(t));
+  return for_each<I + 1, FuncT, Tp...>(t, f);
+}
 
 std::shared_ptr<MsgBase> msg_publisher_factory(ros::NodeHandle& nh, std::string topic_name)
 {
   std::shared_ptr<MsgBase> data = nullptr;
 
-  boost::mpl::for_each<TopicTypeList>(
-    [topic_name, &nh, &data](auto topic) {
-      using T = decltype(topic);
+  for_each(TopicTypeList(),
+    [topic_name, &nh, &data](const auto & topic) {
+      using T = std::remove_cv_t<std::remove_reference_t<decltype(topic)>>;
       if (std::string(topic.name()) == topic_name) {
         data = std::make_shared<T>();
         data->pub = nh.advertise<typename T::RosType>(topic_name, 100);
@@ -29,45 +52,25 @@ std::shared_ptr<MsgBase> msg_publisher_factory(ros::NodeHandle& nh, std::string 
 
 int main(int argc, char**argv)
 {
-  namespace po = boost::program_options; 
-  po::options_description desc("Allowed options");
-  desc.add_options()
-    ("rate,r", po::value<uint32_t>()->default_value(1000), "Publish rate in Hz. Defaults to 1000. 0 = as fast as possible.")
-    ("topic,t", po::value<std::string>()->required(), "Topic to use.");
+  std::string topic_name;
+  uint32_t rate;
 
-  po::variables_map vm;
   try {
-    // Allow unused arguments so we can pass the same command-line used for perf_test, but
-    // just ignore the parts that don't affect the publisher
-    po::store(
-      po::command_line_parser(argc, argv).options(desc)
-                                         .allow_unregistered()
-                                         .run(),
-      vm
-    );  // can throw
- 
-    /** --help option 
-     */ 
-    if ( vm.count("help")  ) 
-    { 
-      std::cout << "Basic Command Line Parameter App" << std::endl 
-                << desc << std::endl; 
-      return 0; 
-    } 
+    TCLAP::CmdLine cmd("Apex.AI performance_test_ros1_publisher");
 
-    if (!vm.count("topic")) {
-      throw std::invalid_argument("--topic is required!");
-    }
-  }
-  catch(po::error& e) 
-  { 
-    std::cerr << "ERROR: " << e.what() << std::endl << std::endl; 
-    std::cerr << desc << std::endl; 
-    return 1; 
-  }
+    TCLAP::ValueArg<std::string> topicArg("t", "topic", "The topic name.",
+      false, "Array16k", "topic", cmd);
+    
+    TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
+      "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
 
-  auto topic_name = vm["topic"].as<std::string>();
-  auto rate = vm["rate"].as<uint32_t>();
+    cmd.parse(argc, argv);
+
+    topic_name = topicArg.getValue();
+    rate = rateArg.getValue();
+  } catch (TCLAP::ArgException & e) {
+    std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
+  }
 
   std::cout << "ROS1 publisher running with rate " << rate << " on topic " << topic_name << std::endl;
   ros::init(argc, argv, "point_cloud_publisher");

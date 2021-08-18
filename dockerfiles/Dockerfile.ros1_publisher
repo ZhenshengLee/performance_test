@@ -1,0 +1,26 @@
+# docker build . -f dockerfiles/Dockerfile.ros1_publisher -t performance_test_ros1_publisher
+# docker run -it performance_test_ros1_publisher bash
+# /opt/performance_test/lib/performance_test_ros1_publisher/publisher --topic Array16k --rate 20
+
+FROM osrf/ros:melodic-desktop
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y python3-colcon-common-extensions
+
+ADD . /perf_test_ws/src/performance_test
+
+RUN source /opt/ros/melodic/setup.bash && \
+    cd /perf_test_ws && \
+    touch src/performance_test/performance_test/COLCON_IGNORE && \
+    rm src/performance_test/performance_test_ros1_msgs/COLCON_IGNORE && \
+    rm src/performance_test/performance_test_ros1_publisher/COLCON_IGNORE && \
+    colcon build \
+      --install-base /opt/performance_test \
+      --merge-install
+
+RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
+
+

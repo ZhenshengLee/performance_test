@@ -1,10 +1,9 @@
 #ifndef PERFORMANCE_TEST_ROS1_PUBLISHER_MSG_TYPES_HPP_INCLUDED
 #define PERFORMANCE_TEST_ROS1_PUBLISHER_MSG_TYPES_HPP_INCLUDED
 
-#include <boost/mpl/list.hpp>
-
 #include <chrono>
 #include <memory>
+#include <tuple>
 
 #include "performance_test_ros1_msgs/Array16k.h"
 #include "performance_test_ros1_msgs/Array1k.h"
@@ -85,6 +84,6 @@ struct PointCloud4m: public Msg<performance_test_ros1_msgs::PointCloud4m>
   static const char* name() { return "PointCloud4m"; }
 };
 
-using TopicTypeList = boost::mpl::list<Array16k, Array2m, Struct32k, PointCloud1m, PointCloud4m>;
+using TopicTypeList = std::tuple<Array16k, Array2m, Struct32k, PointCloud1m, PointCloud4m>;
 
 #endif
