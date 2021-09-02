@@ -79,12 +79,15 @@ void AnalyzeRunner::run()
     }
 #endif
 
-    auto now = std::chrono::steady_clock::now();
+    auto now = perf_clock::now();
     auto loop_diff_start = now - loop_start;
     auto experiment_diff_start = now - experiment_start;
-    auto result = analyze(loop_diff_start, experiment_diff_start);
-    for (const auto & output : m_outputs) {
-      output->update(result);
+    auto seconds = std::chrono::duration_cast<std::chrono::seconds>(experiment_diff_start).count();
+    if (seconds > m_ec.rows_to_ignore()) {
+      auto result = analyze(loop_diff_start, experiment_diff_start);
+      for (const auto & output : m_outputs) {
+        output->update(result);
+      }
     }
   }
 
