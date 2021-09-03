@@ -16,6 +16,14 @@ are automatically recorded when the application is running:
   work).
 - **sample statistics**: number of samples received, sent, and lost per experiment run.
 
+This `master` branch is compatible with ROS2 rolling. For other ROS2 versions,
+visit the corresponding branch:
+- [apex-os](https://gitlab.com/ApexAI/performance_test/-/tree/apex-os)
+- [dashing](https://gitlab.com/ApexAI/performance_test/-/tree/dashing)
+- [eloquent](https://gitlab.com/ApexAI/performance_test/-/tree/eloquent)
+- [foxy](https://gitlab.com/ApexAI/performance_test/-/tree/foxy)
+- [galactic](https://gitlab.com/ApexAI/performance_test/-/tree/galactic)
+
 ## How to use this document
 
 1. Start [here](#example) for a quick example of building and running the performance_test tool
