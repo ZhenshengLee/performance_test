@@ -21,6 +21,8 @@ function(set_compile_options target)
         add_definitions(-D_CRT_NONSTDC_NO_WARNINGS)
         add_definitions(-D_CRT_SECURE_NO_WARNINGS)
         add_definitions(-D_WINSOCK_DEPRECATED_NO_WARNINGS)
+        add_definitions(-DNOMINMAX)
+        add_definitions(/bigobj)
     else()
         target_compile_options(${target} PRIVATE  -Wall
                 -Wextra

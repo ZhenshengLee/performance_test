@@ -15,8 +15,10 @@
 #ifndef EXPERIMENT_EXECUTION__ANALYSIS_RESULT_HPP_
 #define EXPERIMENT_EXECUTION__ANALYSIS_RESULT_HPP_
 
+#if !defined(WIN32)
 #include <sys/time.h>
 #include <sys/resource.h>
+#endif  // !defined(WIN32)
 
 #include <chrono>
 #include <sstream>
@@ -28,8 +30,10 @@
 namespace performance_test
 {
 
+#if !defined(WIN32)
 /// Outstream operator for timeval to seconds (double).
 std::ostream & operator<<(std::ostream & stream, const timeval & e);
+#endif  // !defined(WIN32)
 
 class AnalysisResult
 {
@@ -84,7 +88,9 @@ public:
   StatisticsTracker m_latency;
   StatisticsTracker m_pub_loop_time_reserve;
   StatisticsTracker m_sub_loop_time_reserve;
+#if !defined(WIN32)
   rusage m_sys_usage;
+#endif  // !defined(WIN32)
   const CpuInfo m_cpu_info;
 };
 

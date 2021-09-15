@@ -15,8 +15,10 @@
 #ifndef UTILITIES__CPU_USAGE_TRACKER_HPP_
 #define UTILITIES__CPU_USAGE_TRACKER_HPP_
 
+#if !defined(WIN32)
 #include <sys/times.h>
 #include <unistd.h>
+#endif  // !defined(WIN32)
 #include <thread>
 
 #if defined(QNX)
@@ -59,7 +61,9 @@ public:
     m_tot_cpu_cores = _syspage_ptr->num_cpu;
 #else
     m_cpu_cores = std::thread::hardware_concurrency();
+#if !defined(WIN32)
     m_ticks_to_ns = 1000000000LL / ::sysconf(_SC_CLK_TCK);
+#endif  // !defined(WIN32)
 #endif
   }
 
@@ -102,11 +106,15 @@ public:
     return cpu_info_local;
 #else
     auto wall_time = std::chrono::high_resolution_clock::now().time_since_epoch().count();
+#if defined(WIN32)
+    auto system_time = m_system_time;
+    auto user_time = m_user_time;
+#else
     tms tm;
     ::times(&tm);
     auto system_time = (tm.tms_stime + tm.tms_cstime) * m_ticks_to_ns;
     auto user_time = (tm.tms_utime + tm.tms_cutime) * m_ticks_to_ns;
-
+#endif
     auto wall_diff = wall_time - m_wall_time;
     auto system_diff = system_time - m_system_time;
     auto user_diff = user_time - m_user_time;

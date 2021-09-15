@@ -102,6 +102,7 @@ public:
       write(writer, "sub_loop_time_reserve_mean", ar->m_sub_loop_time_reserve.mean());
       write(writer, "sub_loop_time_reserve_M2", ar->m_sub_loop_time_reserve.m2());
       write(writer, "sub_loop_time_reserve_variance", ar->m_sub_loop_time_reserve.variance());
+#if !defined(WIN32)
       write(writer, "sys_tracker_ru_utime", ar->m_sys_usage.ru_utime);
       write(writer, "sys_tracker_ru_stime", ar->m_sys_usage.ru_stime);
       write(writer, "sys_tracker_ru_maxrss", ar->m_sys_usage.ru_maxrss);
@@ -118,6 +119,7 @@ public:
       write(writer, "sys_tracker_ru_nsignals", ar->m_sys_usage.ru_nsignals);
       write(writer, "sys_tracker_ru_nvcsw", ar->m_sys_usage.ru_nvcsw);
       write(writer, "sys_tracker_ru_nivcsw", ar->m_sys_usage.ru_nivcsw);
+#endif
       write(writer, "cpu_info_cpu_cores", ar->m_cpu_info.cpu_cores());
       write(writer, "cpu_info_cpu_usage", ar->m_cpu_info.cpu_usage());
       writer.EndObject();
@@ -206,6 +208,7 @@ private:
     writer.Bool(val);
   }
 
+#if !defined(WIN32)
   template<typename Writer>
   static void write(Writer & writer, const char * key, timeval val)
   {
@@ -215,6 +218,7 @@ private:
       std::chrono::microseconds(val.tv_usec);
     writer.Int64(ns.count());
   }
+#endif
 
   template<typename Writer>
   static void write(Writer & writer, const char * key, const std::chrono::nanoseconds val)

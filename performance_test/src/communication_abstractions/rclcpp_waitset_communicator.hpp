@@ -71,7 +71,7 @@ public:
       rclcpp::MessageInfo msg_info;
       bool success = m_subscription->take(msg, msg_info);
       if (success) {
-        this->template callback(msg);
+        this->callback(msg);
       }
     }
   }

@@ -65,7 +65,7 @@ void AnalyzeRunner::run()
   while (!check_exit(experiment_start)) {
     const auto loop_start = std::chrono::steady_clock::now();
 
-    sleep(1);
+    std::this_thread::sleep_for(std::chrono::seconds(1));
 
     std::for_each(m_pub_runners.begin(), m_pub_runners.end(), [](auto & a) {a->sync_reset();});
     std::for_each(m_sub_runners.begin(), m_sub_runners.end(), [](auto & a) {a->sync_reset();});

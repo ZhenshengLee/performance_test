@@ -99,6 +99,8 @@ void StdoutOutput::update(std::shared_ptr<const AnalysisResult> result)
       subscriber_loop_table.add_row({"-", "-", "-", "-"});
     }
 
+    tabulate::Table system_statistics_table;
+#if !defined(WIN32)
     std::chrono::nanoseconds utime_ns =
       std::chrono::seconds(result->m_sys_usage.ru_utime.tv_sec) +
       std::chrono::microseconds(result->m_sys_usage.ru_utime.tv_usec);
@@ -106,7 +108,6 @@ void StdoutOutput::update(std::shared_ptr<const AnalysisResult> result)
       std::chrono::seconds(result->m_sys_usage.ru_stime.tv_sec) +
       std::chrono::microseconds(result->m_sys_usage.ru_stime.tv_usec);
 
-    tabulate::Table system_statistics_table;
     system_statistics_table.add_row(
       {"utime", "stime", "maxrss", "ixrss", "idrss", "isrss", "minflt", "majflt"});
     system_statistics_table.add_row(
@@ -130,6 +131,7 @@ void StdoutOutput::update(std::shared_ptr<const AnalysisResult> result)
         std::to_string(result->m_sys_usage.ru_nsignals),
         std::to_string(result->m_sys_usage.ru_nvcsw),
         std::to_string(result->m_sys_usage.ru_nivcsw)});
+#endif
 
     tabulate::Table experiment_time_table;
     experiment_time_table.add_row(
