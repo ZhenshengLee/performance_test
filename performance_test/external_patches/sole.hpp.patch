@@ -1,0 +1,59 @@
+171a172,176
+> #elif defined(__QNX__)
+> #   include <sys/socket.h>
+> #   include <net/if_dl.h>
+> #   include <ifaddrs.h>
+> #   define $qnx $yes
+232a238,244
+> #ifdef  $qnx
+> #define $qnxelse $no
+> #else
+> #define $qnx     $no
+> #define $qnxelse $yes
+> #endif
+> 
+442c454
+<     $lelse( $belse( // if not linux, if not bsd... valid for apple/win32
+---
+>     $lelse( $belse( $qnxelse( // if not linux, if not bsd... valid for apple/win32
+451c463
+<     ))
+---
+>     )))
+594a607,642
+>         return true;
+>     })
+> 
+>     $qnx({
+>         struct ifaddrs *ifaphead;
+>         unsigned char * if_mac;
+>         int found = 0;
+>         struct ifaddrs *ifap;
+>         struct sockaddr_dl *sdl = NULL;
+> 
+>         if (getifaddrs(&ifaphead) != 0)
+>         {
+>             return $no("get_if_name: getifaddrs() failed") false;
+>         }
+> 
+>         for (ifap = ifaphead; ifap && !found; ifap = ifap->ifa_next)
+>         {
+>             if ((ifap->ifa_addr->sa_family == AF_LINK))
+>             {
+>                 found = 1;
+>                 sdl = (struct sockaddr_dl *)ifap->ifa_addr;
+>                 if (sdl)
+>                 {
+>                     _node.resize(sdl->sdl_alen);
+>                     std::memcpy(_node.data(), LLADDR(sdl), _node.size());
+>                 }
+>             }
+>         }
+>         if(ifaphead)
+>         {
+>             freeifaddrs(ifaphead);
+>         }
+>         if (!found)
+>         {
+>             return $no("Failed to find an interface failed") false;
+>         }
