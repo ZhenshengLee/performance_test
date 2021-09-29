@@ -178,13 +178,12 @@ public:
     if (m_ec.is_zero_copy_transfer()) {
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
-    DataType data;
     lock();
-    data.time_(time);
-    data.id_(next_sample_id());
+    m_data.time_(time);
+    m_data.id_(next_sample_id());
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
-    m_publisher->write(static_cast<void *>(&data));
+    m_publisher->write(static_cast<void *>(&m_data));
   }
   /**
    * \brief Reads received data from DDS.

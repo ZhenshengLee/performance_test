@@ -78,13 +78,12 @@ public:
           throw std::runtime_error("Failed to write to sample");
         });
     } else {
-      DataType data;
       lock();
-      data.time = time;
-      data.id = next_sample_id();
+      m_data.time = time;
+      m_data.id = next_sample_id();
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
-      m_publisher->publishCopyOf(data)
+      m_publisher->publishCopyOf(m_data)
       .or_else(
         [](auto &) {
           throw std::runtime_error("Failed to write to sample");
@@ -172,6 +171,8 @@ private:
   std::unique_ptr<iox::popo::Publisher<DataType>> m_publisher;
   std::unique_ptr<iox::popo::Subscriber<DataType>> m_subscriber;
   std::unique_ptr<iox::popo::WaitSet<>> m_waitset;
+
+  DataType m_data;
 };
 
 }  // namespace performance_test

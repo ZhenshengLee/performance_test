@@ -89,8 +89,7 @@ public:
   explicit RclcppCommunicator(SpinLock & lock)
   : Communicator(lock),
     m_node(ResourceManager::get().rclcpp_node()),
-    m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()),
-    m_data_copy(std::make_unique<DataType>()) {}
+    m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()) {}
 
   /**
    * \brief Publishes the provided data.
@@ -120,13 +119,12 @@ public:
       unlock();
       m_publisher->publish(std::move(borrowed_message));
     } else {
-      DataType data;
       lock();
-      data.time = time;
-      data.id = next_sample_id();
+      m_data.time = time;
+      m_data.id = next_sample_id();
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
-      m_publisher->publish(data);
+      m_publisher->publish(m_data);
     }
   }
 
@@ -182,7 +180,8 @@ protected:
 
 private:
   std::shared_ptr<::rclcpp::Publisher<DataType>> m_publisher;
-  std::unique_ptr<DataType> m_data_copy;
+
+  DataType m_data;
 };
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_COMMUNICATOR_HPP_

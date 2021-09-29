@@ -151,13 +151,12 @@ public:
     if (m_ec.is_zero_copy_transfer()) {
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
-    DataType data;
     lock();
-    data.time_ = time;
-    data.id_ = next_sample_id();
+    m_data.time_ = time;
+    m_data.id_ = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
-    auto retcode = m_typed_datawriter->write(data, DDS_HANDLE_NIL);
+    auto retcode = m_typed_datawriter->write(m_data, DDS_HANDLE_NIL);
     if (retcode != DDS_RETCODE_OK) {
       throw std::runtime_error("Failed to write to sample");
     }
@@ -298,6 +297,8 @@ private:
   DataTypeSeq m_data_seq;
   DDS_SampleInfoSeq m_sample_info_seq;
   static DDSTopic * m_topic;
+
+  DataType m_data;
 };
 
 template<class Topic>
