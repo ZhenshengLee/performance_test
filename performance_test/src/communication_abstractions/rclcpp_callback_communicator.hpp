@@ -20,8 +20,6 @@
 #include <memory>
 #include <atomic>
 
-#include "../experiment_configuration/topics.hpp"
-
 #include "rclcpp_communicator.hpp"
 #include "resource_manager.hpp"
 

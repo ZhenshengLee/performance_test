@@ -1,0 +1,13 @@
+#include "Point32.idl"
+
+module performance_test {
+  module msg {
+    module __plugin__ {
+      typedef performance_test::msg::__plugin__::Point32 performance_test__msg__Point32;
+      typedef performance_test__msg__Point32 performance_test__msg__Point32__64[64];
+      struct Polygon {
+        performance_test__msg__Point32__64 points;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

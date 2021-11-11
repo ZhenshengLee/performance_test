@@ -184,8 +184,8 @@ public:
       }
       DataType * sample = static_cast<DataType *>(loaned_sample);
       lock();
-      sample->time_ = time;
-      sample->id_ = next_sample_id();
+      sample->time = time;
+      sample->id = next_sample_id();
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
       status = dds_write(m_datawriter, sample);
@@ -196,8 +196,8 @@ public:
       }
     } else {
       lock();
-      m_data.time_ = time;
-      m_data.id_ = next_sample_id();
+      m_data.time = time;
+      m_data.id = next_sample_id();
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
       if (dds_write(m_datawriter, static_cast<void *>(&m_data)) < 0) {
@@ -251,20 +251,20 @@ public:
       lock();
       const DataType * data = static_cast<DataType *>(untyped);
       if (si.valid_data) {
-        if (m_prev_timestamp >= data->time_) {
+        if (m_prev_timestamp >= data->time) {
           throw std::runtime_error(
                   "Data consistency violated. Received sample with not strictly older timestamp. "
-                  "Time diff: " + std::to_string(data->time_ - m_prev_timestamp) +
-                  " Data Time: " + std::to_string(data->time_));
+                  "Time diff: " + std::to_string(data->time - m_prev_timestamp) +
+                  " Data Time: " + std::to_string(data->time));
         }
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           unlock();
-          publish(data->time_);
+          publish(data->time);
           lock();
         } else {
-          m_prev_timestamp = data->time_;
-          update_lost_samples_counter(data->id_);
-          add_latency_to_statistics(data->time_);
+          m_prev_timestamp = data->time;
+          update_lost_samples_counter(data->id);
+          add_latency_to_statistics(data->time);
           increment_received();
         }
       }

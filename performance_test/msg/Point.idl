@@ -1,0 +1,11 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct Point {
+        double x;
+        double y;
+        double z;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

@@ -1,0 +1,19 @@
+#include "Point.idl"
+#include "Vector3.idl"
+
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct RadarDetection {
+        unsigned short detection_id;
+        performance_test::msg::__plugin__::Point position;
+        performance_test::msg::__plugin__::Vector3 velocity;
+        double amplitude;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

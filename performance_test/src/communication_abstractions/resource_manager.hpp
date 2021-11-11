@@ -35,20 +35,23 @@
 #endif
 
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
-    #include <dds/DCPS/RTPS/RtpsDiscovery.h>
-    #include <dds/DCPS/transport/framework/TransportRegistry.h>
-    #include <dds/DCPS/transport/rtps_udp/RtpsUdpInst_rch.h>
-    #include <dds/DCPS/transport/rtps_udp/RtpsUdpInst.h>
-    #include <dds/DdsDcpsInfrastructureC.h>
-    #include <dds/DdsDcpsPublicationC.h>
-    #include <dds/DdsDcpsSubscriptionC.h>
-    #include <dds/DCPS/Marked_Default_Qos.h>
-    #include <dds/DCPS/Service_Participant.h>
-    #include <dds/DCPS/WaitSet.h>
-    #include <dds/DCPS/StaticIncludes.h>
+  #include <dds/DCPS/RTPS/RtpsDiscovery.h>
+  #include <dds/DCPS/transport/framework/TransportRegistry.h>
+  #include <dds/DCPS/transport/rtps_udp/RtpsUdpInst_rch.h>
+  #include <dds/DCPS/transport/rtps_udp/RtpsUdpInst.h>
+  #include <dds/DdsDcpsInfrastructureC.h>
+  #include <dds/DdsDcpsPublicationC.h>
+  #include <dds/DdsDcpsSubscriptionC.h>
+  #include <dds/DCPS/Marked_Default_Qos.h>
+  #include <dds/DCPS/Service_Participant.h>
+  #include <dds/DCPS/WaitSet.h>
+  #include <dds/DCPS/StaticIncludes.h>
 #endif
 
-#include <rclcpp/rclcpp.hpp>
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  #include <rclcpp/rclcpp.hpp>
+#endif
+
 #include <cstdlib>
 #include <memory>
 #include <mutex>
@@ -78,8 +81,10 @@ public:
   ResourceManager & operator=(ResourceManager const &) = delete;
   ResourceManager & operator=(ResourceManager &&) = delete;
 
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   /// Returns the ROS 2 node.
   std::shared_ptr<rclcpp::Node> rclcpp_node() const;
+#endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   /// Returns FastRTPS participant.
@@ -154,8 +159,10 @@ public:
 
 private:
   ResourceManager()
-  : m_ec(ExperimentConfiguration::get()),
-    m_node(nullptr)
+  : m_ec(ExperimentConfiguration::get())
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+    , m_node(nullptr)
+#endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     , m_fastrtps_participant(nullptr)
 #endif
@@ -177,7 +184,9 @@ private:
 
   const ExperimentConfiguration & m_ec;
 
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   mutable std::shared_ptr<rclcpp::Node> m_node;
+#endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   mutable eprosima::fastrtps::Participant * m_fastrtps_participant;

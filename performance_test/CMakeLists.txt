@@ -55,17 +55,9 @@ if($ENV{RMW_IMPLEMENTATION})
   )
 endif()
 
-find_package(rclcpp REQUIRED)
-find_package(rmw REQUIRED)
-find_package(builtin_interfaces REQUIRED)
+find_package(Threads REQUIRED)
 
-find_package(rcutils REQUIRED)
 find_package(ament_cmake REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(rosidl_default_generators REQUIRED)
-find_package(builtin_interfaces REQUIRED)
-find_package(std_msgs REQUIRED)
-find_package(sensor_msgs REQUIRED)
 
 find_package(osrf_testing_tools_cpp QUIET)
 if(${osrf_testing_tools_cpp_FOUND})
@@ -81,30 +73,29 @@ ament_export_dependencies(rosidl_default_runtime)
 include_directories(${FastRTPS_INCLUDE_DIR} ${FastRTPS_INCLUDE_DIR}/fastrtps/include ${fastcdr_INCLUDE_DIR})
 include_directories(include ${osrf_testing_tools_cpp_INCLUDE_DIR})
 
+
+# ROS2 rclcpp plugins
+option(PERFORMANCE_TEST_RCLCPP_ENABLED "" ON)
+if(PERFORMANCE_TEST_RCLCPP_ENABLED)
+  find_package(rclcpp REQUIRED)
+  find_package(rmw REQUIRED)
+  find_package(rosidl_default_generators REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_RCLCPP_ENABLED)
+endif()
+
+
 # FastRTPS
 option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" OFF)
-
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   find_package(fastrtps_cmake_module QUIET REQUIRED)
   find_package(FastRTPS QUIET REQUIRED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
-  add_subdirectory(src/idlgen/fast_rtps)
-  include_directories(${FAST_RTPS_IDL_INCLUDE_DIR})
+  list(APPEND PLUGIN_LIBRARIES ${FastRTPS_LIBRARIES})
 endif()
 
-
-if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED AND PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-  message(FATAL_ERROR
-    "ConnextDDS Pro and ConnextDDS Micro cannot be used in the same "
-    "application. Please, disable one")
-endif()
 
 # ConnextDDS
-option(PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  "Option to enable Connext DDS Pro"
-  OFF
-)
-
+option(PERFORMANCE_TEST_CONNEXTDDS_ENABLED "Enable Connext DDS Pro" OFF)
 if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED)
     # Append the path to CMAKE_MODULE_PATH in order to find the
     # FindConnextDDS.cmake CMake script
@@ -118,22 +109,26 @@ if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED)
       COMPONENTS
         core
     )
-    add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/src/idlgen/connextdds")
+    add_definitions(-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED)
 endif()
 
 
 # RTI Connext Micro
-option(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED "Option to enable Connext DDS Micro plugin. The
-plugin can only work if ApexOS is present with RTI Connext Micro, otherwise it will fail." OFF)
-
+option(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED "Enable Connext DDS Micro" OFF)
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
   find_package(connext_micro_cmake_module REQUIRED)
   find_package(ConnextMicro MODULE REQUIRED)
   if(ConnextMicro_FOUND)
     add_definitions(-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
-    include_directories(${RTI_MICRO_IDL_INCLUDE_DIR})
     ament_export_definitions(${ConnextMicro_DEFINITIONS})
   endif()
+endif()
+
+
+if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED AND PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)
+  message(FATAL_ERROR
+    "ConnextDDS Pro and ConnextDDS Micro cannot be used in the same "
+    "application. Please, disable one")
 endif()
 
 
@@ -142,32 +137,30 @@ option(PERFORMANCE_TEST_CYCLONEDDS_ENABLED "Enable CycloneDDS" OFF)
 if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
   find_package(CycloneDDS REQUIRED COMPONENTS idlc)
   add_definitions(-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-  add_subdirectory(src/idlgen/cyclonedds)
-  include_directories(${CYCLONEDDS_IDL_INCLUDE_DIR})
+  list(APPEND PLUGIN_LIBRARIES CycloneDDS::ddsc)
 endif()
+
 
 # iceoryx
 option(PERFORMANCE_TEST_ICEORYX_ENABLED "Require iceoryx to be available, fail otherwise" OFF)
 if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   find_package(iceoryx_posh CONFIG REQUIRED)
   add_definitions(-DPERFORMANCE_TEST_ICEORYX_ENABLED)
-  # set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+  list(APPEND PLUGIN_LIBRARIES iceoryx_posh::iceoryx_posh)
 endif()
+
 
 # OpenDDS
 option(PERFORMANCE_TEST_OPENDDS_ENABLED "Require Open DDS to be available, fail otherwise" OFF)
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   add_definitions(-DPERFORMANCE_TEST_OPENDDS_ENABLED)
   set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-  add_subdirectory(src/idlgen/opendds)
-  include_directories(${OPENDDS_IDL_INCLUDE_DIR} ${PARENT_DDS_ROOT_INCLUDE})
 endif()
 
-# ROS2 rclcpp plugins
-option(PERFORMANCE_TEST_RCLCPP_ENABLED "" ON)
-if(PERFORMANCE_TEST_RCLCPP_ENABLED)
-  add_definitions(-DPERFORMANCE_TEST_RCLCPP_ENABLED)
-endif()
+
+add_subdirectory(msg)
+include_directories(${IDLGEN_INCLUDE_DIR})
+
 
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
@@ -175,47 +168,6 @@ set(${PROJECT_NAME}_SOURCES
 set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
-
-set(MESSAGE_FILES
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array16k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array32k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array60k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array64k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array256k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array1m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array2m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array4m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Array8m.idl"
-
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct16.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct256.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct4k.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Struct32k.idl"
-
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud1m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud2m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud4m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud8m.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointCloud512k.idl"
-
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Header.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/PointField.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatStatus.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/NavSatFix.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarDetection.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/RadarTrack.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Range.idl"
-
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Point32.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Polygon.idl"
-    "${CMAKE_CURRENT_SOURCE_DIR}/src:msg/Vector3.idl")
-
-rosidl_generate_interfaces(${PROJECT_NAME}
-    ${MESSAGE_FILES}
-    DEPENDENCIES builtin_interfaces std_msgs sensor_msgs)
 
 set(sources
     src/main.cpp
@@ -226,7 +178,6 @@ set(sources
     src/outputs/stdout_output.cpp
     src/outputs/csv_output.cpp
     src/outputs/json_output.cpp
-    src/experiment_configuration/topics.hpp
     src/data_running/data_runner.hpp
     src/data_running/data_runner_base.hpp
     src/data_running/data_runner_factory.cpp
@@ -362,63 +313,20 @@ execute_process(
 )
 add_definitions(-DPERFORMANCE_TEST_VERSION="${PERF_TEST_VERSION}")
 
-rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")
-
-ament_target_dependencies(${EXE_NAME}
-    "rclcpp" ${OPTIONAL_AMENT_DEPENDENCES})
-
-# If the target exists, it means we want to build the performance test working
-# with the Connext DDS Communicator.
-if(TARGET rti_connextdds_idl)
-  # Link against the Connext DDS IDL types library
-  target_link_libraries(${EXE_NAME}
-    rti_connextdds_idl
-  )
-
-  # Add the definition to enable the Connext DDS Communicator
-  target_compile_definitions(${EXE_NAME}
-    PRIVATE
-      PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  )
+if(PERFORMANCE_TEST_RCLCPP_ENABLED)
+  rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")
+  ament_target_dependencies(${EXE_NAME} "rclcpp")
 endif()
 
-target_link_libraries(${EXE_NAME}
-    ${OPTIONAL_LIBRARIES}
+ament_target_dependencies(${EXE_NAME} ${OPTIONAL_AMENT_DEPENDENCES})
+
+target_link_libraries(
+  ${EXE_NAME}
+  ${OPTIONAL_LIBRARIES}
+  ${PLUGIN_LIBRARIES}
+  ${IDLGEN_LIBRARIES}
+  ${CMAKE_THREAD_LIBS_INIT}
 )
-
-if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  target_link_libraries(${EXE_NAME}
-      ${FastRTPS_LIBRARIES}
-      fast_rtps_idl
-      fastcdr)
-endif()
-
-if(PERFORMANCE_TEST_CYCLONEDDS_ENABLED)
-  target_link_libraries(${EXE_NAME}
-      cyclonedds_idl
-      CycloneDDS::ddsc)
-endif()
-
-if(PERFORMANCE_TEST_ICEORYX_ENABLED)
-  target_link_libraries(${EXE_NAME}
-      iceoryx_posh::iceoryx_posh)
-endif()
-
-if(PERFORMANCE_TEST_OPENDDS_ENABLED)
-    set(DDS_DYN_LIBS  ${PARENT_DDS_ROOT_LIBS}/libACE.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO.so
-                      ${PARENT_DDS_ROOT_LIBS}/libOpenDDS_Dcps.so
-                      ${PARENT_DDS_ROOT_LIBS}/libOpenDDS_Rtps.so
-                      ${PARENT_DDS_ROOT_LIBS}/libOpenDDS_Rtps_Udp.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO_PortableServer.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO_PortableServer.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO_PI.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO_CodecFactory.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO_AnyTypeCode.so
-                      ${PARENT_DDS_ROOT_LIBS}/libTAO_BiDirGIOP.so)
-
-    target_link_libraries(${EXE_NAME} opendds_idl ${DDS_DYN_LIBS})
-endif()
 
 if(BUILD_TESTING)
     find_package(ament_lint_auto REQUIRED)

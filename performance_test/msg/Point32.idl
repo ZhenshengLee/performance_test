@@ -1,0 +1,11 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct Point32 {
+        float x;
+        float y;
+        float z;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

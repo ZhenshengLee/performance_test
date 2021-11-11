@@ -22,6 +22,7 @@
 #include <atomic>
 #include <memory>
 #include <thread>
+#include <functional>
 
 #if defined(QNX)
 #include <sys/neutrino.h>

@@ -15,8 +15,14 @@
 #include "experiment_configuration.hpp"
 
 #include <tclap/CmdLine.h>
-#include <rmw/rmw.h>
 #include <sole/sole.hpp>
+
+#include <performance_test/generated_messages/messages.hpp>
+
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+#include <rclcpp/rclcpp.hpp>
+#include <rmw/rmw.h>
+#endif
 
 #include <iostream>
 #include <iomanip>
@@ -25,13 +31,11 @@
 #include <vector>
 #include <memory>
 
-#include "topics.hpp"
 #include "../outputs/csv_output.hpp"
 #include "../outputs/stdout_output.hpp"
 #include "../outputs/json_output.hpp"
 
 #include "performance_test/version.h"
-#include <rclcpp/rclcpp.hpp> // NOLINT - This include order is required when using OpenDDS
 
 namespace performance_test
 {
@@ -299,7 +303,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
   try {
     if (print_msg_list) {
-      for (const auto & s : topics::supported_msg_names()) {
+      for (const auto & s : messages::supported_msg_names()) {
         std::cout << s << std::endl;
       }
       // Exiting as we just print out some information and not running the
@@ -418,7 +422,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     } else {
       throw std::invalid_argument("Invalid roundtrip mode: " + mode);
     }
+
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
     m_rmw_implementation = rmw_get_implementation_identifier();
+#else
+    m_rmw_implementation = "N/A";
+#endif
 
     // define default output files if none specified
     if (m_csv_logfile == "") {
@@ -639,7 +648,11 @@ void ExperimentConfiguration::check_setup() const
 
 bool ExperimentConfiguration::exit_requested() const
 {
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   return use_ros2_layers() && !rclcpp::ok();
+#else
+  return false;
+#endif
 }
 
 }  // namespace performance_test

@@ -1,0 +1,10 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct Time {
+        long sec;
+        unsigned long nanosec;
+        };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

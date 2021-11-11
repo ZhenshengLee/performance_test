@@ -78,7 +78,6 @@ build_iceoryx:
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
             -DPERFORMANCE_TEST_ICEORYX_ENABLED=ON
-            -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test

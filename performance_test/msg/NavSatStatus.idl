@@ -1,0 +1,10 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct NavSatStatus {
+        octet status;
+        unsigned short service;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

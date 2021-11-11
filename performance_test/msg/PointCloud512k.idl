@@ -1,0 +1,27 @@
+#include "PointField.idl"
+#include "Header.idl"
+
+module performance_test {
+  module msg {
+    module __plugin__ {
+      typedef performance_test::msg::__plugin__::PointField performance_test__msg__512k__PointField;
+      typedef performance_test__msg__512k__PointField performance_test__msg__512k__PointField__8[8];
+      typedef octet octet__pc__524288[524288];
+      struct PointCloud512k {
+        performance_test::msg::__plugin__::Header header;
+        unsigned long height;
+        unsigned long width;
+        performance_test__msg__512k__PointField__8 fields;
+        boolean is_bigendian;
+        unsigned long point_step;
+        unsigned long row_step;
+        octet__pc__524288 data;
+        boolean is_dense;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

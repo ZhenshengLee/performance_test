@@ -152,8 +152,8 @@ public:
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
     lock();
-    m_data.time_ = time;
-    m_data.id_ = next_sample_id();
+    m_data.time = time;
+    m_data.id = next_sample_id();
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
     auto retcode = m_typed_datawriter->write(m_data, DDS_HANDLE_NIL);
@@ -225,18 +225,18 @@ public:
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
         const auto & data = m_data_seq[j];
         if (m_sample_info_seq[j].valid_data) {
-          if (m_prev_timestamp >= data.time_) {
+          if (m_prev_timestamp >= data.time) {
             throw std::runtime_error(
                     "Data consistency violated. Received sample with not strictly older timestamp. "
                     "Time diff: " + std::to_string(
-                      data.time_ - m_prev_timestamp) +
+                      data.time - m_prev_timestamp) +
                     " Data Time: " +
-                    std::to_string(data.time_)
+                    std::to_string(data.time)
             );
           }
-          m_prev_timestamp = data.time_;
-          update_lost_samples_counter(data.id_);
-          add_latency_to_statistics(data.time_);
+          m_prev_timestamp = data.time;
+          update_lost_samples_counter(data.id);
+          add_latency_to_statistics(data.time);
           increment_received();
         }
       }

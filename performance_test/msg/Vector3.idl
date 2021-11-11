@@ -1,0 +1,11 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct Vector3 {
+        double x;
+        double y;
+        double z;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

@@ -36,6 +36,7 @@ void ResourceManager::shutdown()
 #endif
 }
 
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
 std::shared_ptr<rclcpp::Node> ResourceManager::rclcpp_node() const
 {
   /* Temporarely commented out until ROS2 waitsets are available. As of now every ROS2 thread needs a node in the
@@ -70,6 +71,7 @@ std::shared_ptr<rclcpp::Node> ResourceManager::rclcpp_node() const
 
   return rclcpp::Node::make_shared("performance_test" + rand_str, options);
 }
+#endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
 eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const

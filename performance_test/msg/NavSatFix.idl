@@ -1,0 +1,23 @@
+#include "NavSatStatus.idl"
+#include "Header.idl"
+
+module performance_test {
+  module msg {
+    module __plugin__ {
+      typedef double double__9[9];
+      struct NavSatFix {
+        performance_test::msg::__plugin__::Header header;
+        performance_test::msg::__plugin__::NavSatStatus status;
+        double latitude;
+        double longitude;
+        double altitude;
+        double__9 position_covariance;
+        octet position_covariance_type;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

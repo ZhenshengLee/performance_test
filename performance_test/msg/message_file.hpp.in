@@ -1,0 +1,97 @@
+// Copyright 2021 Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#ifndef EXPERIMENT_CONFIGURATION__MESSAGE_@CMAKE_MESSAGE_NAME@_HPP_
+#define EXPERIMENT_CONFIGURATION__MESSAGE_@CMAKE_MESSAGE_NAME@_HPP_
+
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  #include <performance_test/msg/@CMAKE_MESSAGE_SNAKE_NAME@.hpp>
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  #include <fast_rtps/@CMAKE_MESSAGE_NAME@PubSubTypes.h>
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  #include <performance_test/msg/dds_connext_micro_typefiles/@CMAKE_MESSAGE_NAME@Support.h>
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+#include <connextdds/@CMAKE_MESSAGE_NAME@Support.h>
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  #include <cyclonedds/@CMAKE_MESSAGE_NAME@.h>
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  #include <dds/DdsDcpsTopicC.h>
+  #include <opendds/@CMAKE_MESSAGE_NAME@TypeSupportImpl.h>
+#endif
+
+#include <string>
+
+namespace performance_test
+{
+namespace messages
+{
+class @CMAKE_MESSAGE_NAME@
+{
+public:
+  static std::string msg_name()
+  {
+    return std::string("@CMAKE_MESSAGE_NAME@");
+  }
+
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+  using RosType = performance_test::msg::@CMAKE_MESSAGE_NAME@;
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+  using EprosimaTopicType = performance_test::msg::FastDDSGen::@CMAKE_MESSAGE_NAME@PubSubType;
+  using EprosimaType = typename EprosimaTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
+  using ConnextDDSMicroType = performance_test_msg_ConnextDDSMicroGen_@CMAKE_MESSAGE_NAME@;
+#endif
+
+#ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
+  using ConnextDDSType = performance_test_msg_ConnextDDSGen_@CMAKE_MESSAGE_NAME@;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
+  using CycloneDDSType = performance_test_msg_CycloneDDSGen_@CMAKE_MESSAGE_NAME@;
+  static const dds_topic_descriptor_t * CycloneDDSDesc()
+  {
+    return &performance_test_msg_CycloneDDSGen_@CMAKE_MESSAGE_NAME@_desc;
+  }
+#endif
+
+#ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
+  using OpenDDSTopicType = performance_test::msg::OpenDDSGen::@CMAKE_MESSAGE_NAME@;
+  using OpenDDSDataWriterType = performance_test::msg::OpenDDSGen::@CMAKE_MESSAGE_NAME@DataWriter;
+  using OpenDDSDataReaderType = performance_test::msg::OpenDDSGen::@CMAKE_MESSAGE_NAME@DataReader;
+  using OpenDDSDataTypeSeq = performance_test::msg::OpenDDSGen::@CMAKE_MESSAGE_NAME@Seq;
+
+  static DDS::TypeSupport_ptr get_type_support()
+  {
+    return new performance_test::msg::OpenDDSGen::@CMAKE_MESSAGE_NAME@TypeSupportImpl();
+  }
+#endif
+};
+}
+}
+
+#endif  // EXPERIMENT_CONFIGURATION__MESSAGE_@CMAKE_MESSAGE_NAME@_HPP_

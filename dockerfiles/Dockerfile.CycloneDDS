@@ -16,7 +16,8 @@ RUN source /opt/ros/rolling/setup.bash && \
       --cmake-clean-cache \
       --cmake-args \
         -DCMAKE_BUILD_TYPE=Release \
-        -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
+        -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON \
+        -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
 
 RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
 RUN echo 'source /opt/performance_test/setup.bash' >> /root/.bashrc

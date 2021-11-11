@@ -1,0 +1,30 @@
+#include "Struct256.idl"
+
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct Struct4k {
+        performance_test::msg::__plugin__::Struct256 struct2560;
+        performance_test::msg::__plugin__::Struct256 struct2561;
+        performance_test::msg::__plugin__::Struct256 struct2562;
+        performance_test::msg::__plugin__::Struct256 struct2563;
+        performance_test::msg::__plugin__::Struct256 struct2564;
+        performance_test::msg::__plugin__::Struct256 struct2565;
+        performance_test::msg::__plugin__::Struct256 struct2566;
+        performance_test::msg::__plugin__::Struct256 struct2567;
+        performance_test::msg::__plugin__::Struct256 struct2568;
+        performance_test::msg::__plugin__::Struct256 struct2569;
+        performance_test::msg::__plugin__::Struct256 struct256a;
+        performance_test::msg::__plugin__::Struct256 struct256b;
+        performance_test::msg::__plugin__::Struct256 struct256c;
+        performance_test::msg::__plugin__::Struct256 struct256d;
+        performance_test::msg::__plugin__::Struct256 struct256e;
+        performance_test::msg::__plugin__::Struct256 struct256f;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

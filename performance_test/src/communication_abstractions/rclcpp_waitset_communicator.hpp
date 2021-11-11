@@ -24,7 +24,6 @@
 #include <chrono>
 #include <algorithm>
 
-#include "../experiment_configuration/topics.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
 
 #include "rclcpp_communicator.hpp"

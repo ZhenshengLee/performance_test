@@ -1,0 +1,28 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct Struct16 {
+        octet struct0;
+        octet struct1;
+        octet struct2;
+        octet struct3;
+        octet struct4;
+        octet struct5;
+        octet struct6;
+        octet struct7;
+        octet struct8;
+        octet struct9;
+        octet structa;
+        octet structb;
+        octet structc;
+        octet structd;
+        octet structe;
+        octet structf;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

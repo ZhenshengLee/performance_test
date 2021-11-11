@@ -31,7 +31,6 @@
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
-#include "../experiment_configuration/topics.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
 
 namespace performance_test
@@ -179,8 +178,8 @@ public:
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
     lock();
-    m_data.time_(time);
-    m_data.id_(next_sample_id());
+    m_data.time(time);
+    m_data.id(next_sample_id());
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
     m_publisher->write(static_cast<void *>(&m_data));
@@ -216,24 +215,24 @@ public:
     lock();
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
-        if (m_prev_timestamp >= m_data.time_()) {
+        if (m_prev_timestamp >= m_data.time()) {
           throw std::runtime_error(
                   "Data consistency violated. Received sample with not strictly "
                   "older timestamp. Time diff: " + std::to_string(
-                    m_data.time_() - m_prev_timestamp) + " Data Time: " +
-                  std::to_string(m_data.time_())
+                    m_data.time() - m_prev_timestamp) + " Data Time: " +
+                  std::to_string(m_data.time())
           );
         }
 
 
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           unlock();
-          publish(m_data.time_());
+          publish(m_data.time());
           lock();
         } else {
-          m_prev_timestamp = m_data.time_();
-          update_lost_samples_counter(m_data.id_());
-          add_latency_to_statistics(m_data.time_());
+          m_prev_timestamp = m_data.time();
+          update_lost_samples_counter(m_data.id());
+          add_latency_to_statistics(m_data.time());
           increment_received();
         }
       }

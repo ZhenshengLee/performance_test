@@ -22,7 +22,6 @@
 #include <atomic>
 #include <utility>
 
-#include "../experiment_configuration/topics.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
 
 #include "communicator.hpp"

@@ -1,0 +1,19 @@
+#include "Polygon.idl"
+#include "Vector3.idl"
+
+module performance_test {
+  module msg {
+    module __plugin__ {
+      struct RadarTrack {
+        unsigned short track_id;
+        performance_test::msg::__plugin__::Polygon track_shape;
+        performance_test::msg::__plugin__::Vector3 linear_velocity;
+        performance_test::msg::__plugin__::Vector3 linear_acceleration;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test
