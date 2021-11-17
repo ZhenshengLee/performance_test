@@ -30,13 +30,13 @@ class DataRunnerFactory
 public:
   /**
    * \brief The effective factory getter creating the desired object.
-   * \param requested_topic_name The topic name the created object should use.
+   * \param msg_name The name of the message that the created object should use.
    * \param com_mean The communication mean the created object should use.
    * \param run_type The run type the created object should user.
    * \return The created object subject to the provided parameters.
    */
   static std::shared_ptr<DataRunnerBase> get(
-    const std::string & requested_topic_name,
+    const std::string & msg_name,
     CommunicationMean com_mean,
     const RunType run_type);
 };

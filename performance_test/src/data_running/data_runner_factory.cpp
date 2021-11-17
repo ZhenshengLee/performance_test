@@ -21,8 +21,9 @@
 #include <memory>
 
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-  #include "../communication_abstractions/rclcpp_callback_communicator.hpp"
-  #include "../communication_abstractions/rclcpp_waitset_communicator.hpp"
+  #include "factories/rclcpp_ste_data_runner_factory.hpp"
+  #include "factories/rclcpp_sste_data_runner_factory.hpp"
+  #include "factories/rclcpp_waitset_data_runner_factory.hpp"
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
@@ -54,30 +55,31 @@ namespace performance_test
 {
 
 std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
-  const std::string & requested_msg,
+  const std::string & msg_name,
   CommunicationMean com_mean,
   const RunType run_type)
 {
   std::shared_ptr<DataRunnerBase> ptr;
   performance_test::for_each(
     messages::MessageTypeList(),
-    [&ptr, requested_msg, com_mean, run_type](const auto & msg_type) {
+    [&ptr, msg_name, com_mean, run_type](const auto & msg_type) {
       using T = std::remove_cv_t<std::remove_reference_t<decltype(msg_type)>>;
-      if (T::msg_name() == requested_msg) {
+      if (T::msg_name() == msg_name) {
         if (ptr) {
           throw std::runtime_error("It seems that two msgs have the same name");
         }
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+        // These are moved into sub-factories to reduce the amount of template expansion
+        // for this single file. If all three are handled in-place here, like the other
+        // plugins, then sometimes the CI jobs will time out.
         if (com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
-          ptr = std::make_shared<DataRunner<
-            RclcppSingleThreadedExecutorCommunicator<T>>>(run_type);
+          ptr = RclcppSteDataRunnerFactory::get(msg_name, run_type);
         }
         if (com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
-          ptr = std::make_shared<DataRunner<
-            RclcppStaticSingleThreadedExecutorCommunicator<T>>>(run_type);
+          ptr = RclcppSsteDataRunnerFactory::get(msg_name, run_type);
         }
         if (com_mean == CommunicationMean::RCLCPP_WAITSET) {
-          ptr = std::make_shared<DataRunner<RclcppWaitsetCommunicator<T>>>(run_type);
+          ptr = RclcppWaitsetDataRunnerFactory::get(msg_name, run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
