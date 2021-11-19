@@ -77,6 +77,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nUse single participant: " << e.use_single_participant() <<
            "\nWith security: " << e.is_with_security() <<
            "\nZero copy transfer: " << e.is_zero_copy_transfer() <<
+           "\nUnbounded message size: " << e.unbounded_msg_size() <<
            "\nRoundtrip Mode: " << e.roundtrip_mode() <<
            "\nIgnore seconds from beginning: " << e.rows_to_ignore();
   } else {
@@ -241,6 +242,10 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::SwitchArg zeroCopyArg("", "zero-copy",
       "Use zero copy transfer.", cmd, false);
 
+    TCLAP::ValueArg<uint32_t> unboundedMsgSizeArg("", "unbounded-msg-size",
+      "The number of bytes to use for an unbounded message type. Ignored for other messages.",
+      false, 0, "N", cmd);
+
     cmd.parse(argc, argv);
 
     // default to only stdout output
@@ -295,6 +300,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_expected_num_subs = expectedNumSubsArg.getValue();
     m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
     m_is_zero_copy_transfer = zeroCopyArg.getValue();
+    m_unbounded_msg_size = unboundedMsgSizeArg.getValue();
   } catch (TCLAP::ArgException & e) {
     std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
   }
@@ -637,6 +643,12 @@ std::string ExperimentConfiguration::json_logfile() const
 {
   check_setup();
   return m_json_logfile;
+}
+
+size_t ExperimentConfiguration::unbounded_msg_size() const
+{
+  check_setup();
+  return m_unbounded_msg_size;
 }
 
 void ExperimentConfiguration::check_setup() const

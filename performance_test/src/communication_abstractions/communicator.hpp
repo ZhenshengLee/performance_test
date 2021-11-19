@@ -87,6 +87,59 @@ protected:
     return m_lock;
   }
 
+  // TODO(erik.snider) switch to std::void_t when upgrading to C++17
+  template<class ...>
+  using void_t = void;
+
+  template<typename T, typename = void>
+  struct has_bounded_sequence : std::false_type {};
+
+  template<typename T>
+  struct has_bounded_sequence<T,
+    void_t<decltype(std::declval<T>().bounded_sequence)>>: std::true_type {};
+
+  template<typename T, typename = void>
+  struct has_unbounded_sequence : std::false_type {};
+
+  template<typename T>
+  struct has_unbounded_sequence<T,
+    void_t<decltype(std::declval<T>().unbounded_sequence)>>: std::true_type {};
+
+  template<typename T, typename = void>
+  struct has_unbounded_string : std::false_type {};
+
+  template<typename T>
+  struct has_unbounded_string<T,
+    void_t<decltype(std::declval<T>().unbounded_string)>>: std::true_type {};
+
+  template<typename T>
+  inline
+  void init_msg(T & msg, std::int64_t time)
+  {
+    msg.time = time;
+    msg.id = next_sample_id();
+    ensure_fixed_size(msg);
+  }
+
+  template<typename T>
+  inline
+  std::enable_if_t<
+    has_bounded_sequence<T>::value ||
+    has_unbounded_sequence<T>::value ||
+    has_unbounded_string<T>::value, void>
+  ensure_fixed_size(T &)
+  {
+    throw std::runtime_error("This plugin only supports messages with a fixed size");
+  }
+
+  template<typename T>
+  inline
+  std::enable_if_t<
+    !has_bounded_sequence<T>::value &&
+    !has_unbounded_sequence<T>::value &&
+    !has_unbounded_string<T>::value, void>
+  ensure_fixed_size(T &) {}
+
 private:
   std::uint64_t m_prev_sample_id;
   std::uint64_t m_num_lost_samples;

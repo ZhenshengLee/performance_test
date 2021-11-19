@@ -112,15 +112,13 @@ public:
       }
       auto borrowed_message{m_publisher->borrow_loaned_message()};
       lock();
-      borrowed_message.get().time = time;
-      borrowed_message.get().id = next_sample_id();
+      init_msg(borrowed_message.get(), time);
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
       m_publisher->publish(std::move(borrowed_message));
     } else {
       lock();
-      m_data.time = time;
-      m_data.id = next_sample_id();
+      init_msg(m_data, time);
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
       m_publisher->publish(m_data);
@@ -181,6 +179,55 @@ private:
   std::shared_ptr<::rclcpp::Publisher<DataType>> m_publisher;
 
   DataType m_data;
+
+  inline
+  void init_msg(DataType & msg, std::int64_t time)
+  {
+    msg.time = time;
+    msg.id = next_sample_id();
+    init_bounded_sequence(msg);
+    init_unbounded_sequence(msg);
+    init_unbounded_string(msg);
+  }
+
+  template<typename T>
+  inline
+  std::enable_if_t<has_bounded_sequence<T>::value, void>
+  init_bounded_sequence(T & msg)
+  {
+    msg.bounded_sequence.resize(msg.bounded_sequence.capacity());
+  }
+
+  template<typename T>
+  inline
+  std::enable_if_t<!has_bounded_sequence<T>::value, void>
+  init_bounded_sequence(T &) {}
+
+  template<typename T>
+  inline
+  std::enable_if_t<has_unbounded_sequence<T>::value, void>
+  init_unbounded_sequence(T & msg)
+  {
+    msg.unbounded_sequence.resize(m_ec.unbounded_msg_size());
+  }
+
+  template<typename T>
+  inline
+  std::enable_if_t<!has_unbounded_sequence<T>::value, void>
+  init_unbounded_sequence(T &) {}
+
+  template<typename T>
+  inline
+  std::enable_if_t<has_unbounded_string<T>::value, void>
+  init_unbounded_string(T & msg)
+  {
+    msg.unbounded_string.resize(m_ec.unbounded_msg_size());
+  }
+
+  template<typename T>
+  inline
+  std::enable_if_t<!has_unbounded_string<T>::value, void>
+  init_unbounded_string(T &) {}
 };
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_COMMUNICATOR_HPP_

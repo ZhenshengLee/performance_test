@@ -178,8 +178,7 @@ public:
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
     lock();
-    m_data.time(time);
-    m_data.id(next_sample_id());
+    init_msg(m_data, time);
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
     m_publisher->write(static_cast<void *>(&m_data));
@@ -256,6 +255,13 @@ private:
 
   TopicType * m_topic_type;
   DataType m_data;
+
+  void init_msg(DataType & msg, std::int64_t time)
+  {
+    msg.time(time);
+    msg.id(next_sample_id());
+    ensure_fixed_size(msg);
+  }
 };
 
 template<class Topic>

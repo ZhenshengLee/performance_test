@@ -36,6 +36,20 @@ set(SUPPORTED_IDL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Array4m.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Array8m.idl
 
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence1k.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence4k.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence16k.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence32k.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence64k.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence256k.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence1m.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence2m.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence4m.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence8m.idl
+
+    ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedSequence.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedString.idl
+
     ${CMAKE_CURRENT_SOURCE_DIR}/Struct16.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Struct256.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Struct4k.idl

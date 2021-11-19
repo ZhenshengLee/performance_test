@@ -1,0 +1,14 @@
+module performance_test {
+  module msg {
+    module __plugin__ {
+      typedef sequence<octet, 1024> bounded__octet__1024;
+      struct BoundedSequence1k {
+        bounded__octet__1024 bounded_sequence;
+
+        long long time;
+
+        unsigned long long id;
+      };
+    }; // __plugin__
+  }; // msg
+}; // performance_test

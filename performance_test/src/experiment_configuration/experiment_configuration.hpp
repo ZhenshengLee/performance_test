@@ -159,6 +159,9 @@ public:
   /// The configured JSON logfile name.
   /// This will throw if the experiment configuration is not set up.
   std::string json_logfile() const;
+  /// The number of bytes to use for an unbounded message.
+  /// This will throw if the experiment configuration is not set up.
+  size_t unbounded_msg_size() const;
   /// The configured outputs types.
   const std::vector<ExperimentConfiguration::SupportedOutput> & configured_output_types() const;
   const std::vector<std::shared_ptr<Output>> & configured_outputs() const;
@@ -189,6 +192,7 @@ private:
   uint32_t m_rate;
   std::string m_topic_name;
   std::string m_msg_name;
+  size_t m_unbounded_msg_size;
 
   uint64_t m_max_runtime;
   uint32_t m_rows_to_ignore;
