@@ -52,30 +52,31 @@ std::shared_ptr<MsgBase> msg_publisher_factory(ros::NodeHandle& nh, std::string 
 
 int main(int argc, char**argv)
 {
-  std::string topic_name;
+  std::string msg_type;
   uint32_t rate;
 
   try {
     TCLAP::CmdLine cmd("Apex.AI performance_test_ros1_publisher");
+    cmd.ignoreUnmatched(true);
 
-    TCLAP::ValueArg<std::string> topicArg("t", "topic", "The topic name.",
-      false, "Array16k", "topic", cmd);
+    TCLAP::ValueArg<std::string> msgArg("m", "msg", "The message type.",
+      false, "Array16k", "type", cmd);
     
     TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
       "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
 
     cmd.parse(argc, argv);
 
-    topic_name = topicArg.getValue();
+    msg_type = msgArg.getValue();
     rate = rateArg.getValue();
   } catch (TCLAP::ArgException & e) {
     std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
   }
 
-  std::cout << "ROS1 publisher running with rate " << rate << " on topic " << topic_name << std::endl;
+  std::cout << "ROS1 publisher running with rate " << rate << " with message " << msg_type << std::endl;
   ros::init(argc, argv, "point_cloud_publisher");
   ros::NodeHandle n;
-  auto msg_publisher = msg_publisher_factory(n, topic_name);
+  auto msg_publisher = msg_publisher_factory(n, msg_type);
 
   ros::Rate loop_rate(rate);
 

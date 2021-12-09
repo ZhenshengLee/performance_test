@@ -161,6 +161,12 @@ endif()
 add_subdirectory(msg)
 include_directories(${IDLGEN_INCLUDE_DIR})
 
+if(PERFORMANCE_TEST_RCLCPP_ENABLED)
+  # rosidl_generate_interfaces must be invoked from this CMakeLists.txt file. Otherwise, the
+  # generated messages are placed in a directory where ros1_bridge can not find them.
+  rosidl_generate_interfaces(${PROJECT_NAME} ${ROSIDL_GEN_LIST})
+endif()
+
 
 set(${PROJECT_NAME}_SOURCES
     src/experiment_execution/analyze_runner.cpp)
