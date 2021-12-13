@@ -67,6 +67,24 @@ set(SUPPORTED_IDL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Range.idl
 )
 
+# TODO(erik.snider) remove this when we reduce the template expansion in the communicator factory
+option(PERFORMANCE_TEST_MINIMAL_MESSAGES
+  "Include only a small subset of messages, for quick compilation of smoke tests" OFF)
+if(PERFORMANCE_TEST_MINIMAL_MESSAGES)
+  set(SUPPORTED_IDL_FILES
+      ${CMAKE_CURRENT_SOURCE_DIR}/Array16k.idl
+      ${CMAKE_CURRENT_SOURCE_DIR}/Array1m.idl
+
+      ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence16k.idl
+      ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence1m.idl
+
+      ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedSequence.idl
+      ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedString.idl
+
+      ${CMAKE_CURRENT_SOURCE_DIR}/PointCloud1m.idl
+  )
+endif()
+
 set(IDL_FILES ${SUPPLEMENTAL_IDL_FILES} ${SUPPORTED_IDL_FILES})
 
 set(GENERATED_MESSAGES_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen/message")

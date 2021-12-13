@@ -20,7 +20,10 @@ build_cross_image:
     - '
       docker run -t -v `pwd`:`pwd` -w `pwd`
           --rm performance_test_cross
-          sh -c "colcon build --merge-install --cmake-args -DCMAKE_TOOLCHAIN_FILE=`pwd`/tools/toolchain.cmake -DBUILD_TESTING=OFF"
+          sh -c "colcon build --merge-install --cmake-args
+              -DCMAKE_TOOLCHAIN_FILE=`pwd`/tools/toolchain.cmake
+              -DBUILD_TESTING=OFF
+              -DPERFORMANCE_TEST_MINIMAL_MESSAGES=ON"
       '
 
 build_rclcpp:
@@ -33,6 +36,7 @@ build_rclcpp:
           --merge-install
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
+            -DPERFORMANCE_TEST_MINIMAL_MESSAGES=ON
       '
     - cp LICENSE /opt/performance_test
     - tar cfz opt.tar.gz /opt/performance_test
@@ -78,6 +82,7 @@ build_iceoryx:
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
             -DPERFORMANCE_TEST_ICEORYX_ENABLED=ON
+            -DPERFORMANCE_TEST_MINIMAL_MESSAGES=ON
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
@@ -195,7 +200,7 @@ test:
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     - '
-      MSGS=${SMOKE_TEST_TOPICS:-Array1k};
+      MSGS=${SMOKE_TEST_TOPICS:-Array16k};
       for MSG in ${MSGS}; do
         /opt/performance_test/lib/performance_test/perf_test
             -c ${COMMUNICATION_MEAN}
