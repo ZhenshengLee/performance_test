@@ -63,7 +63,8 @@ public:
     write(writer, "number_of_publishers", ec.number_of_publishers());
     write(writer, "number_of_subscribers", ec.number_of_subscribers());
     write(writer, "check_memory", ec.check_memory());
-    write(writer, "use_single_participant", ec.use_single_participant());
+    // TODO(erik.snider) delete when gc parse_upload is fixed
+    write(writer, "use_single_participant", false);
     write(writer, "with_security", ec.is_with_security());
     write(writer, "is_zero_copy_transfer", ec.is_zero_copy_transfer());
     write(writer, "roundtrip_mode", to_string(ec.roundtrip_mode()));

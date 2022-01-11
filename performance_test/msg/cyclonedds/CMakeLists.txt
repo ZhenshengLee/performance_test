@@ -12,10 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(SOURCE_EXTENSION c)
-
-#find_package(CycloneDDS REQUIRED CONFIG)
-
 set_property(GLOBAL PROPERTY RULE_MESSAGES OFF)
 
 set(IDL_GEN_ROOT ${CMAKE_CURRENT_BINARY_DIR}/gen/cyclonedds)
@@ -55,7 +51,6 @@ endforeach()
 
 add_library(cyclonedds_idl ${IDL_GEN_H_LIST} ${IDL_GEN_C_LIST})
 
-#target_include_directories(cyclonedds_idl PRIVATE CycloneDDS::ddsc)
 get_target_property(cdds_include_dir CycloneDDS::ddsc INTERFACE_INCLUDE_DIRECTORIES)
 include_directories("${cdds_include_dir}")
 

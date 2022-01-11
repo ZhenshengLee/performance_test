@@ -136,12 +136,8 @@ public:
     m_topic_type(new TopicType())
   {
     m_participant = ResourceManager::get().fastrtps_participant();
-    if (m_ec.use_single_participant()) {
-      if (!s_type_registered) {
-        s_type_registered = true;
-        eprosima::fastrtps::Domain::registerType(m_participant, m_topic_type);
-      }
-    } else {
+    if (!s_type_registered) {
+      s_type_registered = true;
       eprosima::fastrtps::Domain::registerType(m_participant, m_topic_type);
     }
   }

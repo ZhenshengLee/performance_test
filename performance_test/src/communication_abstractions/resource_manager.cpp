@@ -78,34 +78,30 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
-  eprosima::fastrtps::Participant * result = nullptr;
-  eprosima::fastrtps::ParticipantAttributes PParam;
+  if (!m_fastrtps_participant) {
+    eprosima::fastrtps::Participant * result = nullptr;
+    eprosima::fastrtps::ParticipantAttributes PParam;
 
-  eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
-  eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
-  PParam.rtps.sendSocketBufferSize = 1048576;
-  PParam.rtps.listenSocketBufferSize = 4194304;
-  eprosima::fastrtps::rtps::DiscoverySettings & disc_config = PParam.rtps.builtin.discovery_config;
-  disc_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
-  disc_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-  disc_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-  disc_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
-#if FASTRTPS_VERSION_MAJOR < 2
-  PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
-#else
-  PParam.domainId = m_ec.dds_domain_id();
-#endif
-  PParam.rtps.setName("performance_test_fastRTPS");
+    eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
+    eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
+    PParam.rtps.sendSocketBufferSize = 1048576;
+    PParam.rtps.listenSocketBufferSize = 4194304;
+    eprosima::fastrtps::rtps::DiscoverySettings & disc_config =
+      PParam.rtps.builtin.discovery_config;
+    disc_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    disc_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    disc_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    disc_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+  #if FASTRTPS_VERSION_MAJOR < 2
+    PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
+  #else
+    PParam.domainId = m_ec.dds_domain_id();
+  #endif
+    PParam.rtps.setName("performance_test_fastRTPS");
 
-  if (!m_ec.use_single_participant()) {
-    result = eprosima::fastrtps::Domain::createParticipant(PParam);
-  } else {
-    if (!m_fastrtps_participant) {
-      m_fastrtps_participant = eprosima::fastrtps::Domain::createParticipant(PParam);
-    }
-    result = m_fastrtps_participant;
+    m_fastrtps_participant = eprosima::fastrtps::Domain::createParticipant(PParam);
   }
-  return result;
+  return m_fastrtps_participant;
 }
 #endif
 
@@ -284,23 +280,31 @@ dds_entity_t ResourceManager::cyclonedds_participant() const
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
-  dds_entity_t result = 0;
-
-  if (!m_ec.use_single_participant()) {
-    result = dds_create_participant(DDS_DOMAIN_DEFAULT, nullptr, nullptr);
-  } else {
-    if (!m_cyclonedds_participant) {
-      m_cyclonedds_participant = dds_create_participant(DDS_DOMAIN_DEFAULT, nullptr, nullptr);
-    }
-    result = m_cyclonedds_participant;
+  if (!m_cyclonedds_participant) {
+    m_cyclonedds_participant = dds_create_participant(m_ec.dds_domain_id(), nullptr, nullptr);
   }
-  return result;
+  return m_cyclonedds_participant;
+}
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+dds::domain::DomainParticipant ResourceManager::cyclonedds_cxx_participant() const
+{
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  // CycloneDDS-CXX has its own reference-counting mechanism
+  if (m_cyclonedds_cxx_participant.is_nil()) {
+    m_cyclonedds_cxx_participant = dds::domain::DomainParticipant(m_ec.dds_domain_id());
+  }
+  return m_cyclonedds_cxx_participant;
 }
 #endif
 
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
 void ResourceManager::init_iceoryx_runtime() const
 {
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
   if (!m_iceoryx_initialized) {
     m_iceoryx_initialized = true;
     if (m_ec.number_of_subscribers() == 0) {

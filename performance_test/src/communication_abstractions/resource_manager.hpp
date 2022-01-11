@@ -34,6 +34,10 @@
   #include <dds/dds.h>
 #endif
 
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+  #include <dds/dds.hpp>
+#endif
+
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   #include <dds/DCPS/RTPS/RtpsDiscovery.h>
   #include <dds/DCPS/transport/framework/TransportRegistry.h>
@@ -134,6 +138,10 @@ public:
   dds_entity_t cyclonedds_participant() const;
 #endif
 
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+  dds::domain::DomainParticipant cyclonedds_cxx_participant() const;
+#endif
+
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
   void init_iceoryx_runtime() const;
 #endif
@@ -208,6 +216,10 @@ private:
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
   mutable dds_entity_t m_cyclonedds_participant;
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+  mutable dds::domain::DomainParticipant m_cyclonedds_cxx_participant{dds::core::null};
 #endif
 
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED

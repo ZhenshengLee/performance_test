@@ -1,0 +1,74 @@
+# docker build . -f dockerfiles/Dockerfile.cyclonedds-cxx -t performance_test_cyclone_dds_cxx
+# docker run -it --shm-size 2G performance_test_cyclone_dds_cxx bash
+# ros2 run performance_test perf_test -c CycloneDDS-CXX -p 0 -s 1 --zero-copy --reliable --keep-last --history-depth 16 --max-runtime 10 &
+# sleep 1
+# ros2 run performance_test perf_test -c CycloneDDS-CXX -p 1 -s 0 --zero-copy --reliable --keep-last --history-depth 16 -o none
+
+# This Dockerfile intentionally uses foxy! Cyclone DDS is included with galactic,
+# and we haven't sorted out how to keep the built-in Cyclone DDS from interfering
+# with the hand-built Cyclone DDS. The ROS2 version doesn't really matter anyway,
+# since the CycloneDDS-CXX plugin does not use rclcpp or anything related. The ros
+# base containers are handy because they already have colcon, ament, etc. installed.
+FROM osrf/ros:foxy-desktop
+
+SHELL ["/bin/bash", "-c"]
+
+RUN apt-get update && \
+    apt-get install -y bison default-jdk libacl1-dev
+
+RUN mkdir -p iceoryx_ws/src && \
+    cd $_ && \
+    git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v1.0.1 --depth 1 && \
+    cd .. && \
+    colcon build \
+      --install-base /opt/iceoryx \
+      --cmake-args \
+        -DIOX_MAX_PUBLISHERS=32 \
+        -DIOX_MAX_SUBSCRIBERS=32
+
+RUN source /opt/iceoryx/setup.bash && \
+    git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.1 --depth 1 && \
+    cd cyclonedds && \
+    mkdir -p build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SHM=ON .. && \
+    cmake --build . && \
+    cmake --build . --target install
+
+RUN source /opt/iceoryx/setup.bash && \
+    git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.8.1 --depth 1 && \
+    cd cyclonedds-cxx && \
+    mkdir -p build && \
+    cd build && \
+    cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds-cxx \
+          -DCMAKE_PREFIX_PATH=/opt/cyclonedds \
+          -DENABLE_SHM=ON \
+          .. && \
+    cmake --build . && \
+    cmake --build . --target install
+
+ADD . /perf_test_ws/src/performance_test
+
+RUN source /opt/ros/foxy/setup.bash && \
+    source /opt/iceoryx/setup.bash && \
+    cd /perf_test_ws && \
+    colcon build \
+      --install-base /opt/performance_test \
+      --merge-install \
+      --cmake-clean-cache \
+      --cmake-args \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF \
+        -DPERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED=ON
+
+ADD dockerfiles/cyclonedds.xml /
+ENV CYCLONEDDS_URI=/cyclonedds.xml
+
+RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
+RUN echo 'LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib"' >> /root/.bashrc
+RUN echo 'LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds-cxx/lib"' >> /root/.bashrc
+RUN echo "source /opt/iceoryx/setup.bash" >> /root/.bashrc
+RUN echo 'source /opt/performance_test/setup.bash' >> /root/.bashrc
+
+ADD dockerfiles/roudi_config.toml /etc/iceoryx/roudi_config.toml
+RUN echo "/opt/iceoryx/iceoryx_posh/bin/iox-roudi -c /etc/iceoryx/roudi_config.toml &" >> /root/.bashrc

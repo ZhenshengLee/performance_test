@@ -35,6 +35,10 @@
   #include <cyclonedds/@CMAKE_MESSAGE_NAME@.h>
 #endif
 
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+  #include <cyclonedds-cxx/@CMAKE_MESSAGE_NAME@.hpp>
+#endif
+
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   #include <dds/DdsDcpsTopicC.h>
   #include <opendds/@CMAKE_MESSAGE_NAME@TypeSupportImpl.h>
@@ -77,6 +81,10 @@ public:
   {
     return &performance_test_msg_CycloneDDSGen_@CMAKE_MESSAGE_NAME@_desc;
   }
+#endif
+
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+  using CycloneDDSCXXType = performance_test::msg::CycloneDDSCXXGen::@CMAKE_MESSAGE_NAME@;
 #endif
 
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED

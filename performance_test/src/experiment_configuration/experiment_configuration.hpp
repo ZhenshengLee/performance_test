@@ -126,9 +126,6 @@ public:
   std::chrono::seconds expected_wait_for_matched_timeout() const;
   /// \returns Returns if memory operations should be logged.
   bool check_memory() const;
-  /// \returns Returns if only a single participant should be used. This will throw if
-  /// the experiment configuration is not set up.
-  bool use_single_participant() const;
   /// \returns Returns if post-proc RT initialization is required. This is set when the cpu
   /// affinity or thread priority is overridden by the caller. This will throw if the experiment
   /// configuration is not set up.
@@ -202,7 +199,6 @@ private:
   uint32_t m_expected_num_subs;
   uint32_t m_wait_for_matched_timeout;
   bool m_check_memory;
-  bool m_use_single_participant;
   bool m_is_rt_init_required;
   bool m_with_security;
   bool m_is_zero_copy_transfer;

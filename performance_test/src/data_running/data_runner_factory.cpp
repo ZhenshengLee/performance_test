@@ -42,6 +42,10 @@
   #include "../communication_abstractions/cyclonedds_communicator.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+  #include "../communication_abstractions/cyclonedds_cxx_communicator.hpp"
+#endif
+
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
   #include "../communication_abstractions/iceoryx_communicator.hpp"
 #endif
@@ -100,6 +104,11 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
         if (com_mean == CommunicationMean::CYCLONEDDS) {
           ptr = std::make_shared<DataRunner<CycloneDDSCommunicator<T>>>(run_type);
+        }
+#endif
+#ifdef PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED
+        if (com_mean == CommunicationMean::CYCLONEDDS_CXX) {
+          ptr = std::make_shared<DataRunner<CycloneDDSCXXCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
