@@ -83,7 +83,7 @@ def create_layout(header, dataframe):
     header_fields = {
         'Logfile name', 'Experiment id', 'Communication mean', 'Publishing rate',
         'Topic name', 'Number of publishers', 'Number of subscribers', 'Maximum runtime (sec)',
-        'DDS domain id', 'QOS', 'Use single participant',
+        'DDS domain id', 'QOS',
         'Performance Test Version',
     }
 
@@ -133,7 +133,6 @@ def create_layout(header, dataframe):
                 create_kv(header, 'Number of subscribers'),
                 create_kv(header, 'Maximum runtime (sec)'),
                 create_kv(header, 'DDS domain id'),
-                create_kv(header, 'Use single participant', boolish=True),
             ]},
             {'name': 'average results', 'items': [
                 {'key': 'Experiment Status', 'value': 'success' if xaxis else 'failed'},
