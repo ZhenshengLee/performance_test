@@ -413,5 +413,5 @@ Possible additional communication which could be implemented are:
 
 ## Batch run experiments (for advanced users)
 
-A python script [`run_experiment.py`](helper_scripts/run_experiment.py)
+A python script [`run_experiment.py`](performance_test/helper_scripts/run_experiment.py)
 is provided to run multiple experiments at once.
