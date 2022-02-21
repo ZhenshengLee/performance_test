@@ -95,6 +95,8 @@ file(MAKE_DIRECTORY ${IDL_GEN_ROOT})
 
 set(IDL_GEN_CXX_LIST)
 foreach(idl ${IDL_FILES})
+    get_filename_component(filename ${idl} NAME)
+
     file(READ ${idl} filedata)
     string(REGEX REPLACE "__plugin__" "ConnextDDSGen" filedata "${filedata}")
     file(WRITE ${IDL_GEN_ROOT}/${filename} "${filedata}")
