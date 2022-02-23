@@ -1,0 +1,64 @@
+---
+experiments:
+# default:
+# -
+#   com_mean: rclcpp-single-threaded-executor
+#   transport: INTRA
+#   msg: Array1k
+#   pubs: 1
+#   subs: 1
+#   rate: 100
+#   reliability: RELIABLE
+#   durability: VOLATILE
+#   history: KEEP_LAST
+#   history_depth: 16
+#   rt_prio: 0
+#   rt_cpus: 0
+#   max_runtime: 30
+#   ignore_seconds: 5
+  -
+    com_mean: rclcpp-single-threaded-executor
+    transport:
+      - INTRA
+      - SHMEM
+      - ZERO_COPY
+    msg:
+      - Array1k
+      - Array4k
+      - Array16k
+      - Array64k
+      - Array256k
+      - Array1m
+      - Array4m
+    pubs: 1
+    subs: 1
+    rate: 100
+    reliability: RELIABLE
+    durability: VOLATILE
+    history: KEEP_LAST
+    history_depth: 16
+    max_runtime: 30
+    ignore_seconds: 5
+  -
+    com_mean: rclcpp-single-threaded-executor
+    transport: ZERO_COPY
+    msg:
+      - Array1k
+      - Array4k
+      - Array16k
+      - Array64k
+      - Array256k
+      - Array1m
+      - Array4m
+    pubs: 1
+    subs:
+      - 1
+      - 3
+      - 10
+    rate: 100
+    reliability: RELIABLE
+    durability: VOLATILE
+    history: KEEP_LAST
+    history_depth: 16
+    max_runtime: 30
+    ignore_seconds: 5

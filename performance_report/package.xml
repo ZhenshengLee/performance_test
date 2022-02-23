@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>performance_report</name>
+  <version>0.0.0</version>
+  <description>Apex.AI performance_test runner, plotter, and reporter</description>
+  <maintainer email="evan.flynn@apex.ai">evan.flynn</maintainer>
+  <license>Apache 2.0</license>
+
+  <exec_depend>performance_test</exec_depend>
+  <exec_depend>python3-bokeh-pip</exec_depend>
+  <exec_depend>python-selenium-pip</exec_depend>
+  <exec_depend>chromium-browser</exec_depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+  <test_depend>python3-yaml</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

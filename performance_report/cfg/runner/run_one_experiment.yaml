@@ -1,0 +1,31 @@
+---
+experiments:
+# default:
+# -
+#   com_mean: rclcpp-single-threaded-executor
+#   transport: INTRA
+#   msg: Array1k
+#   pubs: 1
+#   subs: 1
+#   rate: 100
+#   reliability: RELIABLE
+#   durability: VOLATILE
+#   history: KEEP_LAST
+#   history_depth: 16
+#   rt_prio: 0
+#   rt_cpus: 0
+#   max_runtime: 30
+#   ignore_seconds: 5
+  -
+    com_mean: rclcpp-single-threaded-executor
+    transport: INTRA
+    msg: Array16k
+    pubs: 1
+    subs: 1
+    rate: 100
+    reliability: RELIABLE
+    durability: VOLATILE
+    history: KEEP_LAST
+    history_depth: 16
+    max_runtime: 30
+    ignore_seconds: 5

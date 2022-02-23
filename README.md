@@ -413,5 +413,5 @@ Possible additional communication which could be implemented are:
 
 ## Batch run experiments (for advanced users)
 
-A python script [`run_experiment.py`](performance_test/helper_scripts/run_experiment.py)
-is provided to run multiple experiments at once.
+The [`performance_report`](performance_report) package runs multiple performance_test experiments
+at once, plots the results, and generates reports based on the results.
