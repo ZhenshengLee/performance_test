@@ -24,8 +24,8 @@ datasets:
   #        durability: VOLATILE
   #        history: KEEP_LAST
   #        history_depth: 16
-  apex_os_intra_1_subs:
-    name: Apex.OS + Apex.Middleware INTRA 1 subs
+  intra_1_subs:
+    name: INTRA 1 subs
     theme:
       color: '#0000ff'
     experiments:
@@ -38,8 +38,8 @@ datasets:
           - Array256k
           - Array1m
           - Array4m
-  apex_os_shmem_1_subs:
-    name: Apex.OS + Apex.Middleware SHMEM 1 subs
+  shmem_1_subs:
+    name: SHMEM 1 subs
     theme:
       color: '#00ff00'
     experiments:
@@ -52,8 +52,8 @@ datasets:
           - Array256k
           - Array1m
           - Array4m
-  apex_os_zc_1_subs:
-    name: Apex.OS + Apex.Middleware Zero Copy 1 subs
+  zc_1_subs:
+    name: Zero Copy 1 subs
     theme:
       color: '#ff0000'
     experiments:
@@ -66,8 +66,8 @@ datasets:
           - Array256k
           - Array1m
           - Array4m
-  apex_os_zc_3_subs:
-    name: Apex.OS + Apex.Middleware Zero Copy 3 subs
+  zc_3_subs:
+    name: Zero Copy 3 subs
     theme:
       color: '#bf0000'
     experiments:
@@ -81,8 +81,8 @@ datasets:
           - Array1m
           - Array4m
         subs: 3
-  apex_os_zc_10_subs:
-    name: Apex.OS + Apex.Middleware Zero Copy 10 subs
+  zc_10_subs:
+    name: Zero Copy 10 subs
     theme:
       color: '#7f0000'
     experiments:
@@ -96,8 +96,8 @@ datasets:
           - Array1m
           - Array4m
         subs: 10
-  apex_os_intra_array1m_100_1_1:
-    name: Apex.OS + Apex.Middleware INTRA 1 subs
+  intra_array1m_100_1_1:
+    name: INTRA 1 subs
     theme:
       color: '#ff0000'
     experiments:
@@ -105,8 +105,8 @@ datasets:
         msg: Array1m
         subs: 1
         rate: 100
-  apex_os_shmem_array1m_100_1_1:
-    name: Apex.OS + Apex.Middleware SHMEM 1 subs
+  shmem_array1m_100_1_1:
+    name: SHMEM 1 subs
     theme:
       color: '#00ff00'
     experiments:
@@ -114,8 +114,8 @@ datasets:
         msg: Array1m
         subs: 1
         rate: 100
-  apex_os_zc_array1m_100_1_1:
-    name: Apex.OS + Apex.Middleware Zero Copy 1 subs
+  zc_array1m_100_1_1:
+    name: Zero Copy 1 subs
     theme:
       color: '#0000ff'
     experiments:
@@ -139,9 +139,9 @@ reports:
           height: 600
         # dataset names must be listed above under the top-level `datasets`
         datasets:
-          - apex_os_intra_array1m_100_1_1
-          - apex_os_shmem_array1m_100_1_1
-          - apex_os_zc_array1m_100_1_1
+          - intra_array1m_100_1_1
+          - shmem_array1m_100_1_1
+          - zc_array1m_100_1_1
       - name: compare_transport_cpu_usage
         title: Comparing different Apex.OS Transports CPU Usage (%)
         x_axis_label: Time (seconds)
@@ -153,9 +153,9 @@ reports:
           height: 600
         # dataset names must be listed above under the top-level `datasets`
         datasets:
-          - apex_os_intra_array1m_100_1_1
-          - apex_os_shmem_array1m_100_1_1
-          - apex_os_zc_array1m_100_1_1
+          - intra_array1m_100_1_1
+          - shmem_array1m_100_1_1
+          - zc_array1m_100_1_1
       - name: compare_msg_size
         title: Comparing Latency over Message Size
         x_axis_label: Message Size
@@ -167,9 +167,9 @@ reports:
           height: 600
         # dataset names must be listed above under the top-level `datasets`
         datasets:
-          - apex_os_intra_1_subs
-          - apex_os_shmem_1_subs
-          - apex_os_zc_1_subs
+          - intra_1_subs
+          - shmem_1_subs
+          - zc_1_subs
       - name: compare_num_subs
         title: Comparing Latency over Number of Subscribers with Zero Copy
         x_axis_label: Number of Subscribers
@@ -181,6 +181,6 @@ reports:
           height: 600
         # dataset names must be listed above under the top-level `datasets`
         datasets:
-          - apex_os_zc_1_subs
-          - apex_os_zc_3_subs
-          - apex_os_zc_10_subs
+          - zc_1_subs
+          - zc_3_subs
+          - zc_10_subs
