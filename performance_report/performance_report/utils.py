@@ -142,8 +142,11 @@ class ExperimentConfig:
                 shmem_config_file = os.path.join(output_dir, "shmem.yml")
                 commands.append(f'export APEX_MIDDLEWARE_SETTINGS="{shmem_config_file}"')
                 commands.append(f'export CYCLONEDDS_URI="{shmem_config_file}"')
-                shmem_yaml = "domain:\\n  shared_memory:\\n    enable: true"
-                commands.append("printf '" + shmem_yaml + "' > ${APEX_MIDDLEWARE_SETTINGS}")
+                commands.append('cat > ${APEX_MIDDLEWARE_SETTINGS} << EOF')
+                commands.append('domain:')
+                commands.append('  shared_memory:')
+                commands.append('    enable: true')
+                commands.append('EOF')
             commands.append(perf_test_exe_cmd + sub_args + ' &')
             commands.append('sleep 1')
             commands.append(perf_test_exe_cmd + pub_args)
