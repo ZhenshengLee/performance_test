@@ -259,7 +259,7 @@ class PerfArgParser(argparse.ArgumentParser):
         self.add_argument(
             "--test-name",
             "-t",
-            default="experiment",
+            default=DEFAULT_TEST_NAME,
             help="Name of the experiment set to help give context to the test results",
         )
         self.add_argument(
