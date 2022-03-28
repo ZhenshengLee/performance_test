@@ -2,12 +2,13 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <title>Bokeh Scatter Plots</title>
+        <title> {{ title }} </title>
         <script
           type="text/javascript"
           src="https://cdn.bokeh.org/bokeh/release/bokeh-{{ bokeh_version|safe }}.min.js"></script>
     </head>
     <body>
+        <h1>{{ title }}</h1>
         {{ figure_single|safe }}
     </body>
 </html>

@@ -48,9 +48,8 @@ def generateReports(report_cfg_file, log_dir):
                 template = env.get_template(template_file)
 
                 report_title = report_cfg['report_title']
-                output = template.render(html_figures)
-
-                output_file = os.path.join(log_dir, report_title + '.html')
+                output = template.render(html_figures, title=report_title)
+                output_file = os.path.join(log_dir, report_name + '.html')
                 with open(output_file, 'w') as result:
                     result.write(output)
         except KeyError:

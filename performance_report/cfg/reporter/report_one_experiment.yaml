@@ -31,8 +31,8 @@ datasets:
     experiments:
       - msg: Array16k
 reports:
-  time_vs_latency_cpu_mem:
-    report_title: Latency, CPU and Memory Usage over Time
+  time_vs_latency:
+    report_title: Latency over Time
     template_name: ./single.html
     figures:
       - name: figure_single

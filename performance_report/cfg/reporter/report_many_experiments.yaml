@@ -124,7 +124,7 @@ datasets:
         subs: 1
         rate: 100
 reports:
-  time_vs_latency:
+  time_vs_latency_cpu_mem:
     report_title: Latency, CPU and Memory Usage over Time
     template_name: ./many.html
     figures:
