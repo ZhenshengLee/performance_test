@@ -41,7 +41,7 @@ def generateFigure(figConfig, datasets: "list[DatasetConfig]"):
                 margin=(10, 10, 10, 10)
         )
     else:
-        # assume catagorical if not a time series
+        # assume categorical if not a time series
         is_categorical = True
         fig = figure(
                 name=figConfig['name'],
@@ -121,7 +121,7 @@ def generateFigure(figConfig, datasets: "list[DatasetConfig]"):
         # add hover tool
         hover = HoverTool()
         hover.tooltips = [
-            (figConfig['y_axis_label'], '@{' + figConfig['y_range'] + '}{0.0000} ms'),
+            (figConfig['y_axis_label'], '@{' + figConfig['y_range'] + '}{0.0000}'),
         ]
         fig.add_tools(hover)
     return fig
