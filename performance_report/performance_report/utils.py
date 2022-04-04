@@ -306,8 +306,11 @@ class PerfArgParser(argparse.ArgumentParser):
         self.print_help()
         sys.exit(2)
 
-    def exit(self, msg):
-        print('EXIT')
+    def exit(self, status=0, message=None):
+        if status:
+            raise Exception(f'Exiting because of an error: {message}')
+        self.print_help()
+        exit(status)
 
 
 class cliColors:
