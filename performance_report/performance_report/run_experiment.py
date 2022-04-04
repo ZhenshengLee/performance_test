@@ -18,17 +18,31 @@ import yaml
 
 from .logs import getExperiments
 from .utils import cliColors, colorPrint, create_dir
-from .utils import ExperimentConfig, generate_shmem_file, PerfArgParser
+from .utils import ExperimentConfig, generate_shmem_file_xml, generate_shmem_file_yml, is_ros2_plugin, PerfArgParser
 from .transport import TRANSPORT
+from rclpy.utilities import get_rmw_implementation_identifier
 
 
 def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
     # TODO(flynneva): check cfg.com_mean if these are applicable
     if cfg.transport == TRANSPORT.ZERO_COPY or cfg.transport == TRANSPORT.SHMEM:
-        shmem_config_file = generate_shmem_file(output_dir)
+
         colorPrint("[Warning] RouDi is expected to already be running", cliColors.WARN)
-        os.environ["APEX_MIDDLEWARE_SETTINGS"] = shmem_config_file
-        os.environ["CYCLONEDDS_URI"] = shmem_config_file
+
+        if is_ros2_plugin(cfg.com_mean):
+            if get_rmw_implementation_identifier() == "rmw_apex_middleware":
+                shmem_config_file = generate_shmem_file_yml(output_dir)
+                os.environ["APEX_MIDDLEWARE_SETTINGS"] = shmem_config_file
+            elif get_rmw_implementation_identifier() == "rmw_cyclonedds_cpp":
+                shmem_config_file = generate_shmem_file_xml(output_dir)
+                os.environ["CYCLONEDDS_URI"] = shmem_config_file
+            else:
+                print("Unsupported Middleware: ", get_rmw_implementation_identifier())
+        elif cfg.com_mean == "CycloneDDS" or cfg.com_mean == "CycloneDDS-CXX":
+            shmem_config_file = generate_shmem_file_xml(output_dir)
+            os.environ["CYCLONEDDS_URI"] = shmem_config_file
+        else:
+            print("Unsupported com_mean: ", cfg.com_mean)
 
 
 def teardown_from_shmem(cfg: ExperimentConfig):
@@ -60,8 +74,10 @@ def run_experiment(cfg: ExperimentConfig, perf_test_exe_cmd, output_dir, overwri
 
 
 def run_experiments(files: "list[str]", perf_test_exe_cmd, output_dir, overwrite: bool):
+    
     # make sure output dir exists
     create_dir(output_dir)
+    
     # loop over given run files and run experiments
     for run_file in files:
         with open(run_file, "r") as f:
@@ -71,6 +87,7 @@ def run_experiments(files: "list[str]", perf_test_exe_cmd, output_dir, overwrite
 
         for run_config in run_configs:
             run_experiment(run_config, perf_test_exe_cmd, output_dir, overwrite)
+
 
 
 def main():

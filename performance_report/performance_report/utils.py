@@ -12,13 +12,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import argparse
+from itertools import combinations_with_replacement
 import os
 import sys
 import pandas as pd
 import yaml
+import xml.etree.ElementTree as et
 
 from .qos import DURABILITY, HISTORY, RELIABILITY
 from .transport import TRANSPORT
+from rclpy.utilities import get_rmw_implementation_identifier
 
 
 class ExperimentConfig:
@@ -138,26 +141,23 @@ class ExperimentConfig:
             commands.append(perf_test_exe_cmd + args[0])
         elif len(args) == 2:
             sub_args, pub_args = args
+
             if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
-                shmem_config_file = os.path.join(output_dir, "shmem.yml")
-                commands.append(f'export APEX_MIDDLEWARE_SETTINGS="{shmem_config_file}"')
-                commands.append(f'export CYCLONEDDS_URI="{shmem_config_file}"')
-                commands.append('cat > ${APEX_MIDDLEWARE_SETTINGS} << EOF')
-                commands.append('domain:')
-                commands.append('  shared_memory:')
-                commands.append('    enable: true')
-                commands.append('EOF')
-            commands.append(perf_test_exe_cmd + sub_args + ' &')
-            commands.append('sleep 1')
-            commands.append(perf_test_exe_cmd + pub_args)
-            commands.append('sleep 5')
-            if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
-                commands.append('unset APEX_MIDDLEWARE_SETTINGS')
-                commands.append('unset CYCLONEDDS_URI')
+                if is_ros2_plugin(self.com_mean):
+                    if get_rmw_implementation_identifier() == "rmw_apex_middleware":
+                        commands = generate_commands_apex_middleware(output_dir, perf_test_exe_cmd, sub_args, pub_args)
+                    elif get_rmw_implementation_identifier() == "rmw_cyclonedds_cpp":
+                        commands = generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args)
+                    else:
+                        print("Unsupported Middleware: ", get_rmw_implementation_identifier())
+                elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
+                    commands = generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args)
+            else:
+                print("Unsupported com_mean: ", self.com_mean)
         else:
             raise RuntimeError('Unreachable code')
         return commands
-
+            
     def cli_args(self, output_dir) -> list:
         args = ""
         args += f" -c {self.com_mean}"
@@ -328,10 +328,88 @@ def create_dir(dir_path) -> bool:
         return False
 
 
-def generate_shmem_file(dir_path) -> str:
+def generate_shmem_file_yml(dir_path) -> str:
     shmem_config_file = os.path.join(dir_path, "shmem.yml")
     if not os.path.exists(shmem_config_file):
         with open(shmem_config_file, "w") as outfile:
             shmem_dict = dict(domain=dict(shared_memory=dict(enable=True)))
             yaml.safe_dump(shmem_dict, outfile)
     return shmem_config_file
+
+
+def generate_shmem_file_xml(dir_path) -> str:
+    shmem_config_file = os.path.join(dir_path, "shmem.xml")
+    if not os.path.exists(shmem_config_file):
+        root = et.Element("CycloneDDS")
+        root.set("xmlns", "https://cdds.io/config")
+        root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
+        root.set("xsi:schemaLocation", "https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/iceoryx/etc/cyclonedds.xsd")
+        domain = et.SubElement(root, "Domain")
+        sharedMemory = et.SubElement(domain, "SharedMemory")
+        et.SubElement(sharedMemory, "Enable").text = "true"
+        et.SubElement(sharedMemory, "LogLevel").text = "info"
+        tree = et.ElementTree(root)
+        tree._setroot(root)
+        tree.write(shmem_config_file, encoding = "UTF-8", xml_declaration=True)
+    return shmem_config_file
+
+def is_ros2_plugin(com_mean) -> bool:
+    if com_mean == "ApexOSPollingSubscription" or com_mean == "rclcpp-single-threaded-executor" or com_mean == "rclcpp-static-single-threaded-executor" or com_mean == "rclcpp-waitset":
+        return True
+    else:
+        return False
+
+def generate_commands_yml(output_dir) -> list:
+    shmem_config_file = os.path.join(output_dir, "shmem.yml")
+    commands = []
+    commands.append(f'export APEX_MIDDLEWARE_SETTINGS="{shmem_config_file}"')
+    commands.append('cat > ${APEX_MIDDLEWARE_SETTINGS} << EOF')
+    commands.append('domain:')
+    commands.append('  shared_memory:')
+    commands.append('    enable: true')
+    commands.append('EOF')
+    return commands
+
+def generate_commands_xml(output_dir) -> list:
+    shmem_config_file = os.path.join(output_dir, "shmem.xml")
+    commands = []
+    commands.append(f'export CYCLONEDDS_URI="{shmem_config_file}"')
+    commands.append('cat > ${CYCLONEDDS_URI} << EOF')
+    commands.append('<?xml version="1.0" encoding="UTF-8" ?>')
+    commands.append('<CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/iceoryx/etc/cyclonedds.xsd">')
+    commands.append('   <Domain id="any">')
+    commands.append('       <SharedMemory>')
+    commands.append('           <Enable>true</Enable>')
+    commands.append('           <LogLevel>info</LogLevel>')
+    commands.append('       </SharedMemory>')
+    commands.append('   </Domain>')
+    commands.append('</CycloneDDS>')
+    commands.append('EOF')
+    return commands
+
+def generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
+    commands = []
+    commands_xml = generate_commands_xml(output_dir)
+    commands.extend(commands_xml)
+    commands.append(perf_test_exe_cmd + sub_args + ' &')
+    commands.append('sleep 1')
+    commands.append(perf_test_exe_cmd + pub_args)
+    commands.append('sleep 5')
+    commands.append('unset CYCLONEDDS_URI')
+    return commands
+
+def generate_commands_apex_middleware(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
+    commands = []
+    commands_yml = generate_commands_yml(output_dir)
+    commands.extend(commands_yml)
+    commands.append(perf_test_exe_cmd + sub_args + ' &')
+    commands.append('sleep 1')
+    commands.append(perf_test_exe_cmd + pub_args)
+    commands.append('sleep 5')
+    commands.append('unset APEX_MIDDLEWARE_SETTINGS')
+    return commands
+
+
+
+
+

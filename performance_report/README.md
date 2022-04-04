@@ -11,7 +11,7 @@ Install the required dependencies
 
 ```
 # install bokeh and selenium
-python3 -m pip install bokeh selenium
+python3 -m pip install bokeh selenium pandas
 # install firefox-geckodriver
 sudo apt install firefox-geckodriver
 ```
