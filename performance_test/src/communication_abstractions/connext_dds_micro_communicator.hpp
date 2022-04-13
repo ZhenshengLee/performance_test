@@ -306,7 +306,8 @@ private:
   * \param data The data to publish.
   */
   template<typename T>
-  static auto init_data(T & data)->decltype (data.header_.frame_id_, void ()) {
+  static auto init_data(T & data)->decltype (data.header_.frame_id_, void ())
+  {
     data.header_.frame_id_ = DDS_String_dup("frame_id");
     init_fields(data);
   }
@@ -317,7 +318,8 @@ private:
   * \param data The data to publish.
   */
   template<typename T>
-  static auto init_data(T & data)->decltype (data.header_.frame_id_zc_, void ()) {
+  static auto init_data(T & data)->decltype (data.header_.frame_id_zc_, void ())
+  {
     snprintf(data.header_.frame_id_zc_, 9U, "frame_id");
     init_fields(data);
   }
@@ -339,7 +341,8 @@ private:
   * \param data The data to publish.
   */
   template<typename T>
-  static auto init_fields(T & data)->decltype (data.fields_[0].name_, void ()) {
+  static auto init_fields(T & data)->decltype (data.fields_[0].name_, void ())
+  {
     auto fields_size = size(data.fields_);
     for (uint8_t i = 0; i < fields_size; i++) {
       data.fields_[i].name_ = DDS_String_dup("name");
@@ -353,7 +356,8 @@ private:
   * \param data The data to publish.
   */
   template<typename T>
-  static auto init_fields(T & data)->decltype (data.fields_[0].name_zc_, void ()) {
+  static auto init_fields(T & data)->decltype (data.fields_[0].name_zc_, void ())
+  {
     auto fields_size = size(data.fields_);
     for (uint8_t i = 0; i < fields_size; i++) {
       snprintf(data.fields_[i].name_zc_, 5U, "name");

@@ -14,11 +14,11 @@
 
 #include "data_runner_factory.hpp"
 
-#include <performance_test/generated_messages/messages.hpp>
-#include <performance_test/for_each.hpp>
-
 #include <string>
 #include <memory>
+
+#include <performance_test/generated_messages/messages.hpp>
+#include <performance_test/for_each.hpp>
 
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   #include "factories/rclcpp_ste_data_runner_factory.hpp"

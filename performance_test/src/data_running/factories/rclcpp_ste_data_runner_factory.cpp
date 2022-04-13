@@ -14,11 +14,11 @@
 
 #include "rclcpp_ste_data_runner_factory.hpp"
 
-#include <performance_test/generated_messages/messages.hpp>
-#include <performance_test/for_each.hpp>
-
 #include <string>
 #include <memory>
+
+#include <performance_test/generated_messages/messages.hpp>
+#include <performance_test/for_each.hpp>
 
 #include "../data_runner.hpp"
 #include "../../communication_abstractions/rclcpp_callback_communicator.hpp"

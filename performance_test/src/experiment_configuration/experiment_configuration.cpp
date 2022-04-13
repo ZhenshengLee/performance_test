@@ -15,12 +15,8 @@
 #include "experiment_configuration.hpp"
 
 #include <tclap/CmdLine.h>
-#include <sole/sole.hpp>
-
-#include <performance_test/generated_messages/messages.hpp>
 
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-#include <rclcpp/rclcpp.hpp>
 #include <rmw/rmw.h>
 #endif
 
@@ -30,6 +26,13 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <sole/sole.hpp>
+
+#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+#include <rclcpp/rclcpp.hpp>
+#endif
+
+#include <performance_test/generated_messages/messages.hpp>
 
 #include "../outputs/csv_output.hpp"
 #include "../outputs/stdout_output.hpp"

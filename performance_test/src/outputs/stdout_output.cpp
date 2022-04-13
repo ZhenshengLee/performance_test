@@ -12,14 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-
-#include <tabulate/table.hpp>
-
 #include <string>
 #include <chrono>
 #include <iostream>
 #include <sstream>
 #include <memory>
+
+#include <tabulate/table.hpp>
 
 #include "stdout_output.hpp"
 #include "../experiment_configuration/experiment_configuration.hpp"

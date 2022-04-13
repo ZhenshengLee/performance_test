@@ -15,11 +15,11 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__ICEORYX_COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__ICEORYX_COMMUNICATOR_HPP_
 
-#include <iceoryx_posh/popo/publisher.hpp>
-#include <iceoryx_posh/popo/subscriber.hpp>
-
 #include <string>
 #include <memory>
+
+#include <iceoryx_posh/popo/publisher.hpp>
+#include <iceoryx_posh/popo/subscriber.hpp>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"

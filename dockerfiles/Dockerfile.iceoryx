@@ -1,14 +1,28 @@
 # docker build . -f dockerfiles/Dockerfile.iceoryx -t performance_test_iceoryx
 # docker run -it --shm-size 2G performance_test_iceoryx bash
-# /opt/performance_test/lib/performance_test/perf_test -c iceoryx --msg Array1k
+# ros2 run performance_test perf_test -c iceoryx --msg Array1k
 
 FROM osrf/ros:rolling-desktop
 
 SHELL ["/bin/bash", "-c"]
 
+RUN apt-get update && \
+    apt-get install -y bison default-jdk libacl1-dev
+
+RUN mkdir -p iceoryx_ws/src && \
+    cd $_ && \
+    git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1 && \
+    cd .. && \
+    colcon build \
+      --install-base /opt/iceoryx \
+      --cmake-args \
+        -DIOX_MAX_PUBLISHERS=32 \
+        -DIOX_MAX_SUBSCRIBERS=32
+
 ADD . /perf_test_ws/src/performance_test
 
 RUN source /opt/ros/rolling/setup.bash && \
+    source /opt/iceoryx/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
       --install-base /opt/performance_test \

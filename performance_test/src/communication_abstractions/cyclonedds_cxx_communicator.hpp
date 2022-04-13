@@ -15,10 +15,10 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__CYCLONEDDS_CXX_COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__CYCLONEDDS_CXX_COMMUNICATOR_HPP_
 
-#include <dds/dds.hpp>
-
 #include <memory>
 #include <string>
+
+#include <dds/dds.hpp>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"

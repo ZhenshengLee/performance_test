@@ -4,12 +4,7 @@
 # sleep 1
 # ros2 run performance_test perf_test -c CycloneDDS -p 1 -s 0 --zero-copy --reliable --keep-last --history-depth 16 -o none
 
-# This Dockerfile intentionally uses foxy! Cyclone DDS is included with galactic,
-# and we haven't sorted out how to keep the built-in Cyclone DDS from interfering
-# with the hand-built Cyclone DDS. The ROS2 version doesn't really matter anyway,
-# since the CycloneDDS plugin does not use rclcpp or anything related. The ros
-# base containers are handy because they already have colcon, ament, etc. installed.
-FROM osrf/ros:foxy-desktop
+FROM osrf/ros:rolling-desktop
 
 SHELL ["/bin/bash", "-c"]
 
@@ -37,7 +32,7 @@ RUN source /opt/iceoryx/setup.bash && \
 
 ADD . /perf_test_ws/src/performance_test
 
-RUN source /opt/ros/foxy/setup.bash && \
+RUN source /opt/ros/rolling/setup.bash && \
     source /opt/iceoryx/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
@@ -52,7 +47,7 @@ RUN source /opt/ros/foxy/setup.bash && \
 ADD dockerfiles/cyclonedds.xml /
 ENV CYCLONEDDS_URI=/cyclonedds.xml
 
-RUN echo "source /opt/ros/foxy/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
 RUN echo 'LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib"' >> /root/.bashrc
 RUN echo "source /opt/iceoryx/setup.bash" >> /root/.bashrc
 RUN echo 'source /opt/performance_test/setup.bash' >> /root/.bashrc
