@@ -3,9 +3,6 @@
     <Domain id="any">
         <SharedMemory>
             <Enable>true</Enable>
-            <SubQueueCapacity>256</SubQueueCapacity>
-            <SubHistoryRequest>16</SubHistoryRequest>
-            <PubHistoryCapacity>16</PubHistoryCapacity>
             <LogLevel>verbose</LogLevel>
         </SharedMemory>
     </Domain>

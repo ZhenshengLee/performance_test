@@ -1,4 +1,4 @@
-# docker build . -f dockerfiles/Dockerfile.cyclonedds-cxx -t performance_test_cyclone_dds_cxx
+# docker build . -f dockerfiles/Dockerfile.CycloneDDS-CXX -t performance_test_cyclone_dds_cxx
 # docker run -it --shm-size 2G performance_test_cyclone_dds_cxx bash
 # ros2 run performance_test perf_test -c CycloneDDS-CXX -p 0 -s 1 --zero-copy --reliable --keep-last --history-depth 16 --max-runtime 10 &
 # sleep 1
@@ -18,7 +18,7 @@ RUN apt-get update && \
 
 RUN mkdir -p iceoryx_ws/src && \
     cd $_ && \
-    git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v1.0.1 --depth 1 && \
+    git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1 && \
     cd .. && \
     colcon build \
       --install-base /opt/iceoryx \
@@ -27,7 +27,7 @@ RUN mkdir -p iceoryx_ws/src && \
         -DIOX_MAX_SUBSCRIBERS=32
 
 RUN source /opt/iceoryx/setup.bash && \
-    git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.1 --depth 1 && \
+    git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1 && \
     cd cyclonedds && \
     mkdir -p build && \
     cd build && \
@@ -36,7 +36,7 @@ RUN source /opt/iceoryx/setup.bash && \
     cmake --build . --target install
 
 RUN source /opt/iceoryx/setup.bash && \
-    git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.8.1 --depth 1 && \
+    git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.9.0b1 --depth 1 && \
     cd cyclonedds-cxx && \
     mkdir -p build && \
     cd build && \

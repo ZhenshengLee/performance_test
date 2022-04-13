@@ -16,6 +16,7 @@
 #define COMMUNICATION_ABSTRACTIONS__CYCLONEDDS_COMMUNICATOR_HPP_
 
 #include <dds/dds.h>
+#include <dds/ddsc/dds_loan_api.h>
 
 #include <string>
 

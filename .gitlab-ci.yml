@@ -50,8 +50,39 @@ build_rclcpp:
 
 build_cyclonedds:
   stage: build
-  image: osrf/ros:rolling-desktop
+  image: osrf/ros:foxy-desktop
   script:
+    - source /opt/ros/foxy/setup.bash
+    - apt-get update
+    - apt-get install -y bison default-jdk libacl1-dev
+
+    - rosdep update
+    - rosdep install --from performance_test --ignore-src -y
+
+    - mkdir -p /iceoryx_ws/src
+    - cd /iceoryx_ws/src/
+    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
+    - rosdep install --from iceoryx --ignore-src -y
+    - cd /iceoryx_ws
+    - '
+      colcon build
+          --install-base /opt/iceoryx
+          --cmake-args
+            -DIOX_MAX_PUBLISHERS=32
+            -DIOX_MAX_SUBSCRIBERS=32
+            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
+      '
+    - source /opt/iceoryx/setup.bash
+
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
+    - cd cyclonedds
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SECURITY=ON -DENABLE_SHM=ON ..
+    - cmake --build .
+    - cmake --build . --target install
+
+    - cd $CI_PROJECT_DIR
     - '
       colcon build
           --install-base /opt/performance_test
@@ -59,9 +90,13 @@ build_cyclonedds:
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
             -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
-            -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
+            -DPERFORMANCE_TEST_RCLCPP_ENABLED=ON
+          --base-path performance_test
       '
+    
     - cp LICENSE /opt/performance_test
+    - tar cfz opt-iceoryx.tar.gz /opt/iceoryx
+    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -69,6 +104,8 @@ build_cyclonedds:
     paths:
       - log
       - build
+      - opt-iceoryx.tar.gz
+      - opt-cyclonedds.tar.gz
       - opt.tar.gz
 
 build_cyclonedds_cxx:
@@ -84,7 +121,7 @@ build_cyclonedds_cxx:
 
     - mkdir -p /iceoryx_ws/src
     - cd /iceoryx_ws/src/
-    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v1.0.1 --depth 1
+    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
     - rosdep install --from iceoryx --ignore-src -y
     - cd /iceoryx_ws
     - '
@@ -97,7 +134,7 @@ build_cyclonedds_cxx:
       '
     - source /opt/iceoryx/setup.bash
 
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.8.1 --depth 1
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
     - cd cyclonedds
     - mkdir -p build
     - cd build
@@ -105,7 +142,7 @@ build_cyclonedds_cxx:
     - cmake --build .
     - cmake --build . --target install
 
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.8.1 --depth 1
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.9.0b1 --depth 1
     - cd cyclonedds-cxx
     - mkdir -p build
     - cd build
@@ -327,6 +364,12 @@ smoke_test_cyclonedds:
     - build_cyclonedds
   variables:
     COMMUNICATION_MEAN: CycloneDDS
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-iceoryx.tar.gz -C /;
+        tar xzf opt-cyclonedds.tar.gz -C /;
+        source /opt/iceoryx/setup.bash;
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib:/opt/cyclonedds/lib";
+    '
 
 smoke_test_cyclonedds_cxx:
   image: osrf/ros:foxy-desktop
@@ -407,18 +450,24 @@ test_security_fast_dds:
       '
 test_security_cyclone_dds:
   stage: test
-  image: osrf/ros:rolling-desktop
+  image: osrf/ros:foxy-desktop
   needs:
-    - build_rclcpp
+    - build_cyclonedds
   script:
     - apt-get update
+    - apt-get install -y ros-foxy-rmw-cyclonedds-cpp
     - rosdep update
     - rosdep install --from performance_test --ignore-src -y
+    - tar xzf opt-iceoryx.tar.gz -C /;
+    - source /opt/iceoryx/setup.bash;
     - tar xzf opt.tar.gz -C /
+    - tar xzf opt-cyclonedds.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
     - cd performance_test/helper_scripts
     - source security_setup.bash enable ./demo_keys
+    - export LD_LIBRARY_PATH=/opt/cyclonedds/lib:$LD_LIBRARY_PATH
+    - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
     # The below runs should fail:
     # Unexpected node names:
     - '! ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Array1k -t Array1k --max-runtime 10 --rate 2 --keep-last --history-depth 10'
