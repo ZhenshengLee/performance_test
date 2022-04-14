@@ -440,7 +440,7 @@ smoke_test_cyclonedds:
         tar xzf opt-iceoryx.tar.gz -C /;
         tar xzf opt-cyclonedds.tar.gz -C /;
         source /opt/iceoryx/setup.bash;
-        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib:/opt/cyclonedds/lib";
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib";
     '
 
 smoke_test_cyclonedds_cxx:
