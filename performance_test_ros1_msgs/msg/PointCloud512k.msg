@@ -8,7 +8,7 @@
 # such as stereo or time-of-flight.
 
 # Time of sensor data acquisition, and the coordinate frame ID (for 3d points).
-std_msgs/Header header
+FixedHeader header
 
 # 2D structure of the point cloud. If the cloud is unordered, height is
 # 1 and width is the length of the point cloud.
@@ -16,7 +16,7 @@ uint32 height
 uint32 width
 
 # Describes the channels and their layout in the binary data blob.
-sensor_msgs/PointField[8] fields
+FixedPointField[8] fields
 
 bool    is_bigendian # Is this data bigendian?
 uint32  point_step   # Length of a point in bytes

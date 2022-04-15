@@ -8,7 +8,7 @@
 # These sensors follow REP 117 and will output -Inf if the object is detected
 # and +Inf if the object is outside of the detection range.
 
-std_msgs/Header header # timestamp in the header is the time the ranger
+FixedHeader header # timestamp in the header is the time the ranger
                              # returned the distance reading
 
 # Radiation type enums

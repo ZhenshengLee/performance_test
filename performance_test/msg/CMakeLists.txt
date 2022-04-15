@@ -13,9 +13,9 @@
 # limitations under the License.
 
 set(SUPPLEMENTAL_IDL_FILES
-    ${CMAKE_CURRENT_SOURCE_DIR}/Header.idl
-    ${CMAKE_CURRENT_SOURCE_DIR}/PointField.idl
-    ${CMAKE_CURRENT_SOURCE_DIR}/Time.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/FixedHeader.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/FixedPointField.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/FixedTime.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/NavSatStatus.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Point.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Point32.idl

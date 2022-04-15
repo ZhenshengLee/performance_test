@@ -1,10 +1,10 @@
-#include "Header.idl"
+#include "FixedHeader.idl"
 
 module performance_test {
   module msg {
     module __plugin__ {
       struct Range {
-        performance_test::msg::__plugin__::Header header;
+        performance_test::msg::__plugin__::FixedHeader header;
         octet radiation_type;
         float field_of_view;
         float min_range;

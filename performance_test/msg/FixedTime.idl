@@ -1,7 +1,7 @@
 module performance_test {
   module msg {
     module __plugin__ {
-      struct Time {
+      struct FixedTime {
         long sec;
         unsigned long nanosec;
         };

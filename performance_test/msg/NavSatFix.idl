@@ -1,12 +1,12 @@
 #include "NavSatStatus.idl"
-#include "Header.idl"
+#include "FixedHeader.idl"
 
 module performance_test {
   module msg {
     module __plugin__ {
       typedef double double__9[9];
       struct NavSatFix {
-        performance_test::msg::__plugin__::Header header;
+        performance_test::msg::__plugin__::FixedHeader header;
         performance_test::msg::__plugin__::NavSatStatus status;
         double latitude;
         double longitude;

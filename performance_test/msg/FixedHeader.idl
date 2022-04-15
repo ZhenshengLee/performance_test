@@ -1,11 +1,11 @@
-#include "Time.idl"
+#include "FixedTime.idl"
 
 module performance_test {
   module msg {
     module __plugin__ {
       typedef char char__256[256];
-      struct Header {
-        performance_test::msg::__plugin__::Time stamp;
+      struct FixedHeader {
+        performance_test::msg::__plugin__::FixedTime stamp;
         char__256 frame_id;
       };
     }; // __plugin__

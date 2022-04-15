@@ -1,14 +1,14 @@
-#include "PointField.idl"
-#include "Header.idl"
+#include "FixedPointField.idl"
+#include "FixedHeader.idl"
 
 module performance_test {
   module msg {
     module __plugin__ {
-      typedef performance_test::msg::__plugin__::PointField performance_test__msg__2m__PointField;
+      typedef performance_test::msg::__plugin__::FixedPointField performance_test__msg__2m__PointField;
       typedef performance_test__msg__2m__PointField performance_test__msg__2m__PointField__8[8];
       typedef octet octet__pc__2097152[2097152];
       struct PointCloud2m {
-        performance_test::msg::__plugin__::Header header;
+        performance_test::msg::__plugin__::FixedHeader header;
         unsigned long height;
         unsigned long width;
         performance_test__msg__2m__PointField__8 fields;

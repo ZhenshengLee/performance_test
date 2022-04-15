@@ -10,7 +10,7 @@
 #        receiver, usually the location of the antenna.  This is a
 #        Euclidean frame relative to the vehicle, not a reference
 #        ellipsoid.
-std_msgs/Header header
+FixedHeader header
 
 # Satellite fix status information.
 NavSatStatus status
