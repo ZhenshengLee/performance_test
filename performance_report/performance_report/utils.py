@@ -137,23 +137,32 @@ class ExperimentConfig:
     def cli_commands(self, perf_test_exe_cmd, output_dir) -> list:
         args = self.cli_args(output_dir)
         commands = []
+        cleanup_commands = []
         if len(args) == 1:
             commands.append(perf_test_exe_cmd + args[0])
         elif len(args) == 2:
-            sub_args, pub_args = args
-
             if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
                 if is_ros2_plugin(self.com_mean):
                     if get_rmw_implementation_identifier() == "rmw_apex_middleware":
-                        commands = generate_commands_apex_middleware(output_dir, perf_test_exe_cmd, sub_args, pub_args)
+                        commands.extend(generate_commands_yml(output_dir))
+                        cleanup_commands.append('unset APEX_MIDDLEWARE_SETTINGS')
                     elif get_rmw_implementation_identifier() == "rmw_cyclonedds_cpp":
-                        commands = generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args)
+                        commands.extend(generate_commands_xml(output_dir))
+                        cleanup_commands.append('unset CYCLONEDDS_URI')
                     else:
                         print("Unsupported Middleware: ", get_rmw_implementation_identifier())
                 elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
-                    commands = generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args)
-            else:
-                print("Unsupported com_mean: ", self.com_mean)
+                    commands.extend(generate_commands_xml(output_dir))
+                    cleanup_commands.append('unset CYCLONEDDS_URI')
+                else:
+                    print("Unsupported com_mean: ", self.com_mean)
+
+            sub_args, pub_args = args
+            commands.append(perf_test_exe_cmd + sub_args + ' &')
+            commands.append('sleep 1')
+            commands.append(perf_test_exe_cmd + pub_args)
+            commands.append('sleep 5')
+            commands.extend(cleanup_commands)
         else:
             raise RuntimeError('Unreachable code')
         return commands
@@ -386,30 +395,3 @@ def generate_commands_xml(output_dir) -> list:
     commands.append('</CycloneDDS>')
     commands.append('EOF')
     return commands
-
-def generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
-    commands = []
-    commands_xml = generate_commands_xml(output_dir)
-    commands.extend(commands_xml)
-    commands.append(perf_test_exe_cmd + sub_args + ' &')
-    commands.append('sleep 1')
-    commands.append(perf_test_exe_cmd + pub_args)
-    commands.append('sleep 5')
-    commands.append('unset CYCLONEDDS_URI')
-    return commands
-
-def generate_commands_apex_middleware(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
-    commands = []
-    commands_yml = generate_commands_yml(output_dir)
-    commands.extend(commands_yml)
-    commands.append(perf_test_exe_cmd + sub_args + ' &')
-    commands.append('sleep 1')
-    commands.append(perf_test_exe_cmd + pub_args)
-    commands.append('sleep 5')
-    commands.append('unset APEX_MIDDLEWARE_SETTINGS')
-    return commands
-
-
-
-
-
