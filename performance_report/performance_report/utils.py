@@ -173,11 +173,17 @@ class ExperimentConfig:
         args += f" -m {self.msg}"
         args += f" -r {self.rate}"
         if self.reliability == RELIABILITY.RELIABLE:
-            args += " --reliable"
+            args += " --reliability RELIABLE"
+        else:
+            args += " --reliability BEST_EFFORT"
         if self.durability == DURABILITY.TRANSIENT_LOCAL:
-            args += " --transient"
+            args += " --durability TRANSIENT_LOCAL"
+        else:
+            args += " --durability VOLATILE"
         if self.history == HISTORY.KEEP_LAST:
-            args += " --keep-last"
+            args += " --history KEEP_LAST"
+        else:
+            args += " --history KEEP_ALL"
         args += f" --history-depth {self.history_depth}"
         args += f" --use-rt-prio {self.rt_prio}"
         args += f" --use-rt-cpus {self.rt_cpus}"

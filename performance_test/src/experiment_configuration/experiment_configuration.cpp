@@ -110,6 +110,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   std::string comm_str;
   bool print_msg_list = false;
   bool reliable_qos = false;
+  std::string reliability_qos;
+  std::string durability_qos;
+  std::string history_qos;
   bool transient_qos = false;
   bool keep_last_qos = false;
   uint32_t history_depth = 0;
@@ -188,6 +191,24 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     TCLAP::SwitchArg keepLastArg("", "keep-last",
       "Enable keep last QOS. Default is keep all.", cmd, false);
+
+    std::vector<std::string> allowedReliabilityArgs{"RELIABLE", "BEST_EFFORT"};
+    TCLAP::ValuesConstraint<std::string> allowedReliabilityArgsVals(allowedReliabilityArgs);
+    TCLAP::ValueArg<std::string> reliabilityArg("", "reliability",
+      "The QOS Reliability type", false, "BEST_EFFORT",
+      &allowedReliabilityArgsVals, cmd);
+
+    std::vector<std::string> allowedDurabilityArgs{"TRANSIENT_LOCAL", "VOLATILE"};
+    TCLAP::ValuesConstraint<std::string> allowedDurabilityArgsVals(allowedDurabilityArgs);
+    TCLAP::ValueArg<std::string> durabilityArg("", "durability",
+      "The QOS Durability type", false, "VOLATILE",
+      &allowedDurabilityArgsVals, cmd);
+
+    std::vector<std::string> allowedHistoryArgs{"KEEP_LAST", "KEEP_ALL"};
+    TCLAP::ValuesConstraint<std::string> allowedHistoryArgsVals(allowedHistoryArgs);
+    TCLAP::ValueArg<std::string> historyArg("", "history",
+      "The QOS History type", false, "KEEP_ALL",
+      &allowedHistoryArgsVals, cmd);
 
     TCLAP::ValueArg<uint32_t> historyDepthArg("", "history-depth",
       "The history depth QOS.", false, 1000, "N", cmd);
@@ -282,6 +303,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     print_msg_list = msgListArg.getValue();
     m_dds_domain_id = ddsDomainIdArg.getValue();
     reliable_qos = reliableArg.getValue();
+    reliability_qos = reliabilityArg.getValue();
+    durability_qos = durabilityArg.getValue();
+    history_qos = historyArg.getValue();
     transient_qos = transientArg.getValue();
     keep_last_qos = keepLastArg.getValue();
     history_depth = historyDepthArg.getValue();
@@ -365,19 +389,40 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     if (reliable_qos) {
       m_qos.reliability = QOSAbstraction::Reliability::RELIABLE;
+      std::cout << "WARNING: The flag '--reliable' is deprecated.\n"
+        "Please use '--reliability RELIABLE' instead.\n";
     } else {
-      m_qos.reliability = QOSAbstraction::Reliability::BEST_EFFORT;
+      if (reliability_qos == "RELIABLE") {
+        m_qos.reliability = QOSAbstraction::Reliability::RELIABLE;
+      } else if (reliability_qos == "BEST_EFFORT") {
+        m_qos.reliability = QOSAbstraction::Reliability::BEST_EFFORT;
+      }
     }
+
     if (transient_qos) {
       m_qos.durability = QOSAbstraction::Durability::TRANSIENT_LOCAL;
+      std::cout << "WARNING: The flag '--transient' is deprecated.\n"
+        "Please use '--durability TRANSIENT_LOCAL' instead.\n";
     } else {
-      m_qos.durability = QOSAbstraction::Durability::VOLATILE;
+      if (durability_qos == "VOLATILE") {
+        m_qos.durability = QOSAbstraction::Durability::VOLATILE;
+      } else if (durability_qos == "TRANSIENT_LOCAL") {
+        m_qos.durability = QOSAbstraction::Durability::TRANSIENT_LOCAL;
+      }
     }
+
     if (keep_last_qos) {
       m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_LAST;
+      std::cout << "WARNING: The flag '--keep-last' is deprecated.\n"
+        "Please use '--history KEEP_LAST' instead.\n";
     } else {
-      m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_ALL;
+      if (history_qos == "KEEP_LAST") {
+        m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_LAST;
+      } else if (history_qos == "KEEP_ALL") {
+        m_qos.history_kind = QOSAbstraction::HistoryKind::KEEP_ALL;
+      }
     }
+
     m_qos.history_depth = history_depth;
     if (disable_async) {
       if (use_ros2_layers()) {
