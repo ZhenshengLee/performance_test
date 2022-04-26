@@ -127,7 +127,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::ValuesConstraint<std::string> allowedOutputConstraint(
       allowedOutputs);
     TCLAP::MultiArg<std::string> outputArg(
-      "o", "output", "Specify format to output experiment results.", false,
+      "o", "output", "Specify format to output experiment results. Default is stdout.", false,
       &allowedOutputConstraint, cmd);
 
     TCLAP::ValueArg<std::string> csvLogfileArg("l", "csv-logfile",
@@ -137,7 +137,8 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       "Optionally specify a file name for the json results.", false, "", "name", cmd);
 
     TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
-      "The publishing rate. 0 means publish as fast as possible.", false, 1000, "N", cmd);
+      "The publishing rate. 0 means publish as fast as possible. "
+      "Default is 1000.", false, 1000, "N", cmd);
 
     std::vector<std::string> allowedCommunications;
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
@@ -168,62 +169,64 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #endif
     TCLAP::ValuesConstraint<std::string> allowedCommunicationVals(allowedCommunications);
     TCLAP::ValueArg<std::string> communicationArg("c", "communication",
-      "Which communication plugin to use.", false, allowedCommunications[0],
+      "The communication plugin to use. "
+      "Default is " + allowedCommunications[0] + ".", false, allowedCommunications[0],
       &allowedCommunicationVals, cmd);
 
-    TCLAP::ValueArg<std::string> topicArg("t", "topic", "The topic name.",
+    TCLAP::ValueArg<std::string> topicArg("t", "topic", "The topic name. Default is test_topic.",
       false, "test_topic", "topic", cmd);
 
     TCLAP::ValueArg<std::string> msgArg("m", "msg",
-      "The message type. Use --msg-list to list the options.", false, "Array1k", "type", cmd);
+      "The message type. Use --msg-list to list the options. "
+      "Default is Array1k.", false, "Array1k", "type", cmd);
 
     TCLAP::SwitchArg msgListArg("", "msg-list",
       "Print the list of available msg types and exit.", cmd, false);
 
     TCLAP::ValueArg<uint32_t> ddsDomainIdArg("", "dds-domain_id",
-      "The DDS domain id.", false, 0, "id", cmd);
+      "The DDS domain id. Default is 0.", false, 0, "id", cmd);
 
     TCLAP::SwitchArg reliableArg("", "reliable",
-      "Enable reliable QOS. Default is best effort.", cmd, false);
+      "DEPRECATED. Please use --reliability RELIABLE instead.", cmd, false);
 
     TCLAP::SwitchArg transientArg("", "transient",
-      "Enable transient local QOS. Default is volatile.", cmd, false);
+      "DEPRECATED. Please use --durability TRANSIENT_LOCAL instead.", cmd, false);
 
     TCLAP::SwitchArg keepLastArg("", "keep-last",
-      "Enable keep last QOS. Default is keep all.", cmd, false);
+      "DEPRECATED. Please use --history KEEP_LAST instead.", cmd, false);
 
     std::vector<std::string> allowedReliabilityArgs{"RELIABLE", "BEST_EFFORT"};
     TCLAP::ValuesConstraint<std::string> allowedReliabilityArgsVals(allowedReliabilityArgs);
     TCLAP::ValueArg<std::string> reliabilityArg("", "reliability",
-      "The QOS Reliability type", false, "BEST_EFFORT",
+      "The QOS Reliability type. Default is BEST_EFFORT.", false, "BEST_EFFORT",
       &allowedReliabilityArgsVals, cmd);
 
     std::vector<std::string> allowedDurabilityArgs{"TRANSIENT_LOCAL", "VOLATILE"};
     TCLAP::ValuesConstraint<std::string> allowedDurabilityArgsVals(allowedDurabilityArgs);
     TCLAP::ValueArg<std::string> durabilityArg("", "durability",
-      "The QOS Durability type", false, "VOLATILE",
+      "The QOS Durability type. Default is VOLATILE.", false, "VOLATILE",
       &allowedDurabilityArgsVals, cmd);
 
     std::vector<std::string> allowedHistoryArgs{"KEEP_LAST", "KEEP_ALL"};
     TCLAP::ValuesConstraint<std::string> allowedHistoryArgsVals(allowedHistoryArgs);
     TCLAP::ValueArg<std::string> historyArg("", "history",
-      "The QOS History type", false, "KEEP_ALL",
+      "The QOS History type. Default is KEEP_ALL.", false, "KEEP_ALL",
       &allowedHistoryArgsVals, cmd);
 
     TCLAP::ValueArg<uint32_t> historyDepthArg("", "history-depth",
-      "The history depth QOS.", false, 1000, "N", cmd);
+      "The history depth QOS. Default is 1000.", false, 1000, "N", cmd);
 
     TCLAP::SwitchArg disableAsyncArg("", "disable-async",
       "Disable asynchronous pub/sub.", cmd, false);
 
     TCLAP::ValueArg<uint64_t> maxRuntimeArg("", "max-runtime",
-      "Run N seconds, then exit. 0 means run forever.", false, 0, "N", cmd);
+      "Run N seconds, then exit. 0 means run forever. Default is 0.", false, 0, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> numPubsArg("p", "num-pub-threads",
-      "Number of publisher threads.", false, 1, "N", cmd);
+      "Number of publisher threads. Default is 1.", false, 1, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> numSubsArg("s", "num-sub-threads",
-      "Number of subscriber threads.", false, 1, "N", cmd);
+      "Number of subscriber threads. Default is 1.", false, 1, "N", cmd);
 
     TCLAP::SwitchArg checkMemoryArg("", "check-memory",
       "Print backtrace of all memory operations performed by the middleware. "
@@ -231,12 +234,14 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     TCLAP::ValueArg<int32_t> useRtPrioArg("", "use-rt-prio",
       "Set RT priority. "
-      "Only certain platforms (i.e. Drive PX) have the right configuration to support this.",
+      "Only certain platforms (i.e. Drive PX) have the right "
+      "configuration to support this. Default is 0 (disabled).",
       false, 0, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> useRtCpusArg("", "use-rt-cpus",
       "Set RT CPU affinity mask. "
-      "Only certain platforms (i.e. Drive PX) have the right configuration to support this.",
+      "Only certain platforms (i.e. Drive PX) have the right "
+      "configuration to support this. Default is 0 (disabled).",
       false, 0, "N", cmd);
 
     TCLAP::SwitchArg withSecurityArg("", "with-security",
@@ -245,26 +250,27 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     std::vector<std::string> allowedRelayModes{{"None", "Main", "Relay"}};
     TCLAP::ValuesConstraint<std::string> allowedRelayModeVals(allowedRelayModes);
     TCLAP::ValueArg<std::string> relayModeArg("", "roundtrip-mode",
-      "Select the round trip mode.", false, "None",
+      "Select the round trip mode. Default is None.", false, "None",
       &allowedRelayModeVals, cmd);
 
     TCLAP::ValueArg<uint32_t> ignoreArg("", "ignore",
-      "Ignore the first N seconds of the experiment.", false, 0, "N", cmd);
+      "Ignore the first N seconds of the experiment. Default is 0.", false, 0, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> expectedNumPubsArg("", "expected-num-pubs",
-      "Expected number of publishers for wait-for-matched.", false, 0, "N", cmd);
+      "Expected number of publishers for wait-for-matched. Default is 0.", false, 0, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> expectedNumSubsArg("", "expected-num-subs",
-      "Expected number of subscribers for wait-for-matched.", false, 0, "N", cmd);
+      "Expected number of subscribers for wait-for-matched. Default is 0.", false, 0, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> waitForMatchedTimeoutArg("", "wait-for-matched-timeout",
-      "Maximum time in seconds to wait for matched pubs/subs.", false, 30, "N", cmd);
+      "Maximum time in seconds to wait for matched pubs/subs. Default is 30.", false, 30, "N", cmd);
 
     TCLAP::SwitchArg zeroCopyArg("", "zero-copy",
       "Use zero copy transfer.", cmd, false);
 
     TCLAP::ValueArg<uint32_t> unboundedMsgSizeArg("", "unbounded-msg-size",
-      "The number of bytes to use for an unbounded message type. Ignored for other messages.",
+      "The number of bytes to use for an unbounded message type. "
+      "Ignored for other messages. Default is 0.",
       false, 0, "N", cmd);
 
     cmd.parse(argc, argv);
