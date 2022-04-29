@@ -415,3 +415,16 @@ Possible additional communication which could be implemented are:
 
 The [`performance_report`](performance_report) package runs multiple performance_test experiments
 at once, plots the results, and generates reports based on the results.
+
+## Building with limited resources
+
+When building this tool, the compiler must perform a lot of template expansion. This can be
+overwhelming for a system with a low-power CPU or limited RAM. There are some additional CMake
+options which can reduce the system load during compilation:
+
+1. The [ROS 2 Middleware plugins](#ros-2-middleware-plugins) are enabled by default. If only a
+[native plugin](#native-plugins) is needed, then the ROS 2 plugins can be disabled by adding
+`-DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF` to the `--cmake-args`.
+1. This tool includes many different message types, each with many different sizes. Reduce the number of
+messages, and thus the compilation load, by adding `-DPERFORMANCE_TEST_MINIMAL_MESSAGES` to the
+`--cmake-args`. The reduced message set can be found [here](performance_test/msg/CMakeLists.txt#L73-86).
