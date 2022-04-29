@@ -337,9 +337,14 @@ execute_process(
 add_definitions(-DPERFORMANCE_TEST_VERSION="${PERF_TEST_VERSION}")
 
 if(PERFORMANCE_TEST_RCLCPP_ENABLED)
-  rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
-  target_link_libraries(${EXE_NAME} "${cpp_typesupport_target}")
-
+  if($ENV{ROS_DISTRO} MATCHES "galactic")
+    rosidl_target_interfaces(${EXE_NAME} ${PROJECT_NAME} "rosidl_typesupport_cpp")
+  elseif($ENV{ROS_DISTRO} MATCHES "rolling")
+    rosidl_get_typesupport_target(cpp_typesupport_target "${PROJECT_NAME}" "rosidl_typesupport_cpp")
+    target_link_libraries(${EXE_NAME} "${cpp_typesupport_target}")
+  else()
+    message(FATAL_ERROR "Unsupported ROS_DISTRO")
+  endif()
   ament_target_dependencies(${EXE_NAME} "rclcpp")
 endif()
 

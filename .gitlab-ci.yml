@@ -26,7 +26,7 @@ build_cross_image:
               -DPERFORMANCE_TEST_MINIMAL_MESSAGES=ON"
       '
 
-build_rclcpp:
+.build_rclcpp:
   stage: build
   image: osrf/ros:rolling-desktop
   script:
@@ -47,6 +47,15 @@ build_rclcpp:
       - log
       - build
       - opt.tar.gz
+
+build_rclcpp_rolling:
+  extends:
+    - .build_rclcpp
+
+build_rclcpp_galactic:
+  extends:
+    - .build_rclcpp
+  image: osrf/ros:galactic-desktop
 
 build_cyclonedds:
   stage: build
@@ -357,7 +366,7 @@ test:
   stage: test
   image: osrf/ros:rolling-desktop
   needs:
-    - build_rclcpp
+    - build_rclcpp_rolling
   script:
     - tar xf opt.tar.gz -C /
     - '
@@ -397,27 +406,54 @@ test:
       done;
       '
 
-smoke_test_rclcpp_ste:
+smoke_test_rclcpp_ste_rolling:
   extends:
     - .smoke_test
   needs:
-    - build_rclcpp
+    - build_rclcpp_rolling
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
 
-smoke_test_rclcpp_sste:
+smoke_test_rclcpp_ste_galactic:
+  extends:
+    - .smoke_test
+  image: osrf/ros:galactic-desktop
+  needs:
+    - build_rclcpp_galactic
+  variables:
+    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+
+smoke_test_rclcpp_sste_rolling:
   extends:
     - .smoke_test
   needs:
-    - build_rclcpp
+    - build_rclcpp_rolling
   variables:
     COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
 
-smoke_test_rclcpp_waitset:
+smoke_test_rclcpp_sste_galactic:
+  extends:
+    - .smoke_test
+  image: osrf/ros:galactic-desktop
+  needs:
+    - build_rclcpp_galactic
+  variables:
+    COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
+
+smoke_test_rclcpp_waitset_rolling:
   extends:
     - .smoke_test
   needs:
-    - build_rclcpp
+    - build_rclcpp_rolling
+  variables:
+    COMMUNICATION_MEAN: rclcpp-waitset
+
+smoke_test_rclcpp_waitset_galactic:
+  extends:
+    - .smoke_test
+  image: osrf/ros:galactic-desktop
+  needs:
+    - build_rclcpp_galactic
   variables:
     COMMUNICATION_MEAN: rclcpp-waitset
 
@@ -500,7 +536,7 @@ test_security_fast_dds:
   stage: test
   image: osrf/ros:rolling-desktop
   needs:
-    - build_rclcpp
+    - build_rclcpp_rolling
   script:
     - apt-get update
     - rosdep update
@@ -546,7 +582,6 @@ test_security_cyclone_dds:
     # Enable security
     - cd performance_test/helper_scripts
     - source security_setup.bash enable ./demo_keys
-
     # The below runs should fail:
     # Unexpected node names:
     - '! ros2 run performance_test perf_test -c rclcpp-single-threaded-executor --msg Array1k -t Array1k --max-runtime 10 --rate 2 --history KEEP_LAST --history-depth 10'
@@ -565,7 +600,7 @@ volume:
   services:
     - docker:dind
   needs:
-    - build_rclcpp
+    - build_rclcpp_rolling
   before_script:
     - ''
   script:
