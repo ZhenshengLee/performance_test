@@ -21,13 +21,17 @@ namespace performance_test
 
 std::string to_string(const CommunicationMean cm)
 {
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
   if (cm == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
     return "RCLCPP_SINGLE_THREADED_EXECUTOR";
   }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
   if (cm == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
     return "RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR";
   }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
   if (cm == CommunicationMean::RCLCPP_WAITSET) {
     return "RCLCPP_WAITSET";
   }

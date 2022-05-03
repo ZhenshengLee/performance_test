@@ -20,9 +20,15 @@
 #include <performance_test/generated_messages/messages.hpp>
 #include <performance_test/for_each.hpp>
 
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
   #include "factories/rclcpp_ste_data_runner_factory.hpp"
+#endif
+
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
   #include "factories/rclcpp_sste_data_runner_factory.hpp"
+#endif
+
+#ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
   #include "factories/rclcpp_waitset_data_runner_factory.hpp"
 #endif
 
@@ -72,16 +78,26 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         if (ptr) {
           throw std::runtime_error("It seems that two msgs have the same name");
         }
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
         // These are moved into sub-factories to reduce the amount of template expansion
         // for this single file. If all three are handled in-place here, like the other
         // plugins, then sometimes the CI jobs will time out.
         if (com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
           ptr = RclcppSteDataRunnerFactory::get(msg_name, run_type);
         }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
+        // These are moved into sub-factories to reduce the amount of template expansion
+        // for this single file. If all three are handled in-place here, like the other
+        // plugins, then sometimes the CI jobs will time out.
         if (com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
           ptr = RclcppSsteDataRunnerFactory::get(msg_name, run_type);
         }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
+        // These are moved into sub-factories to reduce the amount of template expansion
+        // for this single file. If all three are handled in-place here, like the other
+        // plugins, then sometimes the CI jobs will time out.
         if (com_mean == CommunicationMean::RCLCPP_WAITSET) {
           ptr = RclcppWaitsetDataRunnerFactory::get(msg_name, run_type);
         }

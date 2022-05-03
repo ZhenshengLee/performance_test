@@ -141,9 +141,14 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       "Default is 1000.", false, 1000, "N", cmd);
 
     std::vector<std::string> allowedCommunications;
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
     allowedCommunications.push_back("rclcpp-single-threaded-executor");
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
     allowedCommunications.push_back("rclcpp-static-single-threaded-executor");
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
     allowedCommunications.push_back("rclcpp-waitset");
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
@@ -346,13 +351,17 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       exit(0);
     }
 
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
     if (comm_str == "rclcpp-single-threaded-executor") {
       m_com_mean = CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR;
     }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
     if (comm_str == "rclcpp-static-single-threaded-executor") {
       m_com_mean = CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR;
     }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
     if (comm_str == "rclcpp-waitset") {
       m_com_mean = CommunicationMean::RCLCPP_WAITSET;
     }
@@ -520,11 +529,18 @@ CommunicationMean ExperimentConfiguration::com_mean() const
 }
 bool ExperimentConfiguration::use_ros2_layers() const
 {
-#ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-  if (m_com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR ||
-    m_com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR ||
-    m_com_mean == CommunicationMean::RCLCPP_WAITSET)
-  {
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
+  if (m_com_mean == CommunicationMean::RCLCPP_SINGLE_THREADED_EXECUTOR) {
+    return true;
+  }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
+  if (m_com_mean == CommunicationMean::RCLCPP_STATIC_SINGLE_THREADED_EXECUTOR) {
+    return true;
+  }
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
+  if (m_com_mean == CommunicationMean::RCLCPP_WAITSET) {
     return true;
   }
 #endif

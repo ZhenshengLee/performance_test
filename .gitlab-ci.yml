@@ -57,6 +57,11 @@ build_rclcpp_galactic:
     - .build_rclcpp
   image: osrf/ros:galactic-desktop
 
+build_rclcpp_foxy:
+  extends:
+    - .build_rclcpp
+  image: osrf/ros:foxy-desktop
+
 build_cyclonedds:
   stage: build
   image: osrf/ros:rolling-desktop
@@ -423,6 +428,15 @@ smoke_test_rclcpp_ste_galactic:
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
 
+smoke_test_rclcpp_ste_foxy:
+  extends:
+    - .smoke_test
+  image: osrf/ros:foxy-desktop
+  needs:
+    - build_rclcpp_foxy
+  variables:
+    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+
 smoke_test_rclcpp_sste_rolling:
   extends:
     - .smoke_test
@@ -454,6 +468,15 @@ smoke_test_rclcpp_waitset_galactic:
   image: osrf/ros:galactic-desktop
   needs:
     - build_rclcpp_galactic
+  variables:
+    COMMUNICATION_MEAN: rclcpp-waitset
+
+smoke_test_rclcpp_waitset_foxy:
+  extends:
+    - .smoke_test
+  image: osrf/ros:foxy-desktop
+  needs:
+    - build_rclcpp_foxy
   variables:
     COMMUNICATION_MEAN: rclcpp-waitset
 
