@@ -174,7 +174,7 @@ implemented:
 
 #### Eclipse Cyclone DDS
 
-- [Eclipse Cyclone DDS 0.8.0beta6](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.8.0beta6)
+- [Eclipse Cyclone DDS 0.9.0b1](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.9.0b1)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS`
 - Zero copy transport (`--zero-copy`): yes
@@ -193,10 +193,9 @@ implemented:
   |-------|---------------------|--------------------|
   | INTRA | UDP                 | UDP                |
 
-
 #### Eclipse Cyclone DDS C++ binding
 
-- [Eclipse Cyclone DDS C++ bindings 0.8.1](https://github.com/eclipse-cyclonedds/cyclonedds-cxx/tree/0.8.1)
+- [Eclipse Cyclone DDS C++ bindings 0.9.0b1](https://github.com/eclipse-cyclonedds/cyclonedds-cxx/tree/0.9.0b1)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS-CXX`
 - Zero copy transport (`--zero-copy`): yes
@@ -300,7 +299,7 @@ through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
   - Callback with Single Threaded Executor: `-c rclcpp-single-threaded-executor`
   - Callback with Static Single Threaded Executor: `-c rclcpp-static-single-threaded-executor`
   - [`rclcpp::WaitSet`](https://github.com/ros2/rclcpp/pull/1047): `-c rclcpp-waitset`
-- Zero copy transport (`--zero-copy`): yes
+- Zero copy transport (`--zero-copy`): yes (for `ROS_DISTRO = foxy` and above )
 - Docker file: [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp)
 - These plugins will use the ROS 2 RMW implementation that is configured on your system.
   - ROS 2 Rolling is pre-configured to use rmw_cyclonedds_cpp.

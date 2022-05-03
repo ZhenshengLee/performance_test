@@ -62,6 +62,11 @@ build_rclcpp_foxy:
     - .build_rclcpp
   image: osrf/ros:foxy-desktop
 
+build_rclcpp_eloquent:
+  extends:
+    - .build_rclcpp
+  image: osrf/ros:eloquent-desktop
+
 build_cyclonedds:
   stage: build
   image: osrf/ros:rolling-desktop
@@ -392,7 +397,7 @@ test:
   image: osrf/ros:rolling-desktop
   script:
     - apt-get update
-    - rosdep update
+    - rosdep update --include-eol-distros
     - rosdep install --from performance_test --ignore-src -y
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
@@ -434,6 +439,15 @@ smoke_test_rclcpp_ste_foxy:
   image: osrf/ros:foxy-desktop
   needs:
     - build_rclcpp_foxy
+  variables:
+    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+
+smoke_test_rclcpp_ste_eloquent:
+  extends:
+    - .smoke_test
+  image: osrf/ros:eloquent-desktop
+  needs:
+    - build_rclcpp_eloquent
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
 

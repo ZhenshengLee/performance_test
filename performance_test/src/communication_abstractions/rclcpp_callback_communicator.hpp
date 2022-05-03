@@ -57,13 +57,15 @@ private:
   std::shared_ptr<::rclcpp::Subscription<DataType>> m_subscription;
 };
 
+#ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
 template<class Msg>
 using RclcppSingleThreadedExecutorCommunicator =
   RclcppCallbackCommunicator<Msg, rclcpp::executors::SingleThreadedExecutor>;
-
+#endif
+#ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
 template<class Msg>
 using RclcppStaticSingleThreadedExecutorCommunicator =
   RclcppCallbackCommunicator<Msg, rclcpp::executors::StaticSingleThreadedExecutor>;
-
+#endif
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_
