@@ -107,6 +107,7 @@ public:
         m_ec.topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
     }
     if (m_ec.is_zero_copy_transfer()) {
+      #ifdef PERFORMANCE_TEST_RCLCPP_ZERO_COPY_ENABLED
       if (!m_publisher->can_loan_messages()) {
         throw std::runtime_error("RMW implementation does not support zero copy!");
       }
@@ -116,6 +117,9 @@ public:
       increment_sent();  // We increment before publishing so we don't have to lock twice.
       unlock();
       m_publisher->publish(std::move(borrowed_message));
+      #else
+      throw std::runtime_error("ROS2 distribution does not support zero copy!");
+      #endif
     } else {
       lock();
       init_msg(m_data, time);

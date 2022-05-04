@@ -67,6 +67,11 @@ build_rclcpp_eloquent:
     - .build_rclcpp
   image: osrf/ros:eloquent-desktop
 
+build_rclcpp_dashing:
+  extends:
+    - .build_rclcpp
+  image: osrf/ros:dashing-desktop
+
 build_cyclonedds:
   stage: build
   image: osrf/ros:rolling-desktop
@@ -448,6 +453,15 @@ smoke_test_rclcpp_ste_eloquent:
   image: osrf/ros:eloquent-desktop
   needs:
     - build_rclcpp_eloquent
+  variables:
+    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+
+smoke_test_rclcpp_ste_dashing:
+  extends:
+    - .smoke_test
+  image: osrf/ros:dashing-desktop
+  needs:
+    - build_rclcpp_dashing
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
 
