@@ -1,0 +1,49 @@
+---
+datasets:
+  # default for each dataset:
+  #   name: ''
+  #    theme:
+  #      color: '#0000ff'
+  #      marker:
+  #        shape: dot
+  #        size: 25
+  #        alpha: 1.0
+  #      line:
+  #        style: solid
+  #        width: 2
+  #        alpha: 1.0
+  #    test_name: experiments
+  #    experiments:
+  #      - com_mean: rclcpp-single-threaded-executor
+  #        transport: INTRA
+  #        msg: Array1k
+  #        pubs: 1
+  #        subs: 1
+  #        rate: 100
+  #        reliability: RELIABLE
+  #        durability: VOLATILE
+  #        history: KEEP_LAST
+  #        history_depth: 16
+  intra_1_subs:
+    name: INTRA 1 subs
+    theme:
+      color: '#652342'
+    experiments:
+      - msg: Array16k
+reports:
+  time_vs_latency:
+    report_title: Latency over Time
+    template_name: ./single.md
+    figures:
+      - name: figure_single
+        title: Comparing different Apex.OS Transports
+        x_axis_label: Time (seconds)
+        y_axis_label: Latency (ms)
+        x_range: T_experiment
+        y_range: latency_mean
+        size:
+          width: 1000
+          height: 600
+        # dataset names must be listed above
+        datasets:
+          - intra_1_subs

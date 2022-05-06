@@ -1,0 +1,186 @@
+---
+datasets:
+  # default for each dataset:
+  #   name: ''
+  #    theme:
+  #      color: '#0000ff'
+  #      marker:
+  #        shape: dot
+  #        size: 25
+  #        alpha: 1.0
+  #      line:
+  #        style: solid
+  #        width: 2
+  #        alpha: 1.0
+  #    test_name: experiments
+  #    experiments:
+  #      - com_mean: rclcpp-single-threaded-executor
+  #        transport: INTRA
+  #        msg: Array1k
+  #        pubs: 1
+  #        subs: 1
+  #        rate: 100
+  #        reliability: RELIABLE
+  #        durability: VOLATILE
+  #        history: KEEP_LAST
+  #        history_depth: 16
+  intra_1_subs:
+    name: INTRA 1 subs
+    theme:
+      color: '#0000ff'
+    experiments:
+      - transport: INTRA
+        msg:
+          - Array1k
+          - Array4k
+          - Array16k
+          - Array64k
+          - Array256k
+          - Array1m
+          - Array4m
+  shmem_1_subs:
+    name: SHMEM 1 subs
+    theme:
+      color: '#00ff00'
+    experiments:
+      - transport: SHMEM
+        msg:
+          - Array1k
+          - Array4k
+          - Array16k
+          - Array64k
+          - Array256k
+          - Array1m
+          - Array4m
+  zc_1_subs:
+    name: Zero Copy 1 subs
+    theme:
+      color: '#ff0000'
+    experiments:
+      - transport: ZERO_COPY
+        msg:
+          - Array1k
+          - Array4k
+          - Array16k
+          - Array64k
+          - Array256k
+          - Array1m
+          - Array4m
+  zc_3_subs:
+    name: Zero Copy 3 subs
+    theme:
+      color: '#bf0000'
+    experiments:
+      - transport: ZERO_COPY
+        msg:
+          - Array1k
+          - Array4k
+          - Array16k
+          - Array64k
+          - Array256k
+          - Array1m
+          - Array4m
+        subs: 3
+  zc_10_subs:
+    name: Zero Copy 10 subs
+    theme:
+      color: '#7f0000'
+    experiments:
+      - transport: ZERO_COPY
+        msg:
+          - Array1k
+          - Array4k
+          - Array16k
+          - Array64k
+          - Array256k
+          - Array1m
+          - Array4m
+        subs: 10
+  intra_array1m_100_1_1:
+    name: INTRA 1 subs
+    theme:
+      color: '#ff0000'
+    experiments:
+      - transport: INTRA
+        msg: Array1m
+        subs: 1
+        rate: 100
+  shmem_array1m_100_1_1:
+    name: SHMEM 1 subs
+    theme:
+      color: '#00ff00'
+    experiments:
+      - transport: SHMEM
+        msg: Array1m
+        subs: 1
+        rate: 100
+  zc_array1m_100_1_1:
+    name: Zero Copy 1 subs
+    theme:
+      color: '#0000ff'
+    experiments:
+      - transport: ZERO_COPY
+        msg: Array1m
+        subs: 1
+        rate: 100
+reports:
+  time_vs_latency_cpu_mem:
+    report_title: Latency, CPU and Memory Usage over Time
+    template_name: ./many.md
+    figures:
+      - name: compare_transport
+        title: Comparing different Apex.OS Transports
+        x_axis_label: Time (seconds)
+        y_axis_label: Latency (ms)
+        x_range: T_experiment
+        y_range: latency_mean_ms
+        size:
+          width: 1000
+          height: 600
+        # dataset names must be listed above under the top-level `datasets`
+        datasets:
+          - intra_array1m_100_1_1
+          - shmem_array1m_100_1_1
+          - zc_array1m_100_1_1
+      - name: compare_transport_cpu_usage
+        title: Comparing different Apex.OS Transports CPU Usage (%)
+        x_axis_label: Time (seconds)
+        y_axis_label: CPU Usage (%)
+        x_range: T_experiment
+        y_range: cpu_usage_percent
+        size:
+          width: 1000
+          height: 600
+        # dataset names must be listed above under the top-level `datasets`
+        datasets:
+          - intra_array1m_100_1_1
+          - shmem_array1m_100_1_1
+          - zc_array1m_100_1_1
+      - name: compare_msg_size
+        title: Comparing Latency over Message Size
+        x_axis_label: Message Size
+        y_axis_label: Latency (ms)
+        x_range: msg
+        y_range: latency_mean_ms
+        size:
+          width: 1000
+          height: 600
+        # dataset names must be listed above under the top-level `datasets`
+        datasets:
+          - intra_1_subs
+          - shmem_1_subs
+          - zc_1_subs
+      - name: compare_num_subs
+        title: Comparing Latency over Number of Subscribers with Zero Copy
+        x_axis_label: Number of Subscribers
+        y_axis_label: Latency (ms)
+        x_range: msg
+        y_range: latency_mean_ms
+        size:
+          width: 1000
+          height: 600
+        # dataset names must be listed above under the top-level `datasets`
+        datasets:
+          - zc_1_subs
+          - zc_3_subs
+          - zc_10_subs
