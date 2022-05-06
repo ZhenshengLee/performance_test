@@ -7,7 +7,30 @@ FROM osrf/ros:rolling-desktop
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
-    apt-get install -y default-jdk
+    apt remove -y ros-rolling-fastrtps && \
+    apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
+
+RUN mkdir -p Fast-DDS && \
+    cd Fast-DDS && \
+    git clone https://github.com/eProsima/foonathan_memory_vendor.git -b v1.2.1 && \
+    mkdir foonathan_memory_vendor/build && \
+    cd foonathan_memory_vendor/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DBUILD_SHARED_LIBS=ON && \
+    cmake --build . --target install && \
+
+    cd ../../ && \
+    git clone https://github.com/eProsima/Fast-CDR.git -b v1.0.24 && \
+    mkdir Fast-CDR/build && \
+    cd Fast-CDR/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS && \
+    cmake --build . --target install && \
+
+    cd ../../ && \
+    git clone https://github.com/eProsima/Fast-DDS.git -b v2.6.0 && \
+    mkdir Fast-DDS/build && \
+    cd Fast-DDS/build && \
+    cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS && \
+    cmake --build . --target install
 
 ADD . /perf_test_ws/src/performance_test
 
@@ -19,8 +42,10 @@ RUN source /opt/ros/rolling/setup.bash && \
       --cmake-clean-cache \
       --cmake-args \
         -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_PREFIX_PATH=/opt/Fast-DDS \
         -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON \
         -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
 
 RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
+RUN echo 'export LD_LIBRARY_PATH=/opt/Fast-DDS/lib/' >> ~/.bashrc
 RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc

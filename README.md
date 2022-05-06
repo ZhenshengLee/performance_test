@@ -234,7 +234,7 @@ implemented:
 
 #### eProsima Fast DDS
 
-- [FastDDS 2.0.x](https://github.com/eProsima/Fast-RTPS/tree/2.0.x)
+- [FastDDS 2.6.0](https://github.com/eProsima/Fast-DDS/tree/v2.6.0)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c FastRTPS`
 - Zero copy transport (`--zero-copy`): no

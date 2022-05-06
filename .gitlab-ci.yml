@@ -343,19 +343,47 @@ build_fastrtps:
   stage: build
   image: osrf/ros:rolling-desktop
   script:
+    - source /opt/ros/rolling/setup.bash
     - apt-get update
+    - apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
     - rosdep update
     - rosdep install --from performance_test --ignore-src -y
+    - apt remove -y ros-rolling-fastrtps
+    - mkdir -p Fast-DDS
+    - cd Fast-DDS
+    - git clone https://github.com/eProsima/foonathan_memory_vendor.git -b v1.2.1
+    - mkdir foonathan_memory_vendor/build
+    - cd foonathan_memory_vendor/build && \
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DBUILD_SHARED_LIBS=ON
+    - cmake --build . --target install
+
+    - cd ../../
+    - git clone https://github.com/eProsima/Fast-CDR.git -b v1.0.24
+    - mkdir Fast-CDR/build
+    - cd Fast-CDR/build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
+    - cmake --build . --target install
+
+    - cd ../../
+    - git clone https://github.com/eProsima/Fast-DDS.git -b v2.6.0
+    - mkdir Fast-DDS/build
+    - cd Fast-DDS/build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
+    - cmake --build . --target install
+
+    - cd $CI_PROJECT_DIR
     - '
       colcon build
           --install-base /opt/performance_test
           --merge-install
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
             -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON
             -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
       '
     - cp LICENSE /opt/performance_test
+    - tar cfz opt-fastdds.tar.gz /opt/Fast-DDS
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -363,6 +391,7 @@ build_fastrtps:
     paths:
       - log
       - build
+      - opt-fastdds.tar.gz
       - opt.tar.gz
 
 build_ros1:
@@ -515,6 +544,10 @@ smoke_test_fastrtps:
     - build_fastrtps
   variables:
     COMMUNICATION_MEAN: FastRTPS
+    SMOKE_TEST_BEFORE_SCRIPT: '
+        tar xzf opt-fastdds.tar.gz -C /;
+        LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/Fast-DDS/lib";
+    '
 
 smoke_test_cyclonedds:
   extends:
