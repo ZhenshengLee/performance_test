@@ -338,15 +338,13 @@ The performance_test tool provides several tools to plot the generated results:
 The plot tool requires python3 and texlive. On an Ubuntu system you will need to
 install the following packages:
 
-`sudo apt-get install python3 python3-pip texlive texlive-pictures texlive-luatex`
+`sudo apt-get install python3 python3-pip texlive texlive-pictures texlive-luatex texlive-latex-extra`
 
 Start a Python virtual environment and install the required Python packages:
 
 ```bash
 cd performance_test/helper_scripts/apex_performance_plotter
-pip3 install pipenv
-pipenv shell
-pipenv install --ignore-pipefile
+pip3 install .
 ```
 
 #### Usage
