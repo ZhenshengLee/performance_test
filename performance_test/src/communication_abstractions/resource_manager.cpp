@@ -22,6 +22,10 @@
   #include "iceoryx_posh/runtime/posh_runtime.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+  #include <ecal/ecal.h>
+#endif
+
 #include <cstdlib>
 #include <memory>
 #include <string>
@@ -33,6 +37,9 @@ void ResourceManager::shutdown()
 {
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   eprosima::fastrtps::Domain::stopAll();
+#endif
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+  eCAL::Finalize();
 #endif
 }
 
@@ -313,6 +320,24 @@ void ResourceManager::init_iceoryx_runtime() const
       iox::runtime::PoshRuntime::initRuntime("iox-perf-test-sub");
     } else {
       iox::runtime::PoshRuntime::initRuntime("iox-perf-test-intra");
+    }
+  }
+}
+#endif
+
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+void ResourceManager::init_ecal_runtime() const
+{
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  if (!m_ecal_initialized) {
+    m_ecal_initialized = true;
+    if (m_ec.number_of_subscribers() == 0) {
+      eCAL::Initialize(0, nullptr, "ecal-perf-test-pub");
+    } else if (m_ec.number_of_publishers() == 0) {
+      eCAL::Initialize(0, nullptr, "ecal-perf-test-sub");
+    } else {
+      eCAL::Initialize(0, nullptr, "ecal-perf-test-intra");
     }
   }
 }

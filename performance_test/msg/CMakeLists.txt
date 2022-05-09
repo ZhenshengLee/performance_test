@@ -67,6 +67,61 @@ set(SUPPORTED_IDL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/Range.idl
 )
 
+set(SUPPLEMENTAL_PROTO_FILES
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Header.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointField.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Time.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/NavSatStatus.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Point.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Point32.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Polygon.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Vector3.proto
+)
+
+set(SUPPORTED_PROTO_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array1k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array4k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array16k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array32k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array60k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array64k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array256k.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array1m.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array2m.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array4m.proto
+    ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array8m.proto
+
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence1k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence4k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence16k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence32k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence64k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence256k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence1m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence2m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence4m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence8m.proto
+
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/UnboundedSequence.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/UnboundedString.proto
+
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Struct16.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Struct256.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Struct4k.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Struct32k.proto
+
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointCloud1m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointCloud2m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointCloud4m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointCloud8m.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointCloud512k.proto
+
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/NavSatFix.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/RadarDetection.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/RadarTrack.proto
+    # ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Range.proto
+)
+
 # TODO(erik.snider) remove this when we reduce the template expansion in the communicator factory
 option(PERFORMANCE_TEST_MINIMAL_MESSAGES
   "Include only a small subset of messages, for quick compilation of smoke tests" OFF)
@@ -83,9 +138,23 @@ if(PERFORMANCE_TEST_MINIMAL_MESSAGES)
 
       ${CMAKE_CURRENT_SOURCE_DIR}/PointCloud1m.idl
   )
+  set(SUPPORTED_PROTO_FILES
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array16k.proto
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/Array1m.proto
+
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence16k.proto
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/BoundedSequence1m.proto
+
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/UnboundedSequence.proto
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/UnboundedString.proto
+
+      ${CMAKE_CURRENT_SOURCE_DIR}/protobuf/PointCloud1m.proto
+  )
 endif()
 
 set(IDL_FILES ${SUPPLEMENTAL_IDL_FILES} ${SUPPORTED_IDL_FILES})
+set(PROTO_FILES ${SUPPLEMENTAL_PROTO_FILES} ${SUPPORTED_PROTO_FILES})
+
 
 set(GENERATED_MESSAGES_INCLUDE_DIR "${CMAKE_CURRENT_BINARY_DIR}/gen/message")
 list(APPEND IDLGEN_INCLUDE_DIR ${GENERATED_MESSAGES_INCLUDE_DIR})
@@ -93,29 +162,62 @@ file(MAKE_DIRECTORY "${GENERATED_MESSAGES_INCLUDE_DIR}/performance_test/generate
 
 set(CMAKE_MESSAGE_CLASS_TYPES "// Generated message classes")
 set(CMAKE_MESSAGE_INCLUDE_STATEMENTS "// Generated message files")
-foreach(idl ${SUPPORTED_IDL_FILES})
-  get_filename_component(filename ${idl} NAME)
-  string(REGEX REPLACE "\\.idl" "" basename ${filename})
-  set(CMAKE_MESSAGE_NAME ${basename})
 
-  # if a lower case letter is followed by an uper case letter, split them with an underscore
-  string(REGEX REPLACE "([a-z])([A-Z])" "\\1_\\2" CMAKE_MESSAGE_SNAKE_NAME "${CMAKE_MESSAGE_NAME}")
-  string(TOLOWER "${CMAKE_MESSAGE_SNAKE_NAME}" CMAKE_MESSAGE_SNAKE_NAME)
 
-  set(CMAKE_MESSAGE_HEADER_FILE "performance_test/generated_messages/${CMAKE_MESSAGE_SNAKE_NAME}.hpp")
+if(PERFORMANCE_TEST_ECAL_ENABLED)
+  # only generate supported proto files
+  foreach(idl ${SUPPORTED_PROTO_FILES})
+    get_filename_component(filename ${idl} NAME)
+    string(REGEX REPLACE "\\.proto" "" basename ${filename})
+    set(CMAKE_MESSAGE_NAME ${basename})
 
-  configure_file(message_file.hpp.in "${GENERATED_MESSAGES_INCLUDE_DIR}/${CMAKE_MESSAGE_HEADER_FILE}")
+    # if a lower case letter is followed by an uper case letter, split them with an underscore
+    string(REGEX REPLACE "([a-z])([A-Z])" "\\1_\\2" CMAKE_MESSAGE_SNAKE_NAME "${CMAKE_MESSAGE_NAME}")
+    string(TOLOWER "${CMAKE_MESSAGE_SNAKE_NAME}" CMAKE_MESSAGE_SNAKE_NAME)
 
-  set(CMAKE_MESSAGE_INCLUDE_STATEMENTS "${CMAKE_MESSAGE_INCLUDE_STATEMENTS}\n#include <${CMAKE_MESSAGE_HEADER_FILE}>")
-  set(CMAKE_MESSAGE_CLASS_TYPES "${CMAKE_MESSAGE_CLASS_TYPES},\n${CMAKE_MESSAGE_NAME}")
-endforeach()
+    set(CMAKE_MESSAGE_HEADER_FILE "performance_test/generated_messages/${CMAKE_MESSAGE_SNAKE_NAME}.hpp")
 
+    # colcon/build/performance_test/msg/gen/message/performance_test/generated_messages/array1k.hpp
+    configure_file(message_file.hpp.in "${GENERATED_MESSAGES_INCLUDE_DIR}/${CMAKE_MESSAGE_HEADER_FILE}")
+
+    set(CMAKE_MESSAGE_INCLUDE_STATEMENTS "${CMAKE_MESSAGE_INCLUDE_STATEMENTS}\n#include <${CMAKE_MESSAGE_HEADER_FILE}>")
+    set(CMAKE_MESSAGE_CLASS_TYPES "${CMAKE_MESSAGE_CLASS_TYPES},\n${CMAKE_MESSAGE_NAME}")
+  endforeach()
+else()
+  # generate supported idl files
+  foreach(idl ${SUPPORTED_IDL_FILES})
+    get_filename_component(filename ${idl} NAME)
+    string(REGEX REPLACE "\\.idl" "" basename ${filename})
+    set(CMAKE_MESSAGE_NAME ${basename})
+
+    # if a lower case letter is followed by an uper case letter, split them with an underscore
+    string(REGEX REPLACE "([a-z])([A-Z])" "\\1_\\2" CMAKE_MESSAGE_SNAKE_NAME "${CMAKE_MESSAGE_NAME}")
+    string(TOLOWER "${CMAKE_MESSAGE_SNAKE_NAME}" CMAKE_MESSAGE_SNAKE_NAME)
+
+    set(CMAKE_MESSAGE_HEADER_FILE "performance_test/generated_messages/${CMAKE_MESSAGE_SNAKE_NAME}.hpp")
+
+    # colcon/build/performance_test/msg/gen/message/performance_test/generated_messages/array1k.hpp
+    configure_file(message_file.hpp.in "${GENERATED_MESSAGES_INCLUDE_DIR}/${CMAKE_MESSAGE_HEADER_FILE}")
+
+    set(CMAKE_MESSAGE_INCLUDE_STATEMENTS "${CMAKE_MESSAGE_INCLUDE_STATEMENTS}\n#include <${CMAKE_MESSAGE_HEADER_FILE}>")
+    set(CMAKE_MESSAGE_CLASS_TYPES "${CMAKE_MESSAGE_CLASS_TYPES},\n${CMAKE_MESSAGE_NAME}")
+  endforeach()
+endif()
+
+# colcon/build/performance_test/msg/gen/message/performance_test/generated_messages/messages.hpp
 configure_file(messages.hpp.in "${GENERATED_MESSAGES_INCLUDE_DIR}/performance_test/generated_messages/messages.hpp")
+
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_subdirectory(fast_rtps)
   list(APPEND IDLGEN_INCLUDE_DIR ${FAST_RTPS_IDL_INCLUDE_DIR})
   list(APPEND IDLGEN_LIBRARIES fast_rtps_idl fastcdr)
+endif()
+
+if(PERFORMANCE_TEST_ECAL_ENABLED)
+  add_subdirectory(ecal)
+  list(APPEND IDLGEN_INCLUDE_DIR ${ECAL_IDL_INCLUDE_DIR})
+  list(APPEND IDLGEN_LIBRARIES ecal_idl eCAL::core protobuf::libprotobuf)
 endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDS_ENABLED)

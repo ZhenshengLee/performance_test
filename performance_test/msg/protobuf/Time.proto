@@ -1,0 +1,10 @@
+// Copyright 2022 Zhenshenglee, Inc.
+syntax = "proto2";
+
+package performance_test.msg.__plugin__;
+
+message Time
+{
+  required int32 sec = 1;
+  required uint32 nanosec = 2;
+}

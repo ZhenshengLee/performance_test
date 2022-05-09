@@ -49,6 +49,9 @@ enum class CommunicationMean
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
   ICEORYX,
 #endif
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+  ECAL,
+#endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   OPENDDS,
 #endif

@@ -157,6 +157,13 @@ if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   list(APPEND PLUGIN_LIBRARIES iceoryx_posh::iceoryx_posh)
 endif()
 
+# eCAL
+option(PERFORMANCE_TEST_ECAL_ENABLED "Require ECAL to be available, fail otherwise" OFF)
+if(PERFORMANCE_TEST_ECAL_ENABLED)
+  find_package(eCAL CONFIG REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_ECAL_ENABLED)
+  list(APPEND PLUGIN_LIBRARIES eCAL::core)
+endif()
 
 # OpenDDS
 option(PERFORMANCE_TEST_OPENDDS_ENABLED "Require Open DDS to be available, fail otherwise" OFF)
@@ -247,6 +254,10 @@ endif()
 
 if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   list(APPEND sources src/communication_abstractions/iceoryx_communicator.hpp)
+endif()
+
+if(PERFORMANCE_TEST_ECAL_ENABLED)
+  list(APPEND sources src/communication_abstractions/ecal_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)

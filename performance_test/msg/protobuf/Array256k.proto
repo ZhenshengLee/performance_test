@@ -1,0 +1,13 @@
+// Copyright 2022 Zhenshenglee, Inc.
+syntax = "proto2";
+
+package performance_test.msg.__plugin__;
+
+message Array256k
+{
+  // 262144/4
+  required int32 msg_array_size = 1 [default = 65536];
+  repeated uint32 array = 2;
+  required int64 time = 3;
+  required uint64 id = 4;
+}

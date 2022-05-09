@@ -62,6 +62,11 @@ std::string to_string(const CommunicationMean cm)
     return "ICEORYX";
   }
 #endif
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+  if (cm == CommunicationMean::ECAL) {
+    return "ECAL";
+  }
+#endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   if (cm == CommunicationMean::OPENDDS) {
     return "OpenDDS";

@@ -146,6 +146,10 @@ public:
   void init_iceoryx_runtime() const;
 #endif
 
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+  void init_ecal_runtime() const;
+#endif
+
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
   /// Returns OpenDDS participant.
   DDS::DomainParticipant_ptr opendds_participant() const;
@@ -224,6 +228,10 @@ private:
 
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
   mutable bool m_iceoryx_initialized = false;
+#endif
+
+#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+  mutable bool m_ecal_initialized = false;
 #endif
 
   mutable std::mutex m_global_mutex;
