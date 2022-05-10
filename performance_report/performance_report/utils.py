@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 import argparse
-from itertools import combinations_with_replacement
 import os
 import sys
 import pandas as pd
@@ -170,7 +169,7 @@ class ExperimentConfig:
         else:
             raise RuntimeError('Unreachable code')
         return commands
-            
+
     def cli_args(self, output_dir) -> list:
         args = ""
         args += f" -c {self.com_mean}"
@@ -365,21 +364,28 @@ def generate_shmem_file_xml(dir_path) -> str:
         root = et.Element("CycloneDDS")
         root.set("xmlns", "https://cdds.io/config")
         root.set("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance")
-        root.set("xsi:schemaLocation", "https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/iceoryx/etc/cyclonedds.xsd")
+        root.set("xsi:schemaLocation", "https://cdds.io/config "
+                 "https://raw.githubusercontent.com/eclipse-cyclonedds"
+                 "/cyclonedds/iceoryx/etc/cyclonedds.xsd")
         domain = et.SubElement(root, "Domain")
         sharedMemory = et.SubElement(domain, "SharedMemory")
         et.SubElement(sharedMemory, "Enable").text = "true"
         et.SubElement(sharedMemory, "LogLevel").text = "info"
         tree = et.ElementTree(root)
         tree._setroot(root)
-        tree.write(shmem_config_file, encoding = "UTF-8", xml_declaration=True)
+        tree.write(shmem_config_file, encoding="UTF-8", xml_declaration=True)
     return shmem_config_file
 
+
 def is_ros2_plugin(com_mean) -> bool:
-    if com_mean == "ApexOSPollingSubscription" or com_mean == "rclcpp-single-threaded-executor" or com_mean == "rclcpp-static-single-threaded-executor" or com_mean == "rclcpp-waitset":
+    if (com_mean == "ApexOSPollingSubscription" or
+            com_mean == "rclcpp-single-threaded-executor" or
+            com_mean == "rclcpp-static-single-threaded-executor" or
+            com_mean == "rclcpp-waitset"):
         return True
     else:
         return False
+
 
 def generate_commands_yml(output_dir) -> list:
     shmem_config_file = os.path.join(output_dir, "shmem.yml")
@@ -392,13 +398,18 @@ def generate_commands_yml(output_dir) -> list:
     commands.append('EOF')
     return commands
 
+
 def generate_commands_xml(output_dir) -> list:
     shmem_config_file = os.path.join(output_dir, "shmem.xml")
     commands = []
     commands.append(f'export CYCLONEDDS_URI="{shmem_config_file}"')
     commands.append('cat > ${CYCLONEDDS_URI} << EOF')
     commands.append('<?xml version="1.0" encoding="UTF-8" ?>')
-    commands.append('<CycloneDDS xmlns="https://cdds.io/config" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://cdds.io/config https://raw.githubusercontent.com/eclipse-cyclonedds/cyclonedds/iceoryx/etc/cyclonedds.xsd">')
+    commands.append('<CycloneDDS xmlns="https://cdds.io/config" '
+                    'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" '
+                    'xsi:schemaLocation="https://cdds.io/config '
+                    'https://raw.githubusercontent.com/eclipse-cyclonedds'
+                    '/cyclonedds/iceoryx/etc/cyclonedds.xsd">')
     commands.append('   <Domain id="any">')
     commands.append('       <SharedMemory>')
     commands.append('           <Enable>true</Enable>')

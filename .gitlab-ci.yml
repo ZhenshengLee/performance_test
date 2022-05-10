@@ -412,12 +412,14 @@ test:
   needs:
     - build_rclcpp_rolling
   script:
+    - apt-get update
+    - apt-get install -y python3-pip
+    - python3 -m pip install bokeh selenium pandas
     - tar xf opt.tar.gz -C /
     - '
       colcon test
           --install-base /opt/performance_test
           --merge-install
-          --base-path performance_test
       '
     - 'colcon test-result --verbose'
   artifacts:

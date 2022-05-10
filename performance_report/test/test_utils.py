@@ -14,11 +14,11 @@
 
 import os
 import yaml
-from performance_report.utils import generate_shmem_file
+from performance_report.utils import generate_shmem_file_yml
 
 
 def test_generate_shmem_file(tmp_path):
-    generate_shmem_file(tmp_path)
+    generate_shmem_file_yml(tmp_path)
     shmem_config_file = os.path.join(tmp_path, "shmem.yml")
     with open(shmem_config_file, "r") as f:
         yaml_contents = yaml.load(f, Loader=yaml.FullLoader)

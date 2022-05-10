@@ -17,8 +17,14 @@ import time
 import yaml
 
 from .logs import getExperiments
-from .utils import cliColors, colorPrint, create_dir
-from .utils import ExperimentConfig, generate_shmem_file_xml, generate_shmem_file_yml, is_ros2_plugin, PerfArgParser
+from .utils import (cliColors,
+                    colorPrint,
+                    create_dir,
+                    ExperimentConfig,
+                    generate_shmem_file_xml,
+                    generate_shmem_file_yml,
+                    is_ros2_plugin,
+                    PerfArgParser)
 from .transport import TRANSPORT
 from rclpy.utilities import get_rmw_implementation_identifier
 
@@ -74,10 +80,8 @@ def run_experiment(cfg: ExperimentConfig, perf_test_exe_cmd, output_dir, overwri
 
 
 def run_experiments(files: "list[str]", perf_test_exe_cmd, output_dir, overwrite: bool):
-    
     # make sure output dir exists
     create_dir(output_dir)
-    
     # loop over given run files and run experiments
     for run_file in files:
         with open(run_file, "r") as f:
@@ -89,12 +93,10 @@ def run_experiments(files: "list[str]", perf_test_exe_cmd, output_dir, overwrite
             run_experiment(run_config, perf_test_exe_cmd, output_dir, overwrite)
 
 
-
 def main():
     parser = PerfArgParser()
     parser.init_args()
     args = parser.parse_args()
-
     log_dir = getattr(args, "log_dir")
     test_name = getattr(args, "test_name")
     run_files = getattr(args, "configs")
