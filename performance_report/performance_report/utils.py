@@ -21,7 +21,11 @@ import xml.etree.ElementTree as et
 
 from .qos import DURABILITY, HISTORY, RELIABILITY
 from .transport import TRANSPORT
-from rclpy.utilities import get_rmw_implementation_identifier
+
+try:
+    from rclpy.utilities import get_rmw_implementation_identifier
+except ImportError:
+    print('WARNING: rclpy could not be found. Running with shared memory is unavailable.')
 
 
 class ExperimentConfig:
