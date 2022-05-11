@@ -124,9 +124,9 @@ class FastRTPSCommunicator : public Communicator
 {
 public:
   /// The topic type to use.
-  using TopicType = typename Topic::EprosimaTopicType;
+  using TopicType = typename Topic::FastrtpsTopicType;
   /// The data type to publish and subscribe to.
-  using DataType = typename Topic::EprosimaType;
+  using DataType = typename Topic::FastrtpsType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
   explicit FastRTPSCommunicator(SpinLock & lock)
@@ -168,6 +168,7 @@ public:
       wparam.qos.m_reliability.kind = qos.reliability();
       wparam.qos.m_durability.kind = qos.durability();
       wparam.qos.m_publishMode.kind = qos.publish_mode();
+      wparam.qos.data_sharing.automatic();
       m_publisher = eprosima::fastrtps::Domain::createPublisher(m_participant, wparam);
     }
     if (m_ec.is_zero_copy_transfer()) {
@@ -203,6 +204,7 @@ public:
       rparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
       rparam.qos.m_reliability.kind = qos.reliability();
       rparam.qos.m_durability.kind = qos.durability();
+      rparam.qos.data_sharing.automatic();
       m_subscriber = eprosima::fastrtps::Domain::createSubscriber(m_participant, rparam);
     }
 

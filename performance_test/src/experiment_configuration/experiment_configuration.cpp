@@ -142,6 +142,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     allowedCommunications.push_back("FastRTPS");
 #endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+    allowedCommunications.push_back("FastDDS");
+#endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
     allowedCommunications.push_back("ConnextDDSMicro");
 #endif
@@ -330,6 +333,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     if (comm_str == "FastRTPS") {
       m_com_mean = CommunicationMean::FASTRTPS;
+    }
+#endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+    if (comm_str == "FastDDS") {
+      m_com_mean = CommunicationMean::FASTDDS;
     }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED

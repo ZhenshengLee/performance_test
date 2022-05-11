@@ -22,6 +22,10 @@
   #include <fastrtps/Domain.h>
 #endif
 
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  #include <fastdds/dds/domain/DomainParticipant.hpp>
+#endif
+
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   #include <rti_me_cpp.hxx>
 #endif
@@ -93,6 +97,11 @@ public:
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   /// Returns FastRTPS participant.
   eprosima::fastrtps::Participant * fastrtps_participant() const;
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  /// Returns FastDDS participant.
+  eprosima::fastdds::dds::DomainParticipant * fastdds_participant() const;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
@@ -178,6 +187,9 @@ private:
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     , m_fastrtps_participant(nullptr)
 #endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+    , m_fastdds_participant(nullptr)
+#endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
     , m_connext_dds_micro_participant(nullptr)
 #endif
@@ -202,6 +214,10 @@ private:
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   mutable eprosima::fastrtps::Participant * m_fastrtps_participant;
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  mutable eprosima::fastdds::dds::DomainParticipant * m_fastdds_participant;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED

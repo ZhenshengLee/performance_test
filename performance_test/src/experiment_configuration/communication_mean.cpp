@@ -37,6 +37,11 @@ std::string to_string(const CommunicationMean cm)
     return "FASTRTPS";
   }
 #endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  if (cm == CommunicationMean::FASTDDS) {
+    return "FASTDDS";
+  }
+#endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   if (cm == CommunicationMean::CONNEXTDDSMICRO) {
     return "CONNEXTDDSMICRO";

@@ -14,8 +14,17 @@
 
 #include "resource_manager.hpp"
 
-#if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED)
+#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
+  #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
+  #include <fastdds/rtps/transport/UDPv4TransportDescriptor.h>
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  #include <fastdds/dds/domain/DomainParticipantFactory.hpp>
+  #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
+  #include <fastdds/rtps/transport/UDPv4TransportDescriptor.h>
+  #include <fastrtps/Domain.h>
 #endif
 
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
@@ -35,7 +44,7 @@ namespace performance_test
 
 void ResourceManager::shutdown()
 {
-#ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
+#if ( defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED) )
   eprosima::fastrtps::Domain::stopAll();
 #endif
 #ifdef PERFORMANCE_TEST_ECAL_ENABLED
@@ -91,14 +100,26 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
 
     eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
     eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
+
+    // basic setup
+    PParam.rtps.builtin.discovery_config.discoveryProtocol = eprosima::fastrtps::rtps::DiscoveryProtocol_t::SIMPLE;
+    PParam.rtps.builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    PParam.rtps.builtin.discovery_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    PParam.rtps.builtin.discovery_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+    // tuning system network stack
     PParam.rtps.sendSocketBufferSize = 1048576;
     PParam.rtps.listenSocketBufferSize = 4194304;
-    eprosima::fastrtps::rtps::DiscoverySettings & disc_config =
-      PParam.rtps.builtin.discovery_config;
-    disc_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    disc_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    disc_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-    disc_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+    // set shm transport
+    PParam.rtps.useBuiltinTransports = false;
+    auto shm_transport = std::make_shared<eprosima::fastdds::rtps::SharedMemTransportDescriptor>();
+    // changes to 6MB, default is 0.5MB, 512 * 1024 B
+    shm_transport->segment_size(6 * 1024 * 1024);
+    PParam.rtps.userTransports.push_back(shm_transport);
+    // set udp as fallback transport
+    auto udp_transport = std::make_shared<eprosima::fastdds::rtps::UDPv4TransportDescriptor>();
+    //udp_transport->interfaceWhiteList.push_back("127.0.0.1");
+    PParam.rtps.userTransports.push_back(udp_transport);
   #if FASTRTPS_VERSION_MAJOR < 2
     PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
   #else
@@ -109,6 +130,48 @@ eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
     m_fastrtps_participant = eprosima::fastrtps::Domain::createParticipant(PParam);
   }
   return m_fastrtps_participant;
+}
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+eprosima::fastdds::dds::DomainParticipant * ResourceManager::fastdds_participant() const
+{
+  std::lock_guard<std::mutex> lock(m_global_mutex);
+
+  if (!m_fastdds_participant) {
+    eprosima::fastdds::dds::DomainParticipant * result = nullptr;
+    eprosima::fastdds::dds::DomainParticipantQos pqos;
+
+    // xml currently not supported
+    // eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
+    // eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
+
+    // basic setup
+    // common/src/eProsima/Fast-DDS/src/cpp/fastdds/domain/DomainParticipantImpl.cpp
+    pqos.wire_protocol().builtin.discovery_config.discoveryProtocol = eprosima::fastrtps::rtps::DiscoveryProtocol_t::SIMPLE;
+    pqos.wire_protocol().builtin.discovery_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
+    pqos.wire_protocol().builtin.discovery_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
+    pqos.wire_protocol().builtin.discovery_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
+    pqos.wire_protocol().builtin.discovery_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
+    // tuning system network stack
+    pqos.transport().send_socket_buffer_size = 1048576;
+    pqos.transport().listen_socket_buffer_size = 4194304;
+    // set shm transport
+    pqos.transport().use_builtin_transports = false;
+    auto shm_transport = std::make_shared<eprosima::fastdds::rtps::SharedMemTransportDescriptor>();
+    // changes to 6MB, default is 0.5MB, 512 * 1024 B
+    shm_transport->segment_size(6 * 1024 * 1024);
+    pqos.transport().user_transports.push_back(shm_transport);
+    // set udp as fallback transport
+    auto udp_transport = std::make_shared<eprosima::fastdds::rtps::UDPv4TransportDescriptor>();
+    //udp_transport->interfaceWhiteList.push_back("127.0.0.1");
+    pqos.transport().user_transports.push_back(udp_transport);
+
+    pqos.name("performance_test_fastDDS");
+
+    m_fastdds_participant = eprosima::fastdds::dds::DomainParticipantFactory::get_instance()->create_participant(m_ec.dds_domain_id(), pqos);
+  }
+  return m_fastdds_participant;
 }
 #endif
 

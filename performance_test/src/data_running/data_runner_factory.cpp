@@ -30,6 +30,10 @@
   #include "../communication_abstractions/fast_rtps_communicator.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  #include "../communication_abstractions/fast_dds_communicator.hpp"
+#endif
+
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
   #include "../communication_abstractions/connext_dds_micro_communicator.hpp"
 #endif
@@ -93,6 +97,11 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
         if (com_mean == CommunicationMean::FASTRTPS) {
           ptr = std::make_shared<DataRunner<FastRTPSCommunicator<T>>>(run_type);
+        }
+#endif
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+        if (com_mean == CommunicationMean::FASTDDS) {
+          ptr = std::make_shared<DataRunner<FastDDSCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED

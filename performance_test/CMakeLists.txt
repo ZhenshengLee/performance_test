@@ -89,11 +89,19 @@ endif()
 option(PERFORMANCE_TEST_FASTRTPS_ENABLED "Enable FastRTPS" OFF)
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   find_package(fastrtps_cmake_module QUIET REQUIRED)
-  find_package(FastRTPS QUIET REQUIRED)
+  find_package(FastRTPS 2.3.4 QUIET REQUIRED)
   add_definitions(-DPERFORMANCE_TEST_FASTRTPS_ENABLED)
   list(APPEND PLUGIN_LIBRARIES ${FastRTPS_LIBRARIES})
 endif()
 
+# FastDDS
+option(PERFORMANCE_TEST_FASTDDS_ENABLED "Enable FastDDS" OFF)
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  find_package(fastrtps_cmake_module QUIET REQUIRED)
+  find_package(FastRTPS 2.3.4 QUIET REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_FASTDDS_ENABLED)
+  list(APPEND PLUGIN_LIBRARIES ${FastRTPS_LIBRARIES})
+endif()
 
 # ConnextDDS
 option(PERFORMANCE_TEST_CONNEXTDDS_ENABLED "Enable Connext DDS Pro" OFF)
@@ -238,6 +246,10 @@ endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   list(APPEND sources src/communication_abstractions/fast_rtps_communicator.hpp)
+endif()
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  list(APPEND sources src/communication_abstractions/fast_dds_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED)

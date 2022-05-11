@@ -23,6 +23,10 @@
   #include <fast_rtps/@CMAKE_MESSAGE_NAME@PubSubTypes.h>
 #endif
 
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  #include <fast_dds/@CMAKE_MESSAGE_NAME@PubSubTypes.h>
+#endif
+
 #ifdef PERFORMANCE_TEST_ECAL_ENABLED
   #include <ecal/@CMAKE_MESSAGE_NAME@.pb.h>
 #endif
@@ -67,8 +71,13 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  using EprosimaTopicType = performance_test::msg::FastDDSGen::@CMAKE_MESSAGE_NAME@PubSubType;
-  using EprosimaType = typename EprosimaTopicType::type;
+  using FastrtpsTopicType = performance_test::msg::FastRTPSGen::@CMAKE_MESSAGE_NAME@PubSubType;
+  using FastrtpsType = typename FastrtpsTopicType::type;
+#endif
+
+#ifdef PERFORMANCE_TEST_FASTDDS_ENABLED
+  using FastddsTopicType = performance_test::msg::FastDDSGen::@CMAKE_MESSAGE_NAME@PubSubType;
+  using FastddsType = typename FastddsTopicType::type;
 #endif
 
 #ifdef PERFORMANCE_TEST_ECAL_ENABLED

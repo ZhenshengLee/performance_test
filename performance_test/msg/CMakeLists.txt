@@ -208,10 +208,17 @@ endif()
 configure_file(messages.hpp.in "${GENERATED_MESSAGES_INCLUDE_DIR}/performance_test/generated_messages/messages.hpp")
 
 
+# fastrtps and fastdds don't share msg definition
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)
   add_subdirectory(fast_rtps)
   list(APPEND IDLGEN_INCLUDE_DIR ${FAST_RTPS_IDL_INCLUDE_DIR})
   list(APPEND IDLGEN_LIBRARIES fast_rtps_idl fastcdr)
+endif()
+
+if(PERFORMANCE_TEST_FASTDDS_ENABLED)
+  add_subdirectory(fast_dds)
+  list(APPEND IDLGEN_INCLUDE_DIR ${FAST_DDS_IDL_INCLUDE_DIR})
+  list(APPEND IDLGEN_LIBRARIES fast_dds_idl fastcdr)
 endif()
 
 if(PERFORMANCE_TEST_ECAL_ENABLED)

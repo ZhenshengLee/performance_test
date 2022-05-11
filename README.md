@@ -54,17 +54,51 @@ mkdir experiment
 ./install/performance_test/lib/performance_test/perf_test -c ECAL --msg Array1k -p 1 -s 0
 ```
 
-#### eProsima Fast DDS
+#### eProsima FastRTPS
 
 - [FastDDS 2.3.x](https://github.com/eProsima/Fast-RTPS/tree/2.3.x)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c FastRTPS`
+- Zero copy transport (`--zero-copy`): no
+  - zero copy with datasharing is only provided by FastDDS-API
+- Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | INTRA | SHM                 | UDP                |
+
+#### eProsima FastDDS
+
+FastDDS API is uesd in this plugin, according to [examples here](https://github.com/eProsima/Fast-DDS/tree/2.3.x/examples/C%2B%2B/DDS)
+
+- [FastDDS 2.3.x](https://github.com/eProsima/Fast-RTPS/tree/2.3.x)
+- CMake build flag: `-DPERFORMANCE_TEST_FASTDDS_ENABLED=ON`
+- Communication plugin: `-c FastDDS`
 - Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
 - Default transports:
   | INTRA | IPC on same machine | Distributed system |
   |-------|---------------------|--------------------|
   | INTRA | SHM                 | UDP                |
+
+ps:
+
+- zero-copy is only available for non-bounded msg definitions.
+
+```bash
+source /opt/ros/galactic/setup.bash
+cd ~/perf_test_ws
+colcon build --cmake-args -DPERFORMANCE_TEST_FASTDDS_ENABLED=ON
+source ./install/setup.bash
+```
+
+```bash
+mkdir experiment
+# t1
+./install/performance_test/lib/performance_test/perf_test -c FastDDS --msg Struct16 -p 0 -s 1
+# t2
+./install/performance_test/lib/performance_test/perf_test -c FastDDS --msg Struct16 -p 1 -s 0
+```
 
 ## Performance test results
 
