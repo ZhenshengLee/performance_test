@@ -288,7 +288,7 @@ include_directories(${Rapidjson_INCLUDE_DIRS})
 
 externalproject_add(
   tabulate
-  GIT_REPOSITORY https://hub.fastgit.xyz/p-ranav/tabulate.git
+  GIT_REPOSITORY https://gitee.com/zhenshenglee/tabulate.git
   GIT_TAG v1.4
   GIT_SHALLOW TRUE
   PREFIX ${EXTERNAL_INSTALL_LOCATION}
@@ -303,7 +303,7 @@ include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION}/tabulate/include)
 
 externalproject_add(
   sole
-  GIT_REPOSITORY https://hub.fastgit.xyz/r-lyeh-archived/sole.git
+  GIT_REPOSITORY https://gitee.com/zhenshenglee/sole.git
   GIT_TAG 1.0.2
   GIT_SHALLOW TRUE
   PREFIX ${EXTERNAL_INSTALL_LOCATION}
