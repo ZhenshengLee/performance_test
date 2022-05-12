@@ -1,6 +1,6 @@
 # Changelog for package performance_test
 
-## 1.0.0 (yyyy/mm/dd)
+## 1.0.0 (2022/05/12)
 
 ### Added
 - More expressive perf_test CLI args for QOS settings

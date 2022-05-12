@@ -1,6 +1,6 @@
 # Changelog for package performance_report
 
-## 1.0.0 (yyyy/mm/dd)
+## 1.0.0 (2022/05/12)
 
 ### Added
 - Shared memory experiments are now compatible with both Apex.Middleware and rmw_cyclonedds_cpp
