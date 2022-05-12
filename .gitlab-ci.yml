@@ -81,12 +81,12 @@ build_cyclonedds:
     - apt-get install -y bison default-jdk libacl1-dev
 
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
 
     - mkdir -p /iceoryx_ws/src
     - cd /iceoryx_ws/src/
     - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
-    - rosdep install --from iceoryx --ignore-src -y
+    - rosdep install --from-paths iceoryx --ignore-src -y
     - cd /iceoryx_ws
     - '
       colcon build
@@ -141,7 +141,7 @@ build_rmw_cyclonedds_cpp:
     - apt-get install -y bison default-jdk libacl1-dev
 
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
 
     - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
     - cd cyclonedds
@@ -191,12 +191,12 @@ build_cyclonedds_cxx:
     - apt-get install -y bison default-jdk libacl1-dev
 
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
 
     - mkdir -p /iceoryx_ws/src
     - cd /iceoryx_ws/src/
     - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
-    - rosdep install --from iceoryx --ignore-src -y
+    - rosdep install --from-paths iceoryx --ignore-src -y
     - cd /iceoryx_ws
     - '
       colcon build
@@ -268,7 +268,7 @@ build_iceoryx:
     - mkdir -p /iceoryx_ws/src
     - cd /iceoryx_ws/src/
     - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
-    - rosdep install --from iceoryx --ignore-src -y
+    - rosdep install --from-paths iceoryx --ignore-src -y
     - cd /iceoryx_ws
     - '
       colcon build
@@ -311,7 +311,7 @@ build_opendds:
     - apt-get update
     - apt-get install -y wget
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
     - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opt-opendds-3.13.2.tar.gz
     - tar -xzf opt-opendds-3.13.2.tar.gz -C /
     - find /opt/opendds
@@ -347,7 +347,7 @@ build_fastrtps:
     - apt-get update
     - apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
     - apt remove -y ros-rolling-fastrtps
     - mkdir -p Fast-DDS
     - cd Fast-DDS
@@ -413,8 +413,9 @@ test:
     - build_rclcpp_rolling
   script:
     - apt-get update
-    - apt-get install -y python3-pip
-    - python3 -m pip install bokeh selenium pandas
+    - sudo apt-get install -y python3-pip
+    - rosdep update --include-eol-distros
+    - rosdep install --from-paths performance_test performance_report --ignore-src -y
     - tar xf opt.tar.gz -C /
     - '
       colcon test
@@ -434,7 +435,7 @@ test:
   script:
     - apt-get update
     - rosdep update --include-eol-distros
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
@@ -626,7 +627,7 @@ test_security_fast_dds:
   script:
     - apt-get update
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
     - tar xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
@@ -653,7 +654,7 @@ test_security_cyclone_dds:
   script:
     - apt-get update
     - rosdep update
-    - rosdep install --from performance_test --ignore-src -y
+    - rosdep install --from-paths performance_test --ignore-src -y
 
     - tar xzf opt-cyclonedds.tar.gz -C /
     - export LD_LIBRARY_PATH=/opt/cyclonedds/lib:$LD_LIBRARY_PATH
