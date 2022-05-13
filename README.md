@@ -20,14 +20,48 @@ I'll try my best to make the branch of repo to rebase with the latest commit of 
 
 ### Native plugins
 
-#### Continental eCAL
+#### Continental eCAL with raw rosidl
 
 - [eCAL 5.10.x](https://github.com/continental/ecal/tree/support/v5.10)
-- CMake build flag: `-DPERFORMANCE_TEST_ECAL_ENABLED=ON`
-- Communication plugin: `-c ECAL`
+- CMake build flag: `-DPERFORMANCE_TEST_ECAL_RAW_ENABLED=ON`
+- Communication plugin: `-c ECAL_RAW`
 - The eCAL plugin is not a complete DDS implementation.
   - Some DDS-specific options (such as domain ID) do not apply.
 - Zero copy transport (`--zero-copy`): yes
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system                  |
+  |-------|---------------------|-------------------------------------|
+  | INTRA | SHM                 | Not supported by performance_test   |
+
+ps:
+
+- `eCAL::CPublisher` is used.
+- rosidl datatype is used.
+
+```bash
+source /opt/ros/galactic/setup.bash
+cd ~/perf_test_ws
+colcon build --cmake-args -DPERFORMANCE_TEST_ECAL_RAW_ENABLED=ON
+source ./install/setup.bash
+```
+
+```bash
+mkdir experiment
+# t1
+./install/performance_test/lib/performance_test/perf_test -c ECAL --msg Array1k -p 0 -s 1
+# t2
+./install/performance_test/lib/performance_test/perf_test -c ECAL --msg Array1k -p 1 -s 0
+```
+
+#### Continental eCAL with protobuf
+
+- [eCAL 5.10.x](https://github.com/continental/ecal/tree/support/v5.10)
+- CMake build flag: `-DPERFORMANCE_TEST_ECAL_PROTO_ENABLED=ON`
+- Communication plugin: `-c ECAL_PROTO`
+- The eCAL plugin is not a complete DDS implementation.
+  - Some DDS-specific options (such as domain ID) do not apply.
+- Zero copy transport (`--zero-copy`): no
+  - ser/deserialization cannot be avoided with protobuf
 - Default transports:
   | INTRA | IPC on same machine | Distributed system     |
   |-------|---------------------|------------------------|
@@ -42,16 +76,16 @@ ps:
 ```bash
 source /opt/ros/galactic/setup.bash
 cd ~/perf_test_ws
-colcon build --cmake-args -DPERFORMANCE_TEST_ECAL_ENABLED=ON
+colcon build --cmake-args -DPERFORMANCE_TEST_ECAL_PROTO_ENABLED=ON
 source ./install/setup.bash
 ```
 
 ```bash
 mkdir experiment
 # t1
-./install/performance_test/lib/performance_test/perf_test -c ECAL --msg Array1k -p 0 -s 1
+./install/performance_test/lib/performance_test/perf_test -c ECAL_PROTO --msg Array1k -p 0 -s 1
 # t2
-./install/performance_test/lib/performance_test/perf_test -c ECAL --msg Array1k -p 1 -s 0
+./install/performance_test/lib/performance_test/perf_test -c ECAL_PROTO --msg Array1k -p 1 -s 0
 ```
 
 #### eProsima FastRTPS

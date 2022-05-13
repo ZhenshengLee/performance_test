@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef COMMUNICATION_ABSTRACTIONS__ECAL_COMMUNICATOR_HPP_
-#define COMMUNICATION_ABSTRACTIONS__ECAL_COMMUNICATOR_HPP_
+#ifndef COMMUNICATION_ABSTRACTIONS__ECAL_PROTO_COMMUNICATOR_HPP_
+#define COMMUNICATION_ABSTRACTIONS__ECAL_PROTO_COMMUNICATOR_HPP_
 
 #include <ecal/ecal.h>
 #include <ecal/msg/protobuf/publisher.h>
@@ -30,14 +30,14 @@ namespace performance_test
 {
 
 /// Translates abstract QOS settings to specific QOS settings for eCAL.
-class EcalQOSAdapter
+class EcalProtoQOSAdapter
 {
 public:
   /**
    * \brief Constructs the QOS adapter.
    * \param qos The abstract QOS settings the adapter should use to derive the implementation specific QOS settings.
    */
-  explicit EcalQOSAdapter(const QOSAbstraction qos)
+  explicit EcalProtoQOSAdapter(const QOSAbstraction qos)
   : m_qos(qos)
   {}
 
@@ -86,14 +86,14 @@ private:
  * \tparam Msg The msg type to use.
  */
 template<class Msg>
-class EcalCommunicator : public Communicator
+class EcalProtoCommunicator : public Communicator
 {
 public:
   /// The data type to use.
   using DataType = typename Msg::EcalType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit EcalCommunicator(SpinLock & lock)
+  explicit EcalProtoCommunicator(SpinLock & lock)
   : Communicator(lock),
     m_publisher(nullptr),
     m_subscriber(nullptr)
@@ -114,7 +114,7 @@ public:
   void publish(std::int64_t time)
   {
     if (m_publisher == nullptr) {
-      const EcalQOSAdapter qos(m_ec.qos());
+      const EcalProtoQOSAdapter qos(m_ec.qos());
       ResourceManager::get().init_ecal_runtime();
       eCAL::QOS::SWriterQOS writerQos;
       writerQos.history_kind = qos.history_kind();
@@ -132,6 +132,8 @@ public:
     if (m_ec.is_zero_copy_transfer()) {
       // enable zero copy mode
       m_publisher->ShmEnableZeroCopy(1);
+    } else {
+      m_publisher->ShmEnableZeroCopy(0);
     }
 
     lock();
@@ -156,7 +158,7 @@ public:
   void update_subscription()
   {
     if (m_subscriber == nullptr) {
-      const EcalQOSAdapter qos(m_ec.qos());
+      const EcalProtoQOSAdapter qos(m_ec.qos());
       ResourceManager::get().init_ecal_runtime();
       eCAL::QOS::SReaderQOS ReaderQos;
       ReaderQos.history_kind = qos.history_kind();
@@ -222,4 +224,4 @@ private:
 
 }  // namespace performance_test
 
-#endif  // COMMUNICATION_ABSTRACTIONS__ECAL_COMMUNICATOR_HPP_
+#endif  // COMMUNICATION_ABSTRACTIONS__ECAL_PROTO_COMMUNICATOR_HPP_

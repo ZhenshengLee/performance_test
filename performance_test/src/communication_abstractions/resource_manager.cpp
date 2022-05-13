@@ -31,7 +31,7 @@
   #include "iceoryx_posh/runtime/posh_runtime.hpp"
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
   #include <ecal/ecal.h>
 #endif
 
@@ -47,7 +47,7 @@ void ResourceManager::shutdown()
 #if ( defined(PERFORMANCE_TEST_FASTRTPS_ENABLED) || defined(PERFORMANCE_TEST_FASTDDS_ENABLED) )
   eprosima::fastrtps::Domain::stopAll();
 #endif
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
   eCAL::Finalize();
 #endif
 }
@@ -388,7 +388,7 @@ void ResourceManager::init_iceoryx_runtime() const
 }
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
 void ResourceManager::init_ecal_runtime() const
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);

@@ -164,7 +164,7 @@ set(CMAKE_MESSAGE_CLASS_TYPES "// Generated message classes")
 set(CMAKE_MESSAGE_INCLUDE_STATEMENTS "// Generated message files")
 
 
-if(PERFORMANCE_TEST_ECAL_ENABLED)
+if(PERFORMANCE_TEST_ECAL_PROTO_ENABLED)
   # only generate supported proto files
   foreach(idl ${SUPPORTED_PROTO_FILES})
     get_filename_component(filename ${idl} NAME)
@@ -221,7 +221,7 @@ if(PERFORMANCE_TEST_FASTDDS_ENABLED)
   list(APPEND IDLGEN_LIBRARIES fast_dds_idl fastcdr)
 endif()
 
-if(PERFORMANCE_TEST_ECAL_ENABLED)
+if(PERFORMANCE_TEST_ECAL_PROTO_ENABLED)
   add_subdirectory(ecal)
   list(APPEND IDLGEN_INCLUDE_DIR ${ECAL_IDL_INCLUDE_DIR})
   list(APPEND IDLGEN_LIBRARIES ecal_idl eCAL::core protobuf::libprotobuf)
@@ -255,6 +255,15 @@ if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   if(NOT PERFORMANCE_TEST_RCLCPP_ENABLED)
     message(FATAL_ERROR
     "The iceoryx plugin depends on the rosidl generated messages. "
+    "ROS2 must be installed in your environment, and "
+    "PERFORMANCE_TEST_RCLCPP_ENABLED must be ON.")
+  endif()
+endif()
+
+if(PERFORMANCE_TEST_ECAL_RAW_ENABLED)
+  if(NOT PERFORMANCE_TEST_RCLCPP_ENABLED)
+    message(FATAL_ERROR
+    "The ecal_raw plugin depends on the rosidl generated messages. "
     "ROS2 must be installed in your environment, and "
     "PERFORMANCE_TEST_RCLCPP_ENABLED must be ON.")
   endif()

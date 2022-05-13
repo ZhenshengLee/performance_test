@@ -54,8 +54,12 @@
   #include "../communication_abstractions/iceoryx_communicator.hpp"
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
-  #include "../communication_abstractions/ecal_communicator.hpp"
+#ifdef PERFORMANCE_TEST_ECAL_RAW_ENABLED
+  #include "../communication_abstractions/ecal_raw_communicator.hpp"
+#endif
+
+#ifdef PERFORMANCE_TEST_ECAL_PROTO_ENABLED
+  #include "../communication_abstractions/ecal_proto_communicator.hpp"
 #endif
 
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
@@ -129,9 +133,14 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
           ptr = std::make_shared<DataRunner<IceoryxCommunicator<T>>>(run_type);
         }
 #endif
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
-        if (com_mean == CommunicationMean::ECAL) {
-          ptr = std::make_shared<DataRunner<EcalCommunicator<T>>>(run_type);
+#ifdef PERFORMANCE_TEST_ECAL_RAW_ENABLED
+        if (com_mean == CommunicationMean::ECAL_RAW) {
+          ptr = std::make_shared<DataRunner<EcalRawCommunicator<T>>>(run_type);
+        }
+#endif
+#ifdef PERFORMANCE_TEST_ECAL_PROTO_ENABLED
+        if (com_mean == CommunicationMean::ECAL_PROTO) {
+          ptr = std::make_shared<DataRunner<EcalProtoCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED

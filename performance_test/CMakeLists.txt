@@ -165,11 +165,19 @@ if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   list(APPEND PLUGIN_LIBRARIES iceoryx_posh::iceoryx_posh)
 endif()
 
-# eCAL
-option(PERFORMANCE_TEST_ECAL_ENABLED "Require ECAL to be available, fail otherwise" OFF)
-if(PERFORMANCE_TEST_ECAL_ENABLED)
+# ECAL_RAW
+option(PERFORMANCE_TEST_ECAL_RAW_ENABLED "Require ECAL to be available, fail otherwise" OFF)
+if(PERFORMANCE_TEST_ECAL_RAW_ENABLED)
   find_package(eCAL CONFIG REQUIRED)
-  add_definitions(-DPERFORMANCE_TEST_ECAL_ENABLED)
+  add_definitions(-DPERFORMANCE_TEST_ECAL_RAW_ENABLED)
+  list(APPEND PLUGIN_LIBRARIES eCAL::core)
+endif()
+
+# ECAL_PROTO
+option(PERFORMANCE_TEST_ECAL_PROTO_ENABLED "Require ECAL to be available, fail otherwise" OFF)
+if(PERFORMANCE_TEST_ECAL_PROTO_ENABLED)
+  find_package(eCAL CONFIG REQUIRED)
+  add_definitions(-DPERFORMANCE_TEST_ECAL_PROTO_ENABLED)
   list(APPEND PLUGIN_LIBRARIES eCAL::core)
 endif()
 
@@ -268,8 +276,12 @@ if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   list(APPEND sources src/communication_abstractions/iceoryx_communicator.hpp)
 endif()
 
-if(PERFORMANCE_TEST_ECAL_ENABLED)
-  list(APPEND sources src/communication_abstractions/ecal_communicator.hpp)
+if(PERFORMANCE_TEST_ECAL_PROTO_ENABLED)
+  list(APPEND sources src/communication_abstractions/ecal_raw_communicator.hpp)
+endif()
+
+if(PERFORMANCE_TEST_ECAL_PROTO_ENABLED)
+  list(APPEND sources src/communication_abstractions/ecal_proto_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_OPENDDS_ENABLED)
