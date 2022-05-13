@@ -155,7 +155,7 @@ public:
   void init_iceoryx_runtime() const;
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
   void init_ecal_runtime() const;
 #endif
 
@@ -246,7 +246,7 @@ private:
   mutable bool m_iceoryx_initialized = false;
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#if ( defined(PERFORMANCE_TEST_ECAL_RAW_ENABLED) || defined(PERFORMANCE_TEST_ECAL_PROTO_ENABLED) )
   mutable bool m_ecal_initialized = false;
 #endif
 

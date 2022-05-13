@@ -160,8 +160,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
     allowedCommunications.push_back("iceoryx");
 #endif
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
-    allowedCommunications.push_back("ECAL");
+#ifdef PERFORMANCE_TEST_ECAL_RAW_ENABLED
+    allowedCommunications.push_back("ECAL_RAW");
+#endif
+#ifdef PERFORMANCE_TEST_ECAL_PROTO_ENABLED
+    allowedCommunications.push_back("ECAL_PROTO");
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
     allowedCommunications.push_back("OpenDDS");
@@ -365,9 +368,14 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean = CommunicationMean::ICEORYX;
     }
 #endif
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
-    if (comm_str == "ECAL") {
-      m_com_mean = CommunicationMean::ECAL;
+#ifdef PERFORMANCE_TEST_ECAL_RAW_ENABLED
+    if (comm_str == "ECAL_RAW") {
+      m_com_mean = CommunicationMean::ECAL_RAW;
+    }
+#endif
+#ifdef PERFORMANCE_TEST_ECAL_PROTO_ENABLED
+    if (comm_str == "ECAL_PROTO") {
+      m_com_mean = CommunicationMean::ECAL_PROTO;
     }
 #endif
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED

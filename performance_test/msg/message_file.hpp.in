@@ -27,7 +27,7 @@
   #include <fast_dds/@CMAKE_MESSAGE_NAME@PubSubTypes.h>
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#ifdef PERFORMANCE_TEST_ECAL_PROTO_ENABLED
   #include <ecal/@CMAKE_MESSAGE_NAME@.pb.h>
 #endif
 
@@ -80,7 +80,7 @@ public:
   using FastddsType = typename FastddsTopicType::type;
 #endif
 
-#ifdef PERFORMANCE_TEST_ECAL_ENABLED
+#ifdef PERFORMANCE_TEST_ECAL_PROTO_ENABLED
   using EcalType = performance_test::msg::EcalGen::@CMAKE_MESSAGE_NAME@;
 #endif
 
