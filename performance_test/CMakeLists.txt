@@ -276,7 +276,7 @@ if(PERFORMANCE_TEST_ICEORYX_ENABLED)
   list(APPEND sources src/communication_abstractions/iceoryx_communicator.hpp)
 endif()
 
-if(PERFORMANCE_TEST_ECAL_PROTO_ENABLED)
+if(PERFORMANCE_TEST_ECAL_RAW_ENABLED)
   list(APPEND sources src/communication_abstractions/ecal_raw_communicator.hpp)
 endif()
 

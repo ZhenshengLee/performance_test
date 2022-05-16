@@ -100,7 +100,7 @@ public:
   {
     auto hz = static_cast<double>(this->m_ec.rate());
     auto period_ms = 1000.0 / hz;
-    this->m_timeout_ms = std::max(10 * period_ms, 100.0);
+    this->m_timeout_ms = static_cast<int>(std::max(10 * period_ms, 100.0));
   }
 
   /**
@@ -117,23 +117,23 @@ public:
       const EcalProtoQOSAdapter qos(m_ec.qos());
       ResourceManager::get().init_ecal_runtime();
       eCAL::QOS::SWriterQOS writerQos;
-      writerQos.history_kind = qos.history_kind();
-      writerQos.reliability = qos.reliability();
+      writerQos.history_kind       = qos.history_kind();
+      writerQos.reliability        = qos.reliability();
       writerQos.history_kind_depth = qos.history_depth();
       m_publisher = std::unique_ptr<eCAL::protobuf::CPublisher<DataType>>(
         new eCAL::protobuf::CPublisher<DataType>(m_ec.topic_name()));
       // https://github.com/ZhenshengLee/performance_test/issues/1
-      m_publisher->SetQOS(writerQos);
-    }
-    // set number of publisher memory buffers to improve performance
-    // https://github.com/ZhenshengLee/performance_test/issues/1
-    m_publisher->ShmSetBufferCount(1);
-
-    if (m_ec.is_zero_copy_transfer()) {
-      // enable zero copy mode
-      m_publisher->ShmEnableZeroCopy(1);
-    } else {
-      m_publisher->ShmEnableZeroCopy(0);
+      // m_publisher->SetQOS(writerQos);
+      // set number of used publisher memory buffer
+      // https://github.com/ZhenshengLee/performance_test/issues/1
+      m_publisher->ShmSetBufferCount(1);
+      if (m_ec.is_zero_copy_transfer()){
+        // enable zero copy mode
+        m_publisher->ShmEnableZeroCopy(1);
+      } else {
+        // disable zero copy mode
+        m_publisher->ShmEnableZeroCopy(0);
+      }
     }
 
     lock();
@@ -141,6 +141,17 @@ public:
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
     m_publisher->Send(m_data);
+  }
+
+  // subscriber callback function
+  void on_receive(const DataType& data_)
+  {
+    // read time and id out of the received buffer
+    lock();
+    m_data = data_;
+    unlock();
+    // signal update_subscription to process
+    gSetEvent(m_event);
   }
 
   /**
@@ -160,19 +171,21 @@ public:
     if (m_subscriber == nullptr) {
       const EcalProtoQOSAdapter qos(m_ec.qos());
       ResourceManager::get().init_ecal_runtime();
-      eCAL::QOS::SReaderQOS ReaderQos;
-      ReaderQos.history_kind = qos.history_kind();
-      ReaderQos.reliability = qos.reliability();
-      ReaderQos.history_kind_depth = qos.history_depth();
+      eCAL::QOS::SReaderQOS readerQos;
+      readerQos.history_kind       = qos.history_kind();
+      readerQos.reliability        = qos.reliability();
+      readerQos.history_kind_depth = qos.history_depth();
       m_subscriber = std::unique_ptr<eCAL::protobuf::CSubscriber<DataType>>(
         new eCAL::protobuf::CSubscriber<DataType>(m_ec.topic_name()));
       // https://github.com/ZhenshengLee/performance_test/issues/1
-      m_subscriber->SetQOS(ReaderQos);
+      // m_subscriber->SetQOS(readerQos);
+      // add receive callback
+      m_subscriber->AddReceiveCallback(std::bind(&EcalProtoCommunicator::on_receive, this, std::placeholders::_2));
+      // create sync event
+      eCAL::gOpenEvent(&m_event);
     }
 
-    bool success = m_subscriber->Receive(m_data, nullptr, m_timeout_ms);
-    if(success)
-    {
+    if( gWaitForEvent(m_event, m_timeout_ms) ) {
       lock();
       if (m_prev_timestamp >= m_data.time()) {
         throw std::runtime_error(
@@ -192,8 +205,8 @@ public:
         add_latency_to_statistics(m_data.time());
         increment_received();
       }
+      unlock();
     }
-    unlock();
   }
 
   /// Returns the data received in bytes.
@@ -203,18 +216,20 @@ public:
   }
 
 private:
-  std::unique_ptr<eCAL::protobuf::CPublisher<DataType>> m_publisher;
+  std::unique_ptr<eCAL::protobuf::CPublisher<DataType>>  m_publisher;
   std::unique_ptr<eCAL::protobuf::CSubscriber<DataType>> m_subscriber;
 
-  DataType m_data;
-
-  int m_timeout_ms;
+  eCAL::EventHandleT                                     m_event;
+  int                                                    m_timeout_ms;
+  DataType                                               m_data;
 
   void init_msg(DataType & msg, std::int64_t time)
   {
     // set array size and fill it with 0
-    msg.set_msg_array_size(msg.msg_array_size_e_MAX);
-    msg.mutable_array()->Resize(msg.msg_array_size_e_MAX, 0);
+    if(msg.array().size() < msg.msg_array_size_e_MAX) {
+      msg.set_msg_array_size(msg.msg_array_size_e_MAX);
+      msg.mutable_array()->Resize(msg.msg_array_size_e_MAX, 0);
+    }
     // set time and id
     msg.set_time(time);
     msg.set_id(next_sample_id());
