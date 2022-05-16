@@ -146,9 +146,10 @@ public:
   // subscriber callback function
   void on_receive(const DataType& data_)
   {
-    // read time and id out of the received buffer
     lock();
-    m_data = data_;
+    // read time and id out of the received message
+    m_data.set_time(data_.time());
+    m_data.set_id(data_.id());
     unlock();
     // signal update_subscription to process
     gSetEvent(m_event);
@@ -212,7 +213,8 @@ public:
   /// Returns the data received in bytes.
   std::size_t data_received()
   {
-    return num_received_samples() * sizeof(DataType);
+    // still not correct but better then sizeof(DataType)
+    return num_received_samples() * m_data.msg_array_size() * sizeof(google::protobuf::uint32);
   }
 
 private:
