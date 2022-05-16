@@ -1,13 +1,15 @@
 // Copyright 2022 Zhenshenglee, Inc.
-syntax = "proto2";
+
+syntax = "proto3";
 
 package performance_test.msg.__plugin__;
 
 message Array16k
 {
   // 16384/4
-  required int32 msg_array_size = 1 [default = 4096];
-  repeated uint32 array = 2;
-  required int64 time = 3;
-  required uint64 id = 4;
+  enum msg_array_size_e {MIN = 0; MAX = 4096;}
+  msg_array_size_e msg_array_size = 1;
+  repeated fixed32 array          = 2;
+  int64            time           = 3;
+  uint64           id             = 4;
 }

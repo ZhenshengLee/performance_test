@@ -212,10 +212,10 @@ private:
 
   void init_msg(DataType & msg, std::int64_t time)
   {
-    msg.clear_msg_array_size();
-    msg.set_msg_array_size(msg.msg_array_size());
-    // fill with 0
-    msg.mutable_array()->Resize(msg.msg_array_size(), 0);
+    // set array size and fill it with 0
+    msg.set_msg_array_size(msg.msg_array_size_e_MAX);
+    msg.mutable_array()->Resize(msg.msg_array_size_e_MAX, 0);
+    // set time and id
     msg.set_time(time);
     msg.set_id(next_sample_id());
     ensure_fixed_size(msg);
