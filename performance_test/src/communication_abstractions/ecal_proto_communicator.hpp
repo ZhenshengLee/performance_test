@@ -21,6 +21,8 @@
 
 #include <string>
 #include <memory>
+#include <mutex>
+#include <condition_variable>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
@@ -146,13 +148,14 @@ public:
   // subscriber callback function
   void on_receive(const DataType& data_)
   {
-    lock();
     // read time and id out of the received message
+    std::unique_lock<std::mutex> lk(m_cb_mtx);
+    lock();
     m_data.set_time(data_.time());
     m_data.set_id(data_.id());
     unlock();
     // signal update_subscription to process
-    gSetEvent(m_event);
+    m_cb_cv.notify_one();
   }
 
   /**
@@ -182,11 +185,11 @@ public:
       // m_subscriber->SetQOS(readerQos);
       // add receive callback
       m_subscriber->AddReceiveCallback(std::bind(&EcalProtoCommunicator::on_receive, this, std::placeholders::_2));
-      // create sync event
-      eCAL::gOpenEvent(&m_event);
     }
 
-    if( gWaitForEvent(m_event, m_timeout_ms) ) {
+    // did we get new receives ?
+    std::unique_lock<std::mutex> lk(m_cb_mtx);
+    if(m_cb_cv.wait_for(lk, std::chrono::milliseconds(m_timeout_ms)) ==  std::cv_status::no_timeout) {
       lock();
       if (m_prev_timestamp >= m_data.time()) {
         throw std::runtime_error(
@@ -220,9 +223,9 @@ public:
 private:
   std::unique_ptr<eCAL::protobuf::CPublisher<DataType>>  m_publisher;
   std::unique_ptr<eCAL::protobuf::CSubscriber<DataType>> m_subscriber;
-
-  eCAL::EventHandleT                                     m_event;
-  int                                                    m_timeout_ms;
+  std::mutex                                             m_cb_mtx;
+  std::condition_variable                                m_cb_cv;
+  int                                                    m_timeout_ms = 0;
   DataType                                               m_data;
 
   void init_msg(DataType & msg, std::int64_t time)
