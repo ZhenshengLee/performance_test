@@ -19,6 +19,8 @@
 
 #include <string>
 #include <memory>
+#include <mutex>
+#include <condition_variable>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
@@ -145,13 +147,14 @@ public:
   void on_receive(const struct eCAL::SReceiveCallbackData* data_)
   {
     // read time and id out of the received buffer
+    std::unique_lock<std::mutex> lk(m_cb_mtx);
     lock();
     DataType* data_type_ptr = static_cast<DataType*>(data_->buf);
     m_data.time = data_type_ptr->time;
     m_data.id   = data_type_ptr->id;
     unlock();
     // signal update_subscription to process
-    gSetEvent(m_event);
+    m_cb_cv.notify_one();
   }
   /**
    * \brief Reads received data.
@@ -179,12 +182,11 @@ public:
       // m_subscriber->SetQOS(readerQos);
       // add receive callback
       m_subscriber->AddReceiveCallback(std::bind(&EcalRawCommunicator::on_receive, this, std::placeholders::_2));
-      // create sync event
-      eCAL::gOpenEvent(&m_event);
     }
 
     // did we get new receives ?
-    if( gWaitForEvent(m_event, m_timeout_ms) ) {
+    std::unique_lock<std::mutex> lk(m_cb_mtx);
+    if(m_cb_cv.wait_for(lk, std::chrono::milliseconds(m_timeout_ms)) ==  std::cv_status::no_timeout) {
       lock();
       if (m_prev_timestamp >= m_data.time) {
         throw std::runtime_error(
@@ -215,13 +217,12 @@ public:
   }
 
 private:
-  std::unique_ptr<eCAL::CPublisher> m_publisher;
+  std::unique_ptr<eCAL::CPublisher>  m_publisher;
   std::unique_ptr<eCAL::CSubscriber> m_subscriber;
-
-  eCAL::EventHandleT m_event;
-  int m_timeout_ms = 0;
-
-  DataType m_data;
+  std::mutex                         m_cb_mtx;
+  std::condition_variable            m_cb_cv;
+  int                                m_timeout_ms = 0;
+  DataType                           m_data;
 };
 
 }  // namespace performance_test
