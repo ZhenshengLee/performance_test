@@ -12,20 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DATA_RUNNING__DATA_RUNNER_FACTORY_HPP_
-#define DATA_RUNNING__DATA_RUNNER_FACTORY_HPP_
+#ifndef DATA_RUNNING__DATA_ENTITY_FACTORY_HPP_
+#define DATA_RUNNING__DATA_ENTITY_FACTORY_HPP_
 
 #include <memory>
 #include <string>
 
-#include "data_runner_base.hpp"
 #include "../experiment_configuration/communication_mean.hpp"
+#include "../communication_abstractions/communicator.hpp"
+#include "data_entity.hpp"
 
 namespace performance_test
 {
 
 /// Factory to create a data runner.
-class DataRunnerFactory
+class DataEntityFactory
 {
 public:
   /**
@@ -35,12 +36,13 @@ public:
    * \param run_type The run type the created object should user.
    * \return The created object subject to the provided parameters.
    */
-  static std::shared_ptr<DataRunnerBase> get(
+  static std::shared_ptr<DataEntity> get(
     const std::string & msg_name,
     CommunicationMean com_mean,
-    const RunType run_type);
+    const RunType run_type,
+    DataStats & stats);
 };
 
 }  // namespace performance_test
 
-#endif  // DATA_RUNNING__DATA_RUNNER_FACTORY_HPP_
+#endif  // DATA_RUNNING__DATA_ENTITY_FACTORY_HPP_

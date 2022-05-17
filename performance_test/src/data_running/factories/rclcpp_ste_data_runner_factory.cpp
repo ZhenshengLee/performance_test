@@ -20,23 +20,37 @@
 #include <performance_test/generated_messages/messages.hpp>
 #include <performance_test/for_each.hpp>
 
-#include "../data_runner.hpp"
 #include "../../communication_abstractions/rclcpp_callback_communicator.hpp"
+#include "../data_publisher.hpp"
+#include "../data_subscriber.hpp"
 
 namespace performance_test
 {
 namespace RclcppSteDataRunnerFactory
 {
-std::shared_ptr<DataRunnerBase> get(const std::string & msg_name, const RunType run_type)
+std::shared_ptr<DataEntity> get(
+  const std::string & msg_name,
+  const RunType run_type,
+  DataStats & stats)
 {
-  std::shared_ptr<DataRunnerBase> ptr;
+  std::shared_ptr<DataEntity> ptr;
   performance_test::for_each(
     messages::MessageTypeList(),
-    [&ptr, msg_name, run_type](const auto & msg_type) {
+    [&ptr, msg_name, run_type, &stats](const auto & msg_type) {
       using T = std::remove_cv_t<std::remove_reference_t<decltype(msg_type)>>;
       if (T::msg_name() == msg_name) {
-        ptr = std::make_shared<DataRunner<
-          RclcppSingleThreadedExecutorCommunicator<T>>>(run_type);
+        switch (run_type) {
+          case RunType::PUBLISHER:
+            ptr = std::make_shared<
+              DataPublisher<RclcppSingleThreadedExecutorCommunicator<T>>>(
+              stats);
+            break;
+          case RunType::SUBSCRIBER:
+            ptr = std::make_shared<
+              DataSubscriber<RclcppSingleThreadedExecutorCommunicator<T>>>(
+              stats);
+            break;
+        }
       }
     });
   if (!ptr) {

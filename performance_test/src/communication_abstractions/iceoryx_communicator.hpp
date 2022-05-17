@@ -38,20 +38,13 @@ public:
   using DataType = typename Msg::RosType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit IceoryxCommunicator(SpinLock & lock)
-  : Communicator(lock)
-  {
-  }
+  explicit IceoryxCommunicator(DataStats & stats)
+  : Communicator(stats) {}
 
-  /**
-   * \brief Publishes the provided data.
-   *
-   *  The first time this function is called it also creates the publisher.
-   *  Further it updates all internal counters while running.
-   * \param data The data to publish.
-   * \param time The time to fill into the data field.
-   */
-  void publish(std::int64_t time)
+  void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) override
   {
     if (m_publisher == nullptr) {
       ResourceManager::get().init_iceoryx_runtime();
@@ -66,10 +59,10 @@ public:
       m_publisher->loan()
       .and_then(
         [&](auto & sample) {
-          lock();
+          m_stats.lock();
           init_msg(*sample, time);
-          increment_sent();  // We increment before publishing so we don't have to lock twice.
-          unlock();
+          m_stats.update_publisher_stats(remaining_time_to_publish);
+          m_stats.unlock();
           sample.publish();
         })
       .or_else(
@@ -77,10 +70,10 @@ public:
           throw std::runtime_error("Failed to write to sample");
         });
     } else {
-      lock();
+      m_stats.lock();
       init_msg(m_data, time);
-      increment_sent();  // We increment before publishing so we don't have to lock twice.
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       m_publisher->publishCopyOf(m_data)
       .or_else(
         [](auto &) {
@@ -89,19 +82,7 @@ public:
     }
   }
 
-  /**
-   * \brief Reads received data.
-   *
-   * The first time this function is called it also creates the subscriber.
-   * In detail this function:
-   * * Reads samples.
-   * * Verifies that the data arrived in the right order, chronologically and also
-   *   consistent with the publishing order.
-   * * Counts received and lost samples.
-   * * Calculates the latency of the samples received and updates the statistics
-       accordingly.
-   */
-  void update_subscription()
+  void update_subscription() override
   {
     if (m_subscriber == nullptr) {
       ResourceManager::get().init_iceoryx_runtime();
@@ -128,41 +109,32 @@ public:
       auto eventVector = m_waitset->timedWait(iox::units::Duration::fromSeconds(15));
       for (auto & event : eventVector) {
         if (event->doesOriginateFrom(m_subscriber.get())) {
-          lock();
+          m_stats.lock();
           while (m_subscriber->hasData()) {
             m_subscriber->take()
             .and_then(
               [this](auto & data) {
-                if (m_prev_timestamp >= data->time) {
-                  throw std::runtime_error(
-                    "Data consistency violated. Received sample with not strictly older timestamp. "
-                    "Time diff: " + std::to_string(data->time - m_prev_timestamp) +
-                    " Data Time: " + std::to_string(data->time));
-                }
-                m_prev_timestamp = data->time;
-                update_lost_samples_counter(data->id);
-                add_latency_to_statistics(data->time);
-                increment_received();
+                check_data_consistency(data->time);
+                m_stats.update_subscriber_stats(
+                  data->time, data->id,
+                  sizeof(DataType));
               })
             .or_else(
               [](auto & result) {
-                if (result != iox::popo::ChunkReceiveResult::NO_CHUNK_AVAILABLE) {
-                  throw std::runtime_error("Error: received Chunk not available");
+                if (result !=
+                iox::popo::ChunkReceiveResult::NO_CHUNK_AVAILABLE)
+                {
+                  throw std::runtime_error(
+                    "Error: received Chunk not available");
                 }
               });
           }
-          unlock();
+          m_stats.unlock();
         }
       }
     } else {
       std::cout << "Not subscribed!" << std::endl;
     }
-  }
-
-  /// Returns the data received in bytes.
-  std::size_t data_received()
-  {
-    return num_received_samples() * sizeof(DataType);
   }
 
 private:

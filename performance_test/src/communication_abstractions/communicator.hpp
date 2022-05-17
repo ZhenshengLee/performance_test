@@ -15,77 +15,45 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__COMMUNICATOR_HPP_
 
-#include <stdexcept>
 #include <limits>
-#include <atomic>
+#include <memory>
+#include <stdexcept>
+#include <vector>
 
-#include "../utilities/spin_lock.hpp"
-#include "../utilities/statistics_tracker.hpp"
-#include "../experiment_configuration/experiment_configuration.hpp"
+#include "../experiment_execution/data_stats.hpp"
 
 namespace performance_test
 {
 
-/// Helper base class for communication plugins which provides sample tracking helper functionality.
+/// Helper base class for communication plugins which provides sample tracking
+/// helper functionality.
 class Communicator
 {
 public:
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit Communicator(SpinLock & lock);
+  explicit Communicator(DataStats & stats);
 
-  /// Number of received samples.
-  std::uint64_t num_received_samples() const;
-  /// Number of sent samples.
-  std::uint64_t num_sent_samples() const;
-  /// Number of lost samples.
-  std::uint64_t num_lost_samples() const;
   /**
-   * \brief Adds a sample timestamp to the latency statistics.
-   * \param sample_timestamp The timestamp the sample was sent.
+   * \brief Reads received data from the middleware and compute some statistics
    */
-  void add_latency_to_statistics(const std::int64_t sample_timestamp);
-  /// Returns stored latency statistics.
-  StatisticsTracker latency_statistics() const;
-  /// Resets all internal counters.
-  void reset();
+  virtual void update_subscription() = 0;
+
+  /**
+   * \brief Publishes the provided data.
+   *
+   *  The first time this function is called it also creates the data writer.
+   *  Further it updates all internal counters while running.
+   * \param time The time to fill into the data field.
+   * \param remaining_time_to_publish Idle time between two publish calls
+   */
+  virtual void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) = 0;
 
 protected:
-  /// Get the the id for the next sample to publish.
-  std::uint64_t next_sample_id();
-  /**
-   * \brief Increment the number of received samples.
-   * \param increment Optional different increment step.
-   */
-  void increment_received(const std::uint64_t & increment = 1);
-  /**
-   * \brief Increment the number of sent samples.
-   * \param increment Optional different increment step.
-   */
-  void increment_sent(const std::uint64_t & increment = 1);
-  /**
-   * \brief Given a sample id this function check if and how many samples were lost and
-   *        updates counters accordingly.
-   * \param sample_id The sample id to check.
-   */
-  void update_lost_samples_counter(const std::uint64_t sample_id);
-  /// Returns the last sample id received.
-  std::uint64_t prev_sample_id() const;
-
+  DataStats & m_stats;
   /// The experiment configuration.
   const ExperimentConfiguration & m_ec;
-  /// The time the last sample was received [ns since epoc].
-  std::int64_t m_prev_timestamp;
-
-  /// Lock the spinlock.
-  void lock();
-  /// Unlock the spinlock.
-  void unlock();
-
-  /// Returns the lock.
-  auto & get_lock()
-  {
-    return m_lock;
-  }
 
   // TODO(erik.snider) switch to std::void_t when upgrading to C++17
   template<class ...>
@@ -95,63 +63,56 @@ protected:
   struct has_bounded_sequence : std::false_type {};
 
   template<typename T>
-  struct has_bounded_sequence<T,
-    void_t<decltype(std::declval<T>().bounded_sequence)>>: std::true_type {};
+  struct has_bounded_sequence<
+    T, void_t<decltype(std::declval<T>().bounded_sequence)>>
+    : std::true_type {};
 
   template<typename T, typename = void>
   struct has_unbounded_sequence : std::false_type {};
 
   template<typename T>
-  struct has_unbounded_sequence<T,
-    void_t<decltype(std::declval<T>().unbounded_sequence)>>: std::true_type {};
+  struct has_unbounded_sequence<
+    T, void_t<decltype(std::declval<T>().unbounded_sequence)>>
+    : std::true_type {};
 
   template<typename T, typename = void>
   struct has_unbounded_string : std::false_type {};
 
   template<typename T>
-  struct has_unbounded_string<T,
-    void_t<decltype(std::declval<T>().unbounded_string)>>: std::true_type {};
+  struct has_unbounded_string<
+    T, void_t<decltype(std::declval<T>().unbounded_string)>>
+    : std::true_type {};
 
   template<typename T>
-  inline
-  void init_msg(T & msg, std::int64_t time)
+  inline void init_msg(T & msg, std::int64_t time)
   {
     msg.time = time;
-    msg.id = next_sample_id();
+    msg.id = m_stats.next_sample_id();
     ensure_fixed_size(msg);
   }
 
   template<typename T>
-  inline
-  std::enable_if_t<
-    has_bounded_sequence<T>::value ||
+  inline std::enable_if_t<has_bounded_sequence<T>::value ||
     has_unbounded_sequence<T>::value ||
-    has_unbounded_string<T>::value, void>
+    has_unbounded_string<T>::value,
+    void>
   ensure_fixed_size(T &)
   {
-    throw std::runtime_error("This plugin only supports messages with a fixed size");
+    throw std::runtime_error(
+            "This plugin only supports messages with a fixed size");
   }
 
   template<typename T>
-  inline
-  std::enable_if_t<
-    !has_bounded_sequence<T>::value &&
+  inline std::enable_if_t<!has_bounded_sequence<T>::value &&
     !has_unbounded_sequence<T>::value &&
-    !has_unbounded_string<T>::value, void>
+    !has_unbounded_string<T>::value,
+    void>
   ensure_fixed_size(T &) {}
+  void check_data_consistency(const std::int64_t time_ns_since_epoch);
 
 private:
-  std::uint64_t m_prev_sample_id;
-  std::uint64_t m_num_lost_samples;
-  std::uint64_t m_received_sample_counter;
-  std::uint64_t m_sent_sample_counter;
-#if defined(QNX)
-  std::uint64_t m_cps;
-#endif
-
-  StatisticsTracker m_latency;
-
-  SpinLock & m_lock;
+  /// The time the last sample was received [ns since epoc].
+  std::int64_t m_prev_timestamp;
 };
 
 }  // namespace performance_test

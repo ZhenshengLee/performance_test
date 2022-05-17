@@ -33,15 +33,12 @@ public:
   /// The data type to publish and subscribe to.
   using DataType = typename RclcppCommunicator<Msg>::DataType;
 
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit RclcppCallbackCommunicator(SpinLock & lock)
-  : RclcppCommunicator<Msg>(lock),
-    m_subscription(nullptr)
+  explicit RclcppCallbackCommunicator(DataStats & stats)
+  : RclcppCommunicator<Msg>(stats), m_subscription(nullptr)
   {
     m_executor.add_node(this->m_node);
   }
 
-  /// Reads received data from ROS 2 using callbacks
   void update_subscription() override
   {
     if (!m_subscription) {

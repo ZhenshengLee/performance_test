@@ -35,33 +35,9 @@ namespace performance_test
 std::ostream & operator<<(std::ostream & stream, const timeval & e);
 #endif  // !defined(WIN32)
 
-class AnalysisResult
+struct AnalysisResult
 {
-public:
-  /**
-   * \brief Constructs an result with the specified parameters.
-   * \param experiment_start Time the experiment started.
-   * \param loop_start  Time the loop iteration started.
-   * \param num_samples_received Number of samples received during the experiment iteration.
-   * \param num_samples_sent Number of samples sent during the experiment iteration.
-   * \param num_samples_lost Number of samples lost during the experiment iteration.
-   * \param total_data_received Total data received during the experiment iteration in bytes.
-   * \param latency Latency statistics of samples received.
-   * \param pub_loop_time_reserve Loop time statistics of the publisher threads.
-   * \param sub_loop_time_reserve Loop time statistics of the subscriber threads.
-   */
-  AnalysisResult(
-    const std::chrono::nanoseconds experiment_start,
-    const std::chrono::nanoseconds loop_start,
-    const uint64_t num_samples_received,
-    const uint64_t num_samples_sent,
-    const uint64_t num_samples_lost,
-    const std::size_t total_data_received,
-    StatisticsTracker latency,
-    StatisticsTracker pub_loop_time_reserve,
-    StatisticsTracker sub_loop_time_reserve,
-    const CpuInfo cpu_info
-  );
+  AnalysisResult();
   /**
    * \brief Returns a header for a CVS file containing the analysis result data
    * as a string. \param pretty_print If set, inserts additional tabs to format
@@ -78,12 +54,12 @@ public:
    */
   std::string to_csv_string(const bool pretty_print = false, std::string st = ",") const;
 
-  const std::chrono::nanoseconds m_experiment_start = {};
-  const std::chrono::nanoseconds m_loop_start = {};
-  const uint64_t m_num_samples_received = {};
-  const uint64_t m_num_samples_sent = {};
-  const uint64_t m_num_samples_lost = {};
-  const std::size_t m_total_data_received = {};
+  std::chrono::nanoseconds m_experiment_start = {};
+  std::chrono::nanoseconds m_time_between_two_measurements = {};
+  uint64_t m_num_samples_received = {};
+  uint64_t m_num_samples_sent = {};
+  uint64_t m_num_samples_lost = {};
+  std::size_t m_total_data_received = {};
 
   StatisticsTracker m_latency;
   StatisticsTracker m_pub_loop_time_reserve;
@@ -91,7 +67,7 @@ public:
 #if !defined(WIN32)
   rusage m_sys_usage;
 #endif  // !defined(WIN32)
-  const CpuInfo m_cpu_info;
+  CpuInfo m_cpu_info;
 };
 
 }  // namespace performance_test

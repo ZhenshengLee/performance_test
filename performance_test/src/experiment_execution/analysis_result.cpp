@@ -33,46 +33,31 @@ std::ostream & operator<<(std::ostream & stream, const timeval & e)
 }
 #endif  // !defined(WIN32)
 
-AnalysisResult::AnalysisResult(
-  const std::chrono::nanoseconds experiment_start,
-  const std::chrono::nanoseconds loop_start,
-  const uint64_t num_samples_received,
-  const uint64_t num_samples_sent,
-  const uint64_t num_samples_lost,
-  const std::size_t total_data_received,
-  StatisticsTracker latency,
-  StatisticsTracker pub_loop_time_reserve,
-  StatisticsTracker sub_loop_time_reserve,
-  const CpuInfo cpu_info
-)
-: m_experiment_start(experiment_start),
-  m_loop_start(loop_start),
-  m_num_samples_received(num_samples_received),
-  m_num_samples_sent(num_samples_sent),
-  m_num_samples_lost(num_samples_lost),
-  m_total_data_received(total_data_received),
-  m_latency(latency),
-  m_pub_loop_time_reserve(pub_loop_time_reserve),
-  m_sub_loop_time_reserve(sub_loop_time_reserve),
-  m_cpu_info(cpu_info)
-{
+AnalysisResult::AnalysisResult()
+: m_cpu_info([]() {
+      CPUsageTracker cpu_usage_tracker;
+      return cpu_usage_tracker.get_cpu_usage();
+    } ()) {
 #if !defined(WIN32)
   const auto ret = getrusage(RUSAGE_SELF, &m_sys_usage);
 #if defined(QNX)
-  // QNX getrusage() max_rss does not give the correct value. Using a different method to get
-  // the RSS value and converting into KBytes
+  // QNX getrusage() max_rss does not give the correct value. Using a
+  // different method to get the RSS value and converting into KBytes
   m_sys_usage.ru_maxrss =
-    (static_cast<int64_t>(performance_test::qnx_res::get_proc_rss_mem()) / 1024);
+    (static_cast<int64_t>(performance_test::qnx_res::get_proc_rss_mem()) /
+    1024);
 #endif
   if (ret != 0) {
     throw std::runtime_error("Could not get system resource usage.");
   }
 #endif  // !defined(WIN32)
   if (m_num_samples_received != static_cast<uint64_t>(m_latency.n())) {
-    // TODO(andreas.pasternak): Commented out flaky assertion. Need to check if
-    // it actually a bug.
-    /*throw std::runtime_error("Statistics result sample size does not match: "
-                             + std::to_string(m_num_samples_received) + " / "
+    // TODO(andreas.pasternak): Commented out flaky assertion. Need to check
+    // if it actually a bug.
+    /*throw std::runtime_error("Statistics result sample size does not
+       match: "
+                             + std::to_string(m_num_samples_received) + " /
+       "
                              + std::to_string(m_latency.n()));*/
   }
 }
@@ -142,7 +127,10 @@ std::string AnalysisResult::to_csv_string(const bool pretty_print, std::string s
 
   ss << std::fixed;
   ss << std::chrono::duration_cast<std::chrono::duration<float>>(m_experiment_start).count() << st;
-  ss << std::chrono::duration_cast<std::chrono::duration<float>>(m_loop_start).count() << st;
+  ss << std::chrono::duration_cast<std::chrono::duration<float>>(
+    m_time_between_two_measurements)
+    .count() <<
+    st;
   ss << std::setprecision(0);
   ss << m_num_samples_received << st;
   ss << m_num_samples_sent << st;

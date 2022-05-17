@@ -129,10 +129,8 @@ public:
   using DataType = typename Topic::EprosimaType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit FastRTPSCommunicator(SpinLock & lock)
-  : Communicator(lock),
-    m_publisher(nullptr),
-    m_subscriber(nullptr),
+  explicit FastRTPSCommunicator(DataStats & stats)
+  : Communicator(stats), m_publisher(nullptr), m_subscriber(nullptr),
     m_topic_type(new TopicType())
   {
     m_participant = ResourceManager::get().fastrtps_participant();
@@ -142,15 +140,10 @@ public:
     }
   }
 
-  /**
-   * \brief Publishes the provided data.
-   *
-   *  The first time this function is called it also creates the data writer.
-   *  Further it updates all internal counters while running.
-   * \param data The data to publish.
-   * \param time The time to fill into the data field.
-   */
-  void publish(std::int64_t time)
+  void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) override
   {
     if (!m_publisher) {
       const FastRTPSQOSAdapter qos(m_ec.qos());
@@ -173,22 +166,14 @@ public:
     if (m_ec.is_zero_copy_transfer()) {
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
-    lock();
+    m_stats.lock();
     init_msg(m_data, time);
-    increment_sent();  // We increment before publishing so we don't have to lock twice.
-    unlock();
+    m_stats.update_publisher_stats(remaining_time_to_publish);
+    m_stats.unlock();
     m_publisher->write(static_cast<void *>(&m_data));
   }
-  /**
-   * \brief Reads received data from DDS.
-   *
-   * In detail this function:
-   * * Reads samples from DDS.
-   * * Verifies that the data arrived in the right order, chronologically and also consistent with the publishing order.
-   * * Counts received and lost samples.
-   * * Calculates the latency of the samples received and updates the statistics accordingly.
-   */
-  void update_subscription()
+
+  void update_subscription() override
   {
     if (!m_subscriber) {
       const FastRTPSQOSAdapter qos(m_ec.qos());
@@ -207,38 +192,22 @@ public:
     }
 
     m_subscriber->waitForUnreadMessage();
-    lock();
+    m_stats.lock();
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
-        if (m_prev_timestamp >= m_data.time()) {
-          throw std::runtime_error(
-                  "Data consistency violated. Received sample with not strictly "
-                  "older timestamp. Time diff: " + std::to_string(
-                    m_data.time() - m_prev_timestamp) + " Data Time: " +
-                  std::to_string(m_data.time())
-          );
-        }
-
-
+        check_data_consistency(m_data.time());
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-          unlock();
+          m_stats.unlock();
           publish(m_data.time());
-          lock();
+          m_stats.lock();
         } else {
-          m_prev_timestamp = m_data.time();
-          update_lost_samples_counter(m_data.id());
-          add_latency_to_statistics(m_data.time());
-          increment_received();
+          m_stats.update_subscriber_stats(
+            m_data.time(), m_data.id(),
+            sizeof(DataType));
         }
       }
     }
-    unlock();
-  }
-
-  /// Returns the data received in bytes.
-  std::size_t data_received()
-  {
-    return num_received_samples() * sizeof(DataType);
+    m_stats.unlock();
   }
 
 private:
@@ -255,7 +224,7 @@ private:
   void init_msg(DataType & msg, std::int64_t time)
   {
     msg.time(time);
-    msg.id(next_sample_id());
+    msg.id(m_stats.next_sample_id());
     ensure_fixed_size(msg);
   }
 };

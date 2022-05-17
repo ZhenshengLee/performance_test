@@ -10,10 +10,10 @@ are automatically recorded when the application is running:
 
 - **latency**: corresponds to the time a message takes to travel from a publisher to subscriber. The
   latency is measured by timestamping the sample when it's published and subtracting the timestamp
-  (from the sample) from the measured time when the sample arrives at the subscriber.
-- **CPU usage**: percentage of the total system wide CPU usage
+    (from the sample) from the measured time when the sample arrives at the subscriber (only logged when a subscriber is created)
+- **CPU usage**: percentage of the total system wide CPU usage (logged separately for each instance of `perf_test`)
 - **resident memory**: heap allocations, shared memory segments, stack (used for system's internal
-  work).
+  work) (logged separately for each instance of `perf_test`)
 - **sample statistics**: number of samples received, sent, and lost per experiment run.
 
 This `master` branch is compatible with the following ROS2 versions
@@ -47,6 +47,8 @@ This example shows how to test the non-functional performance of the following c
 | Publishing rate            | 100Hz       |
 | Topic name                 | test_topic  |
 | Duration of the experiment | 30s         |
+| Number of publisher(s)        | 1 (default) |
+| Number of subscriber(s)     | 1 (default) |
 
 1. Install [ROS 2](https://docs.ros.org/en/rolling/index.html)
 
@@ -54,12 +56,12 @@ This example shows how to test the non-functional performance of the following c
 
 3. Build performance_test with the [CMake build flag](#eclipse-cyclone-dds) for Cyclone DDS:
 
-```bash
-source /opt/ros/rolling/setup.bash
-cd ~/perf_test_ws
-colcon build --cmake-args -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
-source ./install/setup.bash
-```
+    ```bash
+    source /opt/ros/rolling/setup.bash
+    cd ~/perf_test_ws
+    colcon build --cmake-args -DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON
+    source ./install/setup.bash
+    ```
 
 4. Run with the [communication plugin option](#eclipse-cyclone-dds) for Cyclone DDS:
 
@@ -124,27 +126,20 @@ different possibilities are explained below.
 For running tests on a single machine, you can choose between the following options:
 
 1. Intraprocess means that the publisher and subscriber threads are in the same process.
-   This is the default configuration.
+
+    ```bash
+    perf_test <options> --num-sub-threads 1 --num-pub-threads 1
+    ```
+
 1. Interprocess means that the publisher and subscriber are in different processes. To test
    interprocess communication, two instances of the performance_test must be run, e.g.
 
     ```bash
+    # Start the subscriber first
     perf_test <options> --num-sub-threads 1 --num-pub-threads 0 &
     sleep 1  # give the subscriber time to finish initializing
     perf_test <options> --num-sub-threads 0 --num-pub-threads 1
     ```
-
-    1. :point_up: CPU and Resident Memory measurements are logged separately for the publisher and
-       subscriber processes.
-    1. Latency is only logged for the subscriber process, because it is calculated after the
-       sample is received.
-    1. Some plugins also support zero copy transfer. With zero copy transfer, the publisher
-       requests a loan from a pre-allocated shared memory pool, where it writes the sample. The
-       subscriber reads the sample from that same location. When running, use the `--zero-copy`
-       argument for both the publisher and subscriber processes.
-    1. :memo: The transport is dependent on the middleware
-    1. It is recommended to start the subscriber process first, and delay for a short amount of time,
-       so that there isn't a full queue for it to process right from the start.
 
 On a distributed system, testing latency is difficult, because the clocks are probably not
 perfectly synchronized between the two devices. To work around this, the performance_test tool
@@ -165,15 +160,17 @@ in non-relay mode.
 
 ## Middleware plugins
 
-### Native plugins
-
 The performance test tool can measure the performance of a variety of communication solutions
 from different vendors. In this case there is no [rclcpp or rmw
 layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview)
-overhead over the publisher and subscriber routines. The following plugins are currently
-implemented:
+overhead over the publisher and subscriber routines.
 
-#### Eclipse Cyclone DDS
+The performance_test tool implements an executor that runs the publisher(s) and/or the subscriber(s) in
+their own thread.
+
+ The following plugins are currently implemented:
+
+### Eclipse Cyclone DDS
 
 - [Eclipse Cyclone DDS 0.9.0b1](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.9.0b1)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
@@ -194,7 +191,7 @@ implemented:
   |-------|---------------------|--------------------|
   | INTRA | UDP                 | UDP                |
 
-#### Eclipse Cyclone DDS C++ binding
+### Eclipse Cyclone DDS C++ binding
 
 - [Eclipse Cyclone DDS C++ bindings 0.9.0b1](https://github.com/eclipse-cyclonedds/cyclonedds-cxx/tree/0.9.0b1)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED=ON`
@@ -215,8 +212,7 @@ implemented:
   |-------|---------------------|--------------------|
   | INTRA | UDP                 | UDP                |
 
-
-#### Eclipse iceoryx
+### Eclipse iceoryx
 
 - [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
 - CMake build flag: `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON`
@@ -233,7 +229,7 @@ implemented:
   |-----------|---------------------|-----------------------------------|
   | zero copy | zero copy           | Not supported by performance_test |
 
-#### eProsima Fast DDS
+### eProsima Fast DDS
 
 - [FastDDS 2.6.0](https://github.com/eProsima/Fast-DDS/tree/v2.6.0)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
@@ -245,7 +241,7 @@ implemented:
   |-------|---------------------|--------------------|
   | UDP   | UDP                 | UDP                |
 
-#### OCI OpenDDS
+### OCI OpenDDS
 
 - [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
 - CMake build flag: `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON`
@@ -257,7 +253,7 @@ implemented:
   |-------|---------------------|--------------------|
   | TCP   | TCP                 | TCP                |
 
-#### RTI Connext DDS
+### RTI Connext DDS
 
 - [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON`
@@ -276,7 +272,7 @@ implemented:
   |-------|---------------------|--------------------|
   | INTRA | SHMEM               | UDP                |
 
-#### RTI Connext DDS Micro
+### RTI Connext DDS Micro
 
 - [Connext DDS Micro 3.0.3](https://www.rti.com/products/connext-dds-micro)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON`
@@ -289,7 +285,12 @@ implemented:
   |-------|---------------------|--------------------|
   | INTRA | SHMEM               | UDP                |
 
-### ROS 2 Middleware plugins
+## Framework plugins
+
+The performance_test tool can also measure the end-to-end latency of a framework. In this case, the
+executor of the framework is used to run the publisher(s) and/or the subscriber(s)
+
+### ROS 2
 
 The performance test tool can also measure the performance of a variety of RMW implementations,
 through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
@@ -310,7 +311,7 @@ through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
       [here](https://docs.ros.org/en/rolling/Concepts/About-Different-Middleware-Vendors.html).
 - Default transports: depends on underlying RMW implementation
 
-#### Apex.OS Polling Subscription
+### Apex.OS
 
 - Apex.OS Polling Subscription with wait-set
 - CMake build flag: `-DPERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED=ON`

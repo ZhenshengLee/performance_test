@@ -142,7 +142,7 @@ void StdoutOutput::update(std::shared_ptr<const AnalysisResult> result)
         "T_loop",
         std::to_string(
           std::chrono::duration_cast<std::chrono::duration<float>>(
-            result->m_loop_start)
+            result->m_time_between_two_measurements)
           .count())});
 
     // create layout (tables without borders)

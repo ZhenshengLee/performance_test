@@ -41,8 +41,8 @@ public:
   using DataType = typename RclcppCommunicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit RclcppWaitsetCommunicator(SpinLock & lock)
-  : RclcppCommunicator<Msg>(lock),
+  explicit RclcppWaitsetCommunicator(DataStats & stats)
+  : RclcppCommunicator<Msg>(stats),
     m_subscription(nullptr)
   {
     auto hz = static_cast<double>(this->m_ec.rate());
@@ -51,7 +51,6 @@ public:
     this->m_timeout = std::max(10 * period_ns, std::chrono::nanoseconds(100 * 1000 * 1000));
   }
 
-  /// Reads received data from ROS 2 using waitsets
   void update_subscription() override
   {
     if (!m_subscription) {

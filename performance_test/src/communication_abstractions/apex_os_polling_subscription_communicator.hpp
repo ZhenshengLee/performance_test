@@ -15,11 +15,8 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__APEX_OS_POLLING_SUBSCRIPTION_COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__APEX_OS_POLLING_SUBSCRIPTION_COMMUNICATOR_HPP_
 
-#include <atomic>
-#include <memory>
-#include <mutex>
-#include <thread>
 #include <functional>
+#include <memory>
 
 #include <rclcpp/rclcpp.hpp>
 
@@ -40,11 +37,9 @@ public:
   using DataType = typename RclcppCommunicator<Msg>::DataType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit ApexOSPollingSubscriptionCommunicator(SpinLock & lock)
-  : RclcppCommunicator<Msg>(lock),
-    m_polling_subscription(nullptr) {}
+  explicit ApexOSPollingSubscriptionCommunicator(DataStats & stats)
+  : RclcppCommunicator<Msg>(stats), m_polling_subscription(nullptr) {}
 
-  /// Reads received data from ROS 2 using waitsets
   void update_subscription() override
   {
     if (!m_polling_subscription) {

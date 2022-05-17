@@ -84,22 +84,14 @@ public:
   /// The data type to publish and subscribe to.
   using DataType = typename Msg::RosType;
 
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit RclcppCommunicator(SpinLock & lock)
-  : Communicator(lock),
-    m_node(ResourceManager::get().rclcpp_node()),
+  explicit RclcppCommunicator(DataStats & stats)
+  : Communicator(stats), m_node(ResourceManager::get().rclcpp_node()),
     m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()) {}
 
-  /**
-   * \brief Publishes the provided data.
-   *
-   *  The first time this function is called it also creates the publisher.
-   *  Further it updates all internal counters while running.
-   *
-   * \param data The data to publish.
-   * \param time The time to fill into the data field.
-   */
-  void publish(std::int64_t time)
+  void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) override
   {
     if (!m_publisher) {
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
@@ -119,30 +111,21 @@ public:
         throw std::runtime_error("RMW implementation does not support zero copy!");
       }
       auto borrowed_message{m_publisher->borrow_loaned_message()};
-      lock();
+      m_stats.lock();
       init_msg(borrowed_message.get(), time);
-      increment_sent();  // We increment before publishing so we don't have to lock twice.
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       m_publisher->publish(std::move(borrowed_message));
       #else
       throw std::runtime_error("ROS2 distribution does not support zero copy!");
       #endif
     } else {
-      lock();
+      m_stats.lock();
       init_msg(m_data, time);
-      increment_sent();  // We increment before publishing so we don't have to lock twice.
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       m_publisher->publish(m_data);
     }
-  }
-
-  /// Reads received data from ROS 2 using callbacks
-  virtual void update_subscription() = 0;
-
-  /// Returns the accumulated data size in bytes.
-  std::size_t data_received()
-  {
-    return num_received_samples() * sizeof(DataType);
   }
 
 protected:
@@ -152,7 +135,7 @@ protected:
    * \brief Callback handler which handles the received data.
    *
    * * Verifies that the data arrived in the right order, chronologically and also consistent with the publishing order.
-   * * Counts recieved and lost samples.
+   * * Counts received and lost samples.
    * * Calculates the latency of the samples received and updates the statistics accordingly.
    *
    * \param data The data received.
@@ -167,22 +150,18 @@ protected:
   {
     static_assert(
       std::is_same<DataType,
-      typename std::remove_cv<typename std::remove_reference<T>::type>::type>::value,
+      typename std::remove_cv<
+        typename std::remove_reference<T>::type>::type>::value,
       "Parameter type passed to callback() does not match");
-    if (m_prev_timestamp >= data.time) {
-      throw std::runtime_error(
-              "Data consistency violated. Received sample with not strictly older timestamp");
-    }
-
-    if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
+    check_data_consistency(data.time);
+    if (m_ec.roundtrip_mode() ==
+      ExperimentConfiguration::RoundTripMode::RELAY)
+    {
       publish(data.time);
     } else {
-      lock();
-      m_prev_timestamp = data.time;
-      update_lost_samples_counter(data.id);
-      add_latency_to_statistics(data.time);
-      increment_received();
-      unlock();
+      m_stats.lock();
+      m_stats.update_subscriber_stats(data.time, data.id, sizeof(DataType));
+      m_stats.unlock();
     }
   }
 
@@ -195,7 +174,7 @@ private:
   void init_msg(DataType & msg, std::int64_t time)
   {
     msg.time = time;
-    msg.id = next_sample_id();
+    msg.id = m_stats.next_sample_id();
     init_bounded_sequence(msg);
     init_unbounded_sequence(msg);
     init_unbounded_string(msg);

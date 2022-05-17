@@ -80,7 +80,7 @@ public:
     for (const auto & ar : ars) {
       writer.StartObject();
       write(writer, "experiment_start", ar->m_experiment_start);
-      write(writer, "loop_start", ar->m_loop_start);
+      write(writer, "loop_start", ar->m_time_between_two_measurements);
       write(writer, "num_samples_received", ar->m_num_samples_received);
       write(writer, "num_samples_sent", ar->m_num_samples_sent);
       write(writer, "num_samples_lost", ar->m_num_samples_lost);

@@ -230,9 +230,6 @@ if(PERFORMANCE_TEST_RCLCPP_ENABLED OR PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPT
 endif()
 
 
-set(${PROJECT_NAME}_SOURCES
-    src/experiment_execution/analyze_runner.cpp)
-
 set(${PROJECT_NAME}_HEADERS
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_execution/analysis_result.hpp)
@@ -246,12 +243,15 @@ set(sources
     src/outputs/stdout_output.cpp
     src/outputs/csv_output.cpp
     src/outputs/json_output.cpp
-    src/data_running/data_runner.hpp
-    src/data_running/data_runner_base.hpp
-    src/data_running/data_runner_factory.cpp
-    src/data_running/data_runner_factory.hpp
-    src/experiment_execution/analyze_runner.hpp
+    src/data_running/data_publisher.hpp
+    src/data_running/data_subscriber.hpp
+    src/data_running/data_entity.hpp
+    src/data_running/data_entity_factory.cpp
+    src/data_running/data_entity_factory.hpp
     src/experiment_execution/analysis_result.cpp
+    src/experiment_execution/runner.hpp
+    src/experiment_execution/data_stats.hpp
+    src/experiment_execution/run_type.hpp
     src/experiment_configuration/communication_mean.cpp
     src/experiment_configuration/communication_mean.hpp
     src/experiment_configuration/qos_abstraction.cpp

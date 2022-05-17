@@ -116,14 +116,16 @@ public:
   using DataType = typename Msg::CycloneDDSCXXType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit CycloneDDSCXXCommunicator(SpinLock & lock)
-  : Communicator(lock),
+  explicit CycloneDDSCXXCommunicator(DataStats & stats)
+  : Communicator(stats),
     m_participant(ResourceManager::get().cyclonedds_cxx_participant()),
-    m_publisher(m_participant),
-    m_subscriber(m_participant),
-    m_datawriter(make_cyclonedds_cxx_datawriter<DataType>(m_participant, m_publisher, m_ec)),
-    m_datareader(make_cyclonedds_cxx_datareader<DataType>(m_participant, m_subscriber, m_ec)),
-    m_read_condition(m_datareader, dds::sub::status::SampleState::not_read()),
+    m_publisher(m_participant), m_subscriber(m_participant),
+    m_datawriter(make_cyclonedds_cxx_datawriter<DataType>(
+        m_participant, m_publisher, m_ec)),
+    m_datareader(make_cyclonedds_cxx_datareader<DataType>(
+        m_participant, m_subscriber, m_ec)),
+    m_read_condition(m_datareader,
+      dds::sub::status::SampleState::not_read()),
     m_waitset()
   {
     m_waitset.attach_condition(m_read_condition);
@@ -141,40 +143,29 @@ public:
     this->m_publisher = dds::core::null;
   }
 
-  /**
-   * \brief Publishes the provided data and updates internal statistics.
-   *
-   * \param time The time to fill into the data field.
-   */
-  void publish(std::int64_t time)
+  void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) override
   {
     if (m_ec.is_zero_copy_transfer()) {
       DataType & loaned_sample = m_datawriter.delegate()->loan_sample();
-      lock();
+      m_stats.lock();
       init_msg(loaned_sample, time);
-      increment_sent();
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       m_datawriter->write(loaned_sample);
     } else {
       DataType sample;
-      lock();
+      m_stats.lock();
       init_msg(sample, time);
-      increment_sent();
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       m_datawriter->write(sample);
     }
   }
 
-  /**
-   * \brief Reads received data from DDS.
-   *
-   * In detail this function:
-   * * Reads samples from DDS.
-   * * Verifies that the data arrived in the right order, chronologically and also consistent with the publishing order.
-   * * Counts received and lost samples.
-   * * Calculates the latency of the samples received and updates the statistics accordingly.
-   */
-  void update_subscription()
+  void update_subscription() override
   {
     // Wait for the data to become available. This is the only condition, so no need to inspect the
     // returned list of triggered conditions.
@@ -190,20 +181,13 @@ public:
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           publish(sample->data().time());
         } else {
-          lock();
-          update_lost_samples_counter(sample->data().id());
-          add_latency_to_statistics(sample->data().time());
-          increment_received();
-          unlock();
+          m_stats.lock();
+          m_stats.update_subscriber_stats(
+            sample->data().time(), sample->data().id(), sizeof(DataType));
+          m_stats.unlock();
         }
       }
     }
-  }
-
-  /// Returns the data received in bytes.
-  std::size_t data_received()
-  {
-    return num_received_samples() * sizeof(DataType);
   }
 
 private:
@@ -218,7 +202,7 @@ private:
   void init_msg(DataType & msg, std::int64_t time)
   {
     msg.time(time);
-    msg.id(next_sample_id());
+    msg.id(m_stats.next_sample_id());
     ensure_fixed_size(msg);
   }
 };

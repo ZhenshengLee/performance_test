@@ -110,6 +110,7 @@ public:
     m_M2 = m_M2 + term1;
     m_variance = m_M2 / m_n;
   }
+
   /// The number of all samples added.
   double n() const
   {

@@ -142,23 +142,15 @@ public:
   using DataType = typename Msg::CycloneDDSType;
 
   /// Constructor which takes a reference \param lock to the lock to use.
-  explicit CycloneDDSCommunicator(SpinLock & lock)
-  : Communicator(lock),
+  explicit CycloneDDSCommunicator(DataStats & stats)
+  : Communicator(stats),
     m_participant(ResourceManager::get().cyclonedds_participant()),
-    m_datawriter(0),
-    m_datareader(0)
-  {
-  }
+    m_datawriter(0), m_datareader(0) {}
 
-  /**
-   * \brief Publishes the provided data.
-   *
-   *  The first time this function is called it also creates the data writer.
-   *  Further it updates all internal counters while running.
-   * \param data The data to publish.
-   * \param time The time to fill into the data field.
-   */
-  void publish(std::int64_t time)
+  void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) override
   {
     if (m_datawriter == 0) {
       dds_qos_t * dw_qos = dds_create_qos();
@@ -184,10 +176,10 @@ public:
         throw std::runtime_error("Failed to obtain a loaned sample " + std::to_string(status));
       }
       DataType * sample = static_cast<DataType *>(loaned_sample);
-      lock();
+      m_stats.lock();
       init_msg(*sample, time);
-      increment_sent();  // We increment before publishing so we don't have to lock twice.
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       status = dds_write(m_datawriter, sample);
       if (status == DDS_RETCODE_UNSUPPORTED) {
         throw std::runtime_error("DDS write unsupported");
@@ -195,28 +187,17 @@ public:
         throw std::runtime_error("Failed to write to sample");
       }
     } else {
-      lock();
+      m_stats.lock();
       init_msg(m_data, time);
-      increment_sent();  // We increment before publishing so we don't have to lock twice.
-      unlock();
+      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.unlock();
       if (dds_write(m_datawriter, static_cast<void *>(&m_data)) < 0) {
         throw std::runtime_error("Failed to write to sample");
       }
     }
   }
 
-  /**
-   * \brief Reads received data from DDS.
-   *
-   * In detail this function:
-   * * Reads samples from DDS.
-   * * Verifies that the data arrived in the right order, chronologically and also
-   *   consistent with the publishing order.
-   * * Counts received and lost samples.
-   * * Calculates the latency of the samples received and updates the statistics
-       accordingly.
-   */
-  void update_subscription()
+  void update_subscription() override
   {
     if (m_datareader == 0) {
       dds_qos_t * dw_qos = dds_create_qos();
@@ -247,36 +228,24 @@ public:
     dds_sample_info_t si;
     int32_t n;
     while ((n = dds_take(m_datareader, &untyped, &si, 1, 1)) > 0) {
-      lock();
+      m_stats.lock();
       const DataType * data = static_cast<DataType *>(untyped);
       if (si.valid_data) {
-        if (m_prev_timestamp >= data->time) {
-          throw std::runtime_error(
-                  "Data consistency violated. Received sample with not strictly older timestamp. "
-                  "Time diff: " + std::to_string(data->time - m_prev_timestamp) +
-                  " Data Time: " + std::to_string(data->time));
-        }
+        check_data_consistency(data->time);
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-          unlock();
+          m_stats.unlock();
           publish(data->time);
-          lock();
+          m_stats.lock();
         } else {
-          m_prev_timestamp = data->time;
-          update_lost_samples_counter(data->id);
-          add_latency_to_statistics(data->time);
-          increment_received();
+          m_stats.update_subscriber_stats(
+            data->time, data->id,
+            sizeof(DataType));
         }
       }
-      unlock();
+      m_stats.unlock();
 
       dds_return_loan(m_datareader, &untyped, n);
     }
-  }
-
-  /// Returns the data received in bytes.
-  std::size_t data_received()
-  {
-    return num_received_samples() * sizeof(DataType);
   }
 
 private:

@@ -141,26 +141,18 @@ public:
   /// The type of a sequence of data.
   using DataTypeSeq = typename Topic::OpenDDSDataTypeSeq;
 
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit OpenDDSCommunicator(SpinLock & lock)
-  : Communicator(lock),
-    m_datawriter(nullptr),
-    m_datareader(nullptr),
+  explicit OpenDDSCommunicator(DataStats & stats)
+  : Communicator(stats), m_datawriter(nullptr), m_datareader(nullptr),
     m_typed_datareader(nullptr)
   {
     m_participant = ResourceManager::get().opendds_participant();
     register_topic();
   }
 
-  /**
-   * \brief Publishes the provided data.
-   *
-   *  The first time this function is called it also creates the data writer.
-   *  Further it updates all internal counters while running.
-   * \param data The data to publish.
-   * \param time The time to fill into the data field.
-   */
-  void publish(std::int64_t time)
+  void publish(
+    std::int64_t time,
+    std::chrono::duration<double> remaining_time_to_publish =
+    std::chrono::duration<double>{}) override
   {
     if (m_datawriter == nullptr) {
       DDS::Publisher_ptr publisher;
@@ -185,27 +177,17 @@ public:
     if (m_ec.is_zero_copy_transfer()) {
       throw std::runtime_error("This plugin does not support zero copy transfer");
     }
-    lock();
+    m_stats.lock();
     init_msg(m_data, time);
-    increment_sent();  // We increment before publishing so we don't have to lock twice.
-    unlock();
+    m_stats.update_publisher_stats(remaining_time_to_publish);
+    m_stats.unlock();
     auto retcode = m_typed_datawriter->write(m_data, DDS::HANDLE_NIL);
     if (retcode != DDS::RETCODE_OK) {
       throw std::runtime_error("Failed to write to sample");
     }
   }
 
-  /**
-   * \brief Reads received data from DDS.
-   *
-   * In detail this function:
-   * * Reads samples from DDS.
-   * * Verifies that the data arrived in the right order, chronologically and also consistent with the publishing order.
-   * * Counts received and lost samples.
-   * * Calculates the latency of the samples received and updates the statistics accordingly.
-   */
-
-  void update_subscription()
+  void update_subscription() override
   {
     if (CORBA::is_nil(m_datareader)) {
       DDS::Subscriber_ptr subscriber = nullptr;
@@ -244,26 +226,15 @@ public:
       DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,
       DDS::ANY_INSTANCE_STATE);
     if (ret == DDS::RETCODE_OK) {
-      lock();
+      m_stats.lock();
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
         const auto & data = m_data_seq[j];
         if (m_sample_info_seq[j].valid_data) {
-          if (m_prev_timestamp >= data.time) {
-            throw std::runtime_error(
-                    "Data consistency violated. Received sample with not strictly older timestamp. "
-                    "Time diff: " + std::to_string(
-                      data.time - m_prev_timestamp) +
-                    " Data Time: " +
-                    std::to_string(data.time)
-            );
-          }
-          m_prev_timestamp = data.time;
-          update_lost_samples_counter(data.id);
-          add_latency_to_statistics(data.time);
-          increment_received();
+          check_data_consistency(data.time);
+          m_stats.update_subscriber_stats(data.time, data.id, sizeof(DataType));
         }
       }
-      unlock();
+      m_stats.unlock();
 
       if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
         throw std::runtime_error("Round trip mode is not implemented for OpenDDS!");
@@ -273,12 +244,6 @@ public:
         m_data_seq,
         m_sample_info_seq);
     }
-  }
-
-  /// Returns the data received in bytes.
-  std::size_t data_received()
-  {
-    return num_received_samples() * sizeof(DataType);
   }
 
 private:
