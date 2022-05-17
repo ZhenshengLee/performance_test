@@ -145,7 +145,11 @@ public:
   void on_receive(const struct eCAL::SReceiveCallbackData* data_)
   {
     // read time and id out of the received buffer
-    m_data = std::move(*(static_cast<DataType*>(data_->buf)));
+    lock();
+    DataType* data_type_ptr = static_cast<DataType*>(data_->buf);
+    m_data.time = data_type_ptr->time;
+    m_data.id   = data_type_ptr->id;
+    unlock();
     // signal update_subscription to process
     gSetEvent(m_event);
   }
