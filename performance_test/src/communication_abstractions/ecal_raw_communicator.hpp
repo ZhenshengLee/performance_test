@@ -126,7 +126,11 @@ public:
       // set number of used publisher memory buffer
       // we use 2 buffer to enable parallel read / write
       // https://github.com/ZhenshengLee/performance_test/issues/1
-      m_publisher->ShmSetBufferCount(2);
+      //m_publisher->ShmSetBufferCount(2);
+
+      // deactivate double buffering again for new tests
+      m_publisher->ShmSetBufferCount(1);
+
       if (m_ec.is_zero_copy_transfer()){
         // enable zero copy mode
         m_publisher->ShmEnableZeroCopy(1);
