@@ -148,6 +148,8 @@ class ExperimentConfig:
                         commands = generate_commands_apex_middleware(output_dir, perf_test_exe_cmd, sub_args, pub_args)
                     elif get_rmw_implementation_identifier() == "rmw_cyclonedds_cpp":
                         commands = generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args)
+                    elif get_rmw_implementation_identifier() == "rmw_fastrtps_cpp":
+                        commands = generate_commands_fastdds(output_dir, perf_test_exe_cmd, sub_args, pub_args)
                     else:
                         print("Unsupported Middleware: ", get_rmw_implementation_identifier())
                 elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
@@ -157,7 +159,7 @@ class ExperimentConfig:
         else:
             raise RuntimeError('Unreachable code')
         return commands
-            
+
     def cli_args(self, output_dir) -> list:
         args = ""
         args += f" -c {self.com_mean}"
@@ -337,8 +339,8 @@ def generate_shmem_file_yml(dir_path) -> str:
     return shmem_config_file
 
 
-def generate_shmem_file_xml(dir_path) -> str:
-    shmem_config_file = os.path.join(dir_path, "shmem.xml")
+def generate_shmem_file_xml_cyclonedds(dir_path) -> str:
+    shmem_config_file = os.path.join(dir_path, "shmem_cyclonedds.xml")
     if not os.path.exists(shmem_config_file):
         root = et.Element("CycloneDDS")
         root.set("xmlns", "https://cdds.io/config")
@@ -348,6 +350,34 @@ def generate_shmem_file_xml(dir_path) -> str:
         sharedMemory = et.SubElement(domain, "SharedMemory")
         et.SubElement(sharedMemory, "Enable").text = "true"
         et.SubElement(sharedMemory, "LogLevel").text = "info"
+        tree = et.ElementTree(root)
+        tree._setroot(root)
+        tree.write(shmem_config_file, encoding = "UTF-8", xml_declaration=True)
+    return shmem_config_file
+
+def generate_shmem_file_xml_fastdds(dir_path) -> str:
+    shmem_config_file = os.path.join(dir_path, "shmem_fastdds.xml")
+    if not os.path.exists(shmem_config_file):
+        root = et.Element("profiles")
+        root.set("xmlns", "http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles")
+        data_writer = et.SubElement(root, "data_writer")
+        data_writer.set("profile_name", "default publisher profile")
+        data_writer.set("is_default_profile", "true")
+        writer_qos = et.SubElement(data_writer, "qos")
+        publishMode = et.SubElement(writer_qos, "publishMode")
+        et.SubElement(publishMode, "kind").text = "ASYNCHRONOUS"
+        writer_data_sharing = et.SubElement(writer_qos, "data_sharing")
+        et.SubElement(writer_data_sharing, "kind").text = "AUTOMATIC"
+        et.SubElement(data_writer, "historyMemoryPolicy").text = "PREALLOCATED_WITH_REALLOC"
+
+        data_reader = et.SubElement(root, "data_reader")
+        data_reader.set("profile_name", "default subscription profile")
+        data_reader.set("is_default_profile", "true")
+        reader_qos = et.SubElement(data_reader, "qos")
+        reader_data_sharing = et.SubElement(reader_qos, "data_sharing")
+        et.SubElement(reader_data_sharing, "kind").text = "AUTOMATIC"
+        et.SubElement(data_reader, "historyMemoryPolicy").text = "PREALLOCATED_WITH_REALLOC"
+
         tree = et.ElementTree(root)
         tree._setroot(root)
         tree.write(shmem_config_file, encoding = "UTF-8", xml_declaration=True)
@@ -370,8 +400,8 @@ def generate_commands_yml(output_dir) -> list:
     commands.append('EOF')
     return commands
 
-def generate_commands_xml(output_dir) -> list:
-    shmem_config_file = os.path.join(output_dir, "shmem.xml")
+def generate_commands_xml_cyclonedds(output_dir) -> list:
+    shmem_config_file = os.path.join(output_dir, "shmem_cyclonedds.xml")
     commands = []
     commands.append(f'export CYCLONEDDS_URI="{shmem_config_file}"')
     commands.append('cat > ${CYCLONEDDS_URI} << EOF')
@@ -387,15 +417,58 @@ def generate_commands_xml(output_dir) -> list:
     commands.append('EOF')
     return commands
 
+def generate_commands_xml_fastdds(output_dir) -> list:
+    shmem_config_file = os.path.join(output_dir, "shmem_fastdds.xml")
+    commands = []
+    commands.append(f'export FASTRTPS_DEFAULT_PROFILES_FILE="{shmem_config_file}"')
+    commands.append(f'export RMW_FASTRTPS_USE_QOS_FROM_XML=1')
+    commands.append('cat > ${FASTRTPS_DEFAULT_PROFILES_FILE} << EOF')
+    commands.append('<?xml version="1.0" encoding="UTF-8" ?>')
+    commands.append('<profiles xmlns="http://www.eprosima.com/XMLSchemas/fastRTPS_Profiles">')
+    commands.append('   <data_writer profile_name="default publisher profile" is_default_profile="true">')
+    commands.append('       <qos>')
+    commands.append('           <publishMode>')
+    commands.append('               <kind>ASYNCHRONOUS</kind>')
+    commands.append('           </publishMode>')
+    commands.append('           <data_sharing>')
+    commands.append('               <kind>AUTOMATIC</kind>')
+    commands.append('           </data_sharing>')
+    commands.append('       </qos>')
+    commands.append('       <historyMemoryPolicy>PREALLOCATED_WITH_REALLOC</historyMemoryPolicy>')
+    commands.append('   </data_writer>')
+    commands.append('   <data_reader profile_name="default subscription profile" is_default_profile="true">')
+    commands.append('       <qos>')
+    commands.append('           <data_sharing>')
+    commands.append('               <kind>AUTOMATIC</kind>')
+    commands.append('           </data_sharing>')
+    commands.append('       </qos>')
+    commands.append('       <historyMemoryPolicy>PREALLOCATED_WITH_REALLOC</historyMemoryPolicy>')
+    commands.append('   </data_reader>')
+    commands.append('</profiles>')
+    commands.append('EOF')
+    return commands
+
 def generate_commands_cycloneDDS(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
     commands = []
-    commands_xml = generate_commands_xml(output_dir)
+    commands_xml = generate_commands_xml_cyclonedds(output_dir)
     commands.extend(commands_xml)
     commands.append(perf_test_exe_cmd + sub_args + ' &')
     commands.append('sleep 1')
     commands.append(perf_test_exe_cmd + pub_args)
     commands.append('sleep 5')
     commands.append('unset CYCLONEDDS_URI')
+    return commands
+
+def generate_commands_fastdds(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
+    commands = []
+    commands_xml = generate_commands_xml_fastdds(output_dir)
+    commands.extend(commands_xml)
+    commands.append(perf_test_exe_cmd + sub_args + ' &')
+    commands.append('sleep 1')
+    commands.append(perf_test_exe_cmd + pub_args)
+    commands.append('sleep 5')
+    commands.append('unset FASTRTPS_DEFAULT_PROFILES_FILE')
+    commands.append('unset RMW_FASTRTPS_USE_QOS_FROM_XML')
     return commands
 
 def generate_commands_apex_middleware(output_dir, perf_test_exe_cmd, sub_args, pub_args) -> list:
