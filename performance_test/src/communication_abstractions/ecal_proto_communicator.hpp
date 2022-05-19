@@ -127,8 +127,13 @@ public:
       // https://github.com/ZhenshengLee/performance_test/issues/1
       // m_publisher->SetQOS(writerQos);
       // set number of used publisher memory buffer
+      // we use 2 buffer to enable parallel read / write
       // https://github.com/ZhenshengLee/performance_test/issues/1
+      //m_publisher->ShmSetBufferCount(2);
+
+      // deactivate double buffering again for new tests
       m_publisher->ShmSetBufferCount(1);
+
       if (m_ec.is_zero_copy_transfer()){
         // enable zero copy mode
         m_publisher->ShmEnableZeroCopy(1);
@@ -142,7 +147,7 @@ public:
     init_msg(m_data, time);
     increment_sent();  // We increment before publishing so we don't have to lock twice.
     unlock();
-    m_publisher->Send(m_data);
+    m_publisher->Send(m_data, time);
   }
 
   // subscriber callback function
@@ -155,6 +160,7 @@ public:
     m_data.set_id(data_.id());
     unlock();
     // signal update_subscription to process
+    m_received = true;
     m_cb_cv.notify_one();
   }
 
@@ -189,7 +195,8 @@ public:
 
     // did we get new receives ?
     std::unique_lock<std::mutex> lk(m_cb_mtx);
-    if(m_cb_cv.wait_for(lk, std::chrono::milliseconds(m_timeout_ms)) ==  std::cv_status::no_timeout) {
+    if (m_cb_cv.wait_for(lk, std::chrono::milliseconds(m_timeout_ms), [this]{return this->m_received; })) {
+      m_received = false;
       lock();
       if (m_prev_timestamp >= m_data.time()) {
         throw std::runtime_error(
@@ -225,6 +232,7 @@ private:
   std::unique_ptr<eCAL::protobuf::CSubscriber<DataType>> m_subscriber;
   std::mutex                                             m_cb_mtx;
   std::condition_variable                                m_cb_cv;
+  bool                                                   m_received   = false;
   int                                                    m_timeout_ms = 0;
   DataType                                               m_data;
 
