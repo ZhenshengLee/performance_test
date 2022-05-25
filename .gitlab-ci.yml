@@ -1,8 +1,23 @@
 stages:
+  - bootstrap
   - build
   - test
   - deploy
 
+Draft MR:
+  stage: bootstrap
+  rules:
+    - if: $CI_MERGE_REQUEST_ID != null && $CI_MERGE_REQUEST_TITLE =~ /^Draft:/
+      when: always
+  script:
+    - echo "To suppress this failing job, remove 'Draft:' from the MR title"
+    - exit 1
+
+workflow:
+  rules:
+    - if: $CI_MERGE_REQUEST_ID != null && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/
+    - when: always
+ 
 build_cross_image:
   stage: build
   image: docker
@@ -48,10 +63,11 @@ build_cross_image:
       - build
       - opt.tar.gz
 
+
 build_rclcpp_rolling:
   extends:
     - .build_rclcpp
-
+    
 build_rclcpp_galactic:
   extends:
     - .build_rclcpp
@@ -453,6 +469,7 @@ test:
       done;
       '
 
+
 smoke_test_rclcpp_ste_rolling:
   extends:
     - .smoke_test
@@ -611,7 +628,6 @@ smoke_test_opendds:
 test_plotter:
   stage: test
   image: osrf/ros:rolling-desktop
-  needs: []
   script:
     - cd performance_test/helper_scripts/apex_performance_plotter
     - apt-get update
