@@ -32,6 +32,10 @@
   #include "factories/rclcpp_waitset_data_runner_factory.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  #include "../communication_abstractions/apex_os_polling_subscription_communicator.hpp"
+#endif
+
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   #include "../communication_abstractions/fast_rtps_communicator.hpp"
 #endif
@@ -100,6 +104,11 @@ std::shared_ptr<DataRunnerBase> DataRunnerFactory::get(
         // plugins, then sometimes the CI jobs will time out.
         if (com_mean == CommunicationMean::RCLCPP_WAITSET) {
           ptr = RclcppWaitsetDataRunnerFactory::get(msg_name, run_type);
+        }
+#endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+        if (com_mean == CommunicationMean::ApexOSPollingSubscription) {
+          ptr = std::make_shared<DataRunner<ApexOSPollingSubscriptionCommunicator<T>>>(run_type);
         }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED

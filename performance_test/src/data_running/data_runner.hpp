@@ -29,6 +29,7 @@
 #include <inttypes.h>
 #endif
 
+#include "../utilities/perf_clock.hpp"
 #include "../utilities/spin_lock.hpp"
 
 namespace performance_test
@@ -50,7 +51,7 @@ public:
     m_sum_lost_samples(0),
     m_sum_received_data(0),
     m_sum_sent_samples(0),
-    m_last_sync(std::chrono::steady_clock::now()),
+    m_last_sync(perf_clock::now()),
     m_run_type(run_type),
     m_thread(std::bind(&DataRunner::thread_function, this))
   {
@@ -107,7 +108,7 @@ public:
   void sync_reset() override
   {
     namespace sc = std::chrono;
-    const auto now = sc::steady_clock::now();
+    const auto now = perf_clock::now();
     m_lock.lock();
     sc::duration<double> iteration_duration = now - m_last_sync;
 
@@ -138,11 +139,11 @@ private:
   /// The function running inside the thread doing all the work.
   void thread_function()
   {
-    auto next_run = std::chrono::steady_clock::now() +
+    auto next_run = perf_clock::now() +
       std::chrono::duration_cast<std::chrono::nanoseconds>(
       std::chrono::duration<double>(1.0 / m_ec.rate()));
 
-    auto first_run = std::chrono::steady_clock::now();
+    auto first_run = perf_clock::now();
 
     std::size_t loop_counter = 1;
 
@@ -154,14 +155,14 @@ private:
         std::int64_t epoc_time = static_cast<std::int64_t>(ClockCycles());
 #else
         std::int64_t epoc_time =
-          std::chrono::steady_clock::now().time_since_epoch().count();
+          perf_clock::now().time_since_epoch().count();
 #endif
         m_com.publish(epoc_time);
       }
       if (m_run_type == RunType::SUBSCRIBER) {
         m_com.update_subscription();
       }
-      const std::chrono::nanoseconds reserve = next_run - std::chrono::steady_clock::now();
+      const std::chrono::nanoseconds reserve = next_run - perf_clock::now();
       {
         // We track here how much time (can also be negative) was left for the loop iteration given
         // the desired loop rate.
@@ -222,7 +223,7 @@ private:
   StatisticsTracker m_latency_statistics;
   StatisticsTracker m_time_reserve_statistics, m_time_reserve_statistics_store;
 
-  std::chrono::steady_clock::time_point m_last_sync;
+  perf_clock::time_point m_last_sync;
   const RunType m_run_type;
 
   std::thread m_thread;

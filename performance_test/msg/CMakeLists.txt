@@ -47,9 +47,6 @@ set(SUPPORTED_IDL_FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence4m.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence8m.idl
 
-    ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedSequence.idl
-    ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedString.idl
-
     ${CMAKE_CURRENT_SOURCE_DIR}/Struct16.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Struct256.idl
     ${CMAKE_CURRENT_SOURCE_DIR}/Struct4k.idl
@@ -78,10 +75,14 @@ if(PERFORMANCE_TEST_MINIMAL_MESSAGES)
       ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence16k.idl
       ${CMAKE_CURRENT_SOURCE_DIR}/BoundedSequence1m.idl
 
-      ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedSequence.idl
-      ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedString.idl
-
       ${CMAKE_CURRENT_SOURCE_DIR}/PointCloud1m.idl
+  )
+endif()
+
+if(NOT APEX_CERT)
+  list(APPEND SUPPORTED_IDL_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedSequence.idl
+    ${CMAKE_CURRENT_SOURCE_DIR}/UnboundedString.idl
   )
 endif()
 
@@ -169,7 +170,7 @@ if(PERFORMANCE_TEST_OPENDDS_ENABLED)
   list(APPEND IDLGEN_LIBRARIES opendds_idl ${DDS_DYN_LIBS})
 endif()
 
-if(PERFORMANCE_TEST_RCLCPP_ENABLED)
+if(PERFORMANCE_TEST_RCLCPP_ENABLED OR PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED)
   add_subdirectory(rclcpp)
   set(ROSIDL_GEN_LIST ${ROSIDL_GEN_LIST} PARENT_SCOPE)
 endif()

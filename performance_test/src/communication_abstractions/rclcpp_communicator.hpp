@@ -105,6 +105,13 @@ public:
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
       m_publisher = m_node->create_publisher<DataType>(
         m_ec.topic_name() + m_ec.pub_topic_postfix(), ros2QOSAdapter);
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+      if (m_ec.expected_num_subs() > 0) {
+        m_publisher->wait_for_matched(
+          m_ec.expected_num_subs(),
+          m_ec.expected_wait_for_matched_timeout());
+      }
+#endif
     }
     if (m_ec.is_zero_copy_transfer()) {
       #ifdef PERFORMANCE_TEST_RCLCPP_ZERO_COPY_ENABLED

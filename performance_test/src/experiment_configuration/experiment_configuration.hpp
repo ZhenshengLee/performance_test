@@ -133,6 +133,9 @@ public:
   /// \returns Returns if security is enabled for ROS2. This will throw if the configured mean
   /// of communication is not ROS2.
   bool is_with_security() const;
+  /// \returns Returns whether shared memory transfer is enabled. Only applicable for Apex.OS or
+  /// ROS2. This will throw if the experiment configuration is not set up.
+  bool is_shared_memory_transfer() const;
   /// \returns Returns whether to use zero copy transfer. This will throw if the experiment
   /// configuration is not set up.
   bool is_zero_copy_transfer() const;

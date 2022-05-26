@@ -23,12 +23,6 @@
 #include "analyze_runner.hpp"
 #include "analysis_result.hpp"
 
-#ifdef QNX710
-using perf_clock = std::chrono::system_clock;
-#else
-using perf_clock = std::chrono::steady_clock;
-#endif
-
 namespace performance_test
 {
 
@@ -63,7 +57,7 @@ void AnalyzeRunner::run()
   const auto experiment_start = perf_clock::now();
 
   while (!check_exit(experiment_start)) {
-    const auto loop_start = std::chrono::steady_clock::now();
+    const auto loop_start = perf_clock::now();
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -150,7 +144,7 @@ std::shared_ptr<const AnalysisResult> AnalyzeRunner::analyze(
   return result;
 }
 
-bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_start) const
+bool AnalyzeRunner::check_exit(perf_clock::time_point experiment_start) const
 {
   if (m_ec.exit_requested()) {
     std::cout << "Caught signal. Exiting." << std::endl;
@@ -163,7 +157,7 @@ bool AnalyzeRunner::check_exit(std::chrono::steady_clock::time_point experiment_
   }
 
   const double runtime_sec =
-    std::chrono::duration<double>(std::chrono::steady_clock::now() - experiment_start).count();
+    std::chrono::duration<double>(perf_clock::now() - experiment_start).count();
 
   if (runtime_sec > static_cast<double>(m_ec.max_runtime())) {
     std::cout << "Maximum runtime reached. Exiting." << std::endl;

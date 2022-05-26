@@ -36,6 +36,11 @@ std::string to_string(const CommunicationMean cm)
     return "RCLCPP_WAITSET";
   }
 #endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  if (cm == CommunicationMean::ApexOSPollingSubscription) {
+    return "ApexOSPollingSubscription";
+  }
+#endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
   if (cm == CommunicationMean::FASTRTPS) {
     return "FASTRTPS";

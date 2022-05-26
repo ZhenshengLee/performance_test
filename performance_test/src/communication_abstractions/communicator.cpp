@@ -22,6 +22,8 @@
 #include <sys/syspage.h>
 #endif
 
+#include "../utilities/perf_clock.hpp"
+
 namespace performance_test
 {
 
@@ -94,7 +96,7 @@ void Communicator::add_latency_to_statistics(const std::int64_t sample_timestamp
   const double sec_diff = static_cast<double>(ncycles) / static_cast<double>(m_cps);
 #else
   std::chrono::nanoseconds st(sample_timestamp);
-  const auto diff = std::chrono::steady_clock::now().time_since_epoch() - st;
+  const auto diff = perf_clock::now().time_since_epoch() - st;
 
   const auto sec_diff = std::chrono::duration_cast<std::chrono::duration<double>>(diff).count();
 #endif

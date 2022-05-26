@@ -20,6 +20,12 @@
 #include <rmw/rmw.h>
 #endif
 
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+#include <settings/inspect.hpp>
+#include <settings/repository.hpp>
+#include <cyclone_dds_vendor/dds.hpp>
+#endif
+
 #include <iostream>
 #include <iomanip>
 #include <exception>
@@ -78,6 +84,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
            "\nNumber of subscribers: " << e.number_of_subscribers() <<
            "\nMemory check enabled: " << e.check_memory() <<
            "\nWith security: " << e.is_with_security() <<
+           "\nShared memory transfer: " << e.is_shared_memory_transfer() <<
            "\nZero copy transfer: " << e.is_zero_copy_transfer() <<
            "\nUnbounded message size: " << e.unbounded_msg_size() <<
            "\nRoundtrip Mode: " << e.roundtrip_mode() <<
@@ -150,6 +157,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #endif
 #ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
     allowedCommunications.push_back("rclcpp-waitset");
+#endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+    allowedCommunications.push_back("ApexOSPollingSubscription");
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     allowedCommunications.push_back("FastRTPS");
@@ -366,6 +376,11 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean = CommunicationMean::RCLCPP_WAITSET;
     }
 #endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+    if (comm_str == "ApexOSPollingSubscription") {
+      m_com_mean = CommunicationMean::ApexOSPollingSubscription;
+    }
+#endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     if (comm_str == "FastRTPS") {
       m_com_mean = CommunicationMean::FASTRTPS;
@@ -544,6 +559,11 @@ bool ExperimentConfiguration::use_ros2_layers() const
     return true;
   }
 #endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  if (com_mean() == CommunicationMean::ApexOSPollingSubscription) {
+    return true;
+  }
+#endif
   return false;
 }
 uint32_t ExperimentConfiguration::dds_domain_id() const
@@ -625,6 +645,20 @@ bool ExperimentConfiguration::is_with_security() const
 {
   check_setup();
   return m_with_security;
+}
+
+bool ExperimentConfiguration::is_shared_memory_transfer() const
+{
+  check_setup();
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+#ifdef DDSCXX_HAS_SHM
+  if (rmw_implementation() == "rmw_apex_middleware" && use_ros2_layers()) {
+    return apex::settings::inspect::get_or_default<bool>(
+      apex::settings::repository::get(), "domain/shared_memory/enable", false);
+  }
+#endif
+#endif
+  return false;
 }
 
 bool ExperimentConfiguration::is_zero_copy_transfer() const

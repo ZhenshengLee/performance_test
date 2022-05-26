@@ -25,6 +25,7 @@
 #include "../experiment_configuration/experiment_configuration.hpp"
 #include "../outputs/output.hpp"
 #include "../utilities/cpu_usage_tracker.hpp"
+#include "../utilities/perf_clock.hpp"
 
 namespace performance_test
 {
@@ -66,7 +67,7 @@ private:
    * \param experiment_start The start of the experiment.
    * \return Is the experiment finnished
    */
-  bool check_exit(std::chrono::steady_clock::time_point experiment_start) const;
+  bool check_exit(perf_clock::time_point experiment_start) const;
 
   const ExperimentConfiguration & m_ec;
   std::vector<std::shared_ptr<Output>> m_outputs;

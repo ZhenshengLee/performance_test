@@ -310,6 +310,18 @@ through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
       [here](https://docs.ros.org/en/rolling/Concepts/About-Different-Middleware-Vendors.html).
 - Default transports: depends on underlying RMW implementation
 
+#### Apex.OS Polling Subscription
+
+- Apex.OS Polling Subscription with wait-set
+- CMake build flag: `-DPERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED=ON`
+- Communication plugin: `-c ApexOSPollingSubscription`
+- Zero copy transport (`--zero_copy`): yes (see the Apex.OS documentation for configuration instructions)
+- Docker file: Not available
+- Default transports:
+  | INTRA | IPC on same machine | Distributed system |
+  |-------|---------------------|--------------------|
+  | INTRA | UDP                 | UDP                |
+
 ## Analyze the results
 
 After an experiment is run with the `-l` flag, a CSV file is recorded. It is possible to add custom

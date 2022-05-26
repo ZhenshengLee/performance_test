@@ -32,7 +32,11 @@ int main(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
   // initialize ros
   if (ec.use_ros2_layers()) {
+#ifdef APEX_CERT
+    rclcpp::init(argc, argv, rclcpp::InitOptions{}, false);
+#else
     rclcpp::init(argc, argv);
+#endif
   }
 #endif
 
