@@ -1,5 +1,10 @@
 # Changelog for package performance_report
 
+## 1.1.0 (2022/05/27)
+
+### Added
+- New Apex.OS Polling Subscription plugin
+
 ## 1.0.0 (2022/05/12)
 
 ### Added

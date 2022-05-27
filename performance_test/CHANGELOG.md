@@ -1,5 +1,10 @@
 # Changelog for package performance_test
 
+## 1.1.0 (2022/05/27)
+
+### Fixed
+- Fix the GBP builds by removing `python3-bokeh-pip` from package.xml
+
 ## 1.0.0 (2022/05/12)
 
 ### Added

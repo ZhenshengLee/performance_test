@@ -22,8 +22,7 @@ This `master` branch is compatible with the following ROS2 versions
 - foxy
 - eloquent
 - dashing
-
-For using `performance_test` with Apex.OS, switch to [`apex-os`](https://gitlab.com/ApexAI/performance_test/-/tree/apex-os) branch.
+- Apex.OS
 
 ## How to use this document
 

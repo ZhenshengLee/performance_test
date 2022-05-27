@@ -3,7 +3,7 @@
         schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>performance_test</name>
-  <version>1.0.0</version>
+  <version>1.1.0</version>
   <description>Tool to test performance of ROS2 and DDS data layers and communication.</description>
   <maintainer email="opensource@apex.ai">Apex AI, Inc.</maintainer>
   <license>Apache 2.0</license>
