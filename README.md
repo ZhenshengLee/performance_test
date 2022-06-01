@@ -18,6 +18,7 @@ are automatically recorded when the application is running:
 
 This `master` branch is compatible with the following ROS2 versions
 - rolling
+- humble
 - galactic
 - foxy
 - eloquent

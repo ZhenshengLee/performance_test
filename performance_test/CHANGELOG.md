@@ -1,5 +1,10 @@
 # Changelog for package performance_test
 
+## X.Y.Z (YYYY/MM/DD)
+
+### Added
+- Compatibility with ROS2 Humble
+
 ## 1.1.0 (2022/05/27)
 
 ### Fixed

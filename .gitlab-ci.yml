@@ -64,6 +64,11 @@ build_cross_image:
       - opt.tar.gz
 
 
+build_rclcpp_humble:
+  extends:
+    - .build_rclcpp
+  image: osrf/ros:humble-desktop
+
 build_rclcpp_rolling:
   extends:
     - .build_rclcpp
@@ -470,6 +475,15 @@ test:
       '
 
 
+smoke_test_rclcpp_ste_humble:
+  extends:
+    - .smoke_test
+  image: osrf/ros:humble-desktop
+  needs:
+    - build_rclcpp_humble
+  variables:
+    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+
 smoke_test_rclcpp_ste_rolling:
   extends:
     - .smoke_test
@@ -514,6 +528,15 @@ smoke_test_rclcpp_ste_dashing:
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
 
+smoke_test_rclcpp_sste_humble:
+  extends:
+    - .smoke_test
+  image: osrf/ros:humble-desktop
+  needs:
+    - build_rclcpp_humble
+  variables:
+    COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
+
 smoke_test_rclcpp_sste_rolling:
   extends:
     - .smoke_test
@@ -530,6 +553,15 @@ smoke_test_rclcpp_sste_galactic:
     - build_rclcpp_galactic
   variables:
     COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
+
+smoke_test_rclcpp_waitset_humble:
+  extends:
+    - .smoke_test
+  image: osrf/ros:humble-desktop
+  needs:
+    - build_rclcpp_humble
+  variables:
+    COMMUNICATION_MEAN: rclcpp-waitset
 
 smoke_test_rclcpp_waitset_rolling:
   extends:
