@@ -475,6 +475,15 @@ test:
       '
 
 
+smoke_test_rclcpp_ste_rolling:
+  extends:
+    - .smoke_test
+  needs:
+    - build_rclcpp_rolling
+  variables:
+    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+    ROS_DOMAIN_ID: 10
+
 smoke_test_rclcpp_ste_humble:
   extends:
     - .smoke_test
@@ -483,14 +492,7 @@ smoke_test_rclcpp_ste_humble:
     - build_rclcpp_humble
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
-
-smoke_test_rclcpp_ste_rolling:
-  extends:
-    - .smoke_test
-  needs:
-    - build_rclcpp_rolling
-  variables:
-    COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+    ROS_DOMAIN_ID: 11
 
 smoke_test_rclcpp_ste_galactic:
   extends:
@@ -500,6 +502,7 @@ smoke_test_rclcpp_ste_galactic:
     - build_rclcpp_galactic
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+    ROS_DOMAIN_ID: 12
 
 smoke_test_rclcpp_ste_foxy:
   extends:
@@ -509,6 +512,7 @@ smoke_test_rclcpp_ste_foxy:
     - build_rclcpp_foxy
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+    ROS_DOMAIN_ID: 13
 
 smoke_test_rclcpp_ste_eloquent:
   extends:
@@ -518,6 +522,7 @@ smoke_test_rclcpp_ste_eloquent:
     - build_rclcpp_eloquent
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+    ROS_DOMAIN_ID: 14
 
 smoke_test_rclcpp_ste_dashing:
   extends:
@@ -527,6 +532,16 @@ smoke_test_rclcpp_ste_dashing:
     - build_rclcpp_dashing
   variables:
     COMMUNICATION_MEAN: rclcpp-single-threaded-executor
+    ROS_DOMAIN_ID: 15
+
+smoke_test_rclcpp_sste_rolling:
+  extends:
+    - .smoke_test
+  needs:
+    - build_rclcpp_rolling
+  variables:
+    COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
+    ROS_DOMAIN_ID: 20
 
 smoke_test_rclcpp_sste_humble:
   extends:
@@ -536,14 +551,7 @@ smoke_test_rclcpp_sste_humble:
     - build_rclcpp_humble
   variables:
     COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
-
-smoke_test_rclcpp_sste_rolling:
-  extends:
-    - .smoke_test
-  needs:
-    - build_rclcpp_rolling
-  variables:
-    COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
+    ROS_DOMAIN_ID: 21
 
 smoke_test_rclcpp_sste_galactic:
   extends:
@@ -553,6 +561,16 @@ smoke_test_rclcpp_sste_galactic:
     - build_rclcpp_galactic
   variables:
     COMMUNICATION_MEAN: rclcpp-static-single-threaded-executor
+    ROS_DOMAIN_ID: 22
+
+smoke_test_rclcpp_waitset_rolling:
+  extends:
+    - .smoke_test
+  needs:
+    - build_rclcpp_rolling
+  variables:
+    COMMUNICATION_MEAN: rclcpp-waitset
+    ROS_DOMAIN_ID: 30
 
 smoke_test_rclcpp_waitset_humble:
   extends:
@@ -562,14 +580,7 @@ smoke_test_rclcpp_waitset_humble:
     - build_rclcpp_humble
   variables:
     COMMUNICATION_MEAN: rclcpp-waitset
-
-smoke_test_rclcpp_waitset_rolling:
-  extends:
-    - .smoke_test
-  needs:
-    - build_rclcpp_rolling
-  variables:
-    COMMUNICATION_MEAN: rclcpp-waitset
+    ROS_DOMAIN_ID: 31
 
 smoke_test_rclcpp_waitset_galactic:
   extends:
@@ -579,6 +590,7 @@ smoke_test_rclcpp_waitset_galactic:
     - build_rclcpp_galactic
   variables:
     COMMUNICATION_MEAN: rclcpp-waitset
+    ROS_DOMAIN_ID: 32
 
 smoke_test_rclcpp_waitset_foxy:
   extends:
@@ -588,6 +600,7 @@ smoke_test_rclcpp_waitset_foxy:
     - build_rclcpp_foxy
   variables:
     COMMUNICATION_MEAN: rclcpp-waitset
+    ROS_DOMAIN_ID: 33
 
 smoke_test_fastrtps:
   extends:
@@ -672,6 +685,8 @@ test_security_fast_dds:
   image: osrf/ros:rolling-desktop
   needs:
     - build_rclcpp_rolling
+  variables:
+    ROS_DOMAIN_ID: 40
   script:
     - apt-get update
     - rosdep update
@@ -699,6 +714,8 @@ test_security_cyclone_dds:
   image: osrf/ros:rolling-desktop
   needs:
     - build_rmw_cyclonedds_cpp
+  variables:
+    ROS_DOMAIN_ID: 41
   script:
     - apt-get update
     - rosdep update
