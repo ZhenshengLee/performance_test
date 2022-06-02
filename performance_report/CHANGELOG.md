@@ -1,9 +1,9 @@
 # Changelog for package performance_report
 
-## 1.1.0 (2022/05/27)
+## 1.1.0 (2022/06/02)
 
-### Added
-- New Apex.OS Polling Subscription plugin
+### Fixed
+- Fix the GBP builds by removing `python3-bokeh-pip` from package.xml
 
 ## 1.0.0 (2022/05/12)
 
