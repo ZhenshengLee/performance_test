@@ -1,5 +1,10 @@
 # Changelog for package performance_report
 
+## X.Y.Z (YYYY/MM/DD)
+
+### Fixed
+- Bokeh line style can be specified in the plotter and reporter .yaml files
+
 ## 1.1.0 (2022/06/02)
 
 ### Fixed

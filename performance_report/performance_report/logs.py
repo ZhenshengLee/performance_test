@@ -40,7 +40,7 @@ def parseLog(log_dir: str, test_name: str, experiment: ExperimentConfig):
                 dataframe['latency_mean_ms'] = dataframe['latency_mean'] * 1000
                 dataframe['latency_variance_ms'] = dataframe['latency_variance'] * 1000 * 1000
                 dataframe['latency_M2_ms'] = dataframe['latency_M2'] * 1000 * 1000
-                dataframe['cpu_usage_percent'] = dataframe['cpu_info_cpu_usage'] * 100
+                dataframe['cpu_usage_percent'] = dataframe['cpu_info_cpu_usage']
                 dataframe['ru_maxrss'] = dataframe['sys_tracker_ru_maxrss']
                 dataframe['T_experiment'] = dataframe['experiment_start'] / 1000000000
                 # get experiement settings as dataframe

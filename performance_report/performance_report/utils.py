@@ -239,8 +239,16 @@ class ThemeConfig:
         line: LineConfig = LineConfig(),
     ) -> None:
         self.color = str(color)
-        self.marker = marker
-        self.line = line
+
+        if type(marker) is MarkerConfig:
+            self.marker = marker
+        if type(marker) is dict:
+            self.marker = MarkerConfig(**marker)
+
+        if type(line) is LineConfig:
+            self.line = line
+        if type(line) is dict:
+            self.line = LineConfig(**line)
 
 
 class DatasetConfig:
