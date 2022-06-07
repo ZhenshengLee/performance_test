@@ -1,5 +1,12 @@
 # Changelog for package performance_test
 
+## 1.1.1 (2022/06/07)
+
+### Changed
+- Significant refactor to simplify the analysis pipeline
+### Fixed
+- Add some missing definitions when Apex.OS is enabled, but the rclcpp plugins are disabled
+
 ## 1.1.0 (2022/06/02)
 
 ### Added
