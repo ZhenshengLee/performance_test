@@ -17,10 +17,6 @@
 
 #include <chrono>
 
-#ifdef QNX710
-using perf_clock = std::chrono::system_clock;
-#else
 using perf_clock = std::chrono::steady_clock;
-#endif
 
 #endif  // UTILITIES__PERF_CLOCK_HPP_

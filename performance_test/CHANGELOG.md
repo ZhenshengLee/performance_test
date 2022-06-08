@@ -1,5 +1,10 @@
 # Changelog for package performance_test
 
+## X.Y.Z (YYYY/MM/DD)
+
+### Changed
+- Use `steady_clock` for all platforms, including QNX QOS
+
 ## 1.1.1 (2022/06/07)
 
 ### Changed
