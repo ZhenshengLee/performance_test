@@ -83,16 +83,6 @@ std::string AnalysisResult::csv_header(const bool pretty_print, std::string st)
   ss << "latency_mean (ms)" << st;
   ss << "latency_variance (ms)" << st;
 
-  ss << "pub_loop_res_min (ms)" << st;
-  ss << "pub_loop_res_max (ms)" << st;
-  ss << "pub_loop_res_mean (ms)" << st;
-  ss << "pub_loop_res_variance (ms)" << st;
-
-  ss << "sub_loop_res_min (ms)" << st;
-  ss << "sub_loop_res_max (ms)" << st;
-  ss << "sub_loop_res_mean (ms)" << st;
-  ss << "sub_loop_res_variance (ms)" << st;
-
 #if !defined(WIN32)
   ss << "ru_utime" << st;
   ss << "ru_stime" << st;
@@ -147,16 +137,6 @@ std::string AnalysisResult::to_csv_string(const bool pretty_print, std::string s
   ss << m_latency.max() * 1000.0 << st;
   ss << m_latency.mean() * 1000.0 << st;
   ss << m_latency.variance() * 1000.0 << st;
-
-  ss << m_pub_loop_time_reserve.min() * 1000.0 << st;
-  ss << m_pub_loop_time_reserve.max() * 1000.0 << st;
-  ss << m_pub_loop_time_reserve.mean() * 1000.0 << st;
-  ss << m_pub_loop_time_reserve.variance() * 1000.0 << st;
-
-  ss << m_sub_loop_time_reserve.min() * 1000.0 << st;
-  ss << m_sub_loop_time_reserve.max() * 1000.0 << st;
-  ss << m_sub_loop_time_reserve.mean() * 1000.0 << st;
-  ss << m_sub_loop_time_reserve.variance() * 1000.0 << st;
 
   /* See http://www.gnu.org/software/libc/manual/html_node/Resource-Usage.html
    * for a detailed explanation of the output below

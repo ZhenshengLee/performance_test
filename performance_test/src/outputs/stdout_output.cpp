@@ -74,29 +74,6 @@ void StdoutOutput::update(std::shared_ptr<const AnalysisResult> result)
       latency_table.add_row({"-", "-", "-", "-"});
     }
 
-    tabulate::Table publisher_loop_table;
-    publisher_loop_table.add_row({"min", "max", "mean", "variance"});
-    if (result->m_pub_loop_time_reserve.n() > 0) {
-      publisher_loop_table.add_row(
-        {std::to_string(result->m_pub_loop_time_reserve.min()),
-          std::to_string(result->m_pub_loop_time_reserve.max()),
-          std::to_string(result->m_pub_loop_time_reserve.mean()),
-          std::to_string(result->m_pub_loop_time_reserve.variance())});
-    } else {
-      publisher_loop_table.add_row({"-", "-", "-", "-"});
-    }
-
-    tabulate::Table subscriber_loop_table;
-    subscriber_loop_table.add_row({"min", "max", "mean", "variance"});
-    if (result->m_sub_loop_time_reserve.n() > 0) {
-      subscriber_loop_table.add_row(
-        {std::to_string(result->m_sub_loop_time_reserve.min()),
-          std::to_string(result->m_sub_loop_time_reserve.max()),
-          std::to_string(result->m_sub_loop_time_reserve.mean()),
-          std::to_string(result->m_sub_loop_time_reserve.variance())});
-    } else {
-      subscriber_loop_table.add_row({"-", "-", "-", "-"});
-    }
 
     tabulate::Table system_statistics_table;
 #if !defined(WIN32)
@@ -160,8 +137,6 @@ void StdoutOutput::update(std::shared_ptr<const AnalysisResult> result)
     tabulate::Table packets_table;
     packets_table.add_row({"samples", "latency"});
     packets_table.add_row({sample_table, latency_table});
-    packets_table.add_row({"publisher loop", "subscriber loop"});
-    packets_table.add_row({publisher_loop_table, subscriber_loop_table});
 
     packets_table.format()
     .border_top(" ")

@@ -46,7 +46,6 @@ struct DataStats
 
   void reset()
   {
-    m_pub_loop_time_reserves.clear();
     m_latencies.clear();
   }
 
@@ -116,11 +115,9 @@ struct DataStats
     update_data_received(data_type_size);
   }
 
-  void update_publisher_stats(
-    const std::chrono::duration<double> & remaining_time_to_publish)
+  void update_publisher_stats()
   {
     increment_sent();
-    m_pub_loop_time_reserves.push_back(remaining_time_to_publish.count());
   }
 
   void lock() {m_lock.lock();}
@@ -168,9 +165,6 @@ struct DataStats
     switch (run_type) {
       case RunType::PUBLISHER:
         results->m_num_samples_sent += m_sent_samples_per_iteration;
-        for (auto reserve : m_pub_loop_time_reserves) {
-          results->m_pub_loop_time_reserve.add_sample(reserve);
-        }
         break;
       case RunType::SUBSCRIBER:
         results->m_num_samples_received += m_received_samples_per_iteration;
@@ -213,8 +207,6 @@ struct DataStats
     // timestamps are very close double precision is enough.
     m_latencies.push_back(sec_diff);
   }
-
-  std::vector<double> m_pub_loop_time_reserves;
 
 private:
   std::vector<double> m_latencies;

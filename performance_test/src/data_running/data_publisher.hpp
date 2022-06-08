@@ -74,7 +74,7 @@ public:
 #else
     std::int64_t epoc_time = perf_clock::now().time_since_epoch().count();
 #endif
-    m_com.publish(epoc_time, reserve);
+    m_com.publish(epoc_time);
 
     m_next_run =
       m_first_run +

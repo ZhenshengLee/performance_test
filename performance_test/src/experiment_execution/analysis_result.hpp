@@ -62,8 +62,6 @@ struct AnalysisResult
   std::size_t m_total_data_received = {};
 
   StatisticsTracker m_latency;
-  StatisticsTracker m_pub_loop_time_reserve;
-  StatisticsTracker m_sub_loop_time_reserve;
 #if !defined(WIN32)
   rusage m_sys_usage;
 #endif  // !defined(WIN32)

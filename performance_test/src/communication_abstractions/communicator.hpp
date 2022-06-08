@@ -43,12 +43,8 @@ public:
    *  The first time this function is called it also creates the data writer.
    *  Further it updates all internal counters while running.
    * \param time The time to fill into the data field.
-   * \param remaining_time_to_publish Idle time between two publish calls
    */
-  virtual void publish(
-    std::int64_t time,
-    std::chrono::duration<double> remaining_time_to_publish =
-    std::chrono::duration<double>{}) = 0;
+  virtual void publish(std::int64_t time) = 0;
 
 protected:
   DataStats & m_stats;

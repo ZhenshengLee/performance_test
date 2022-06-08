@@ -2,6 +2,9 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Removed
+- The pub/sub loop reserve time metrics
+
 ## 1.1.2 (2022/06/08)
 
 ### Changed

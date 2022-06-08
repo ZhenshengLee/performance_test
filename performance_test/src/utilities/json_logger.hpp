@@ -91,18 +91,6 @@ public:
       write(writer, "latency_mean", ar->m_latency.mean());
       write(writer, "latency_M2", ar->m_latency.m2());
       write(writer, "latency_variance", ar->m_latency.variance());
-      write(writer, "pub_loop_time_reserve_min", ar->m_pub_loop_time_reserve.min());
-      write(writer, "pub_loop_time_reserve_max", ar->m_pub_loop_time_reserve.max());
-      write(writer, "pub_loop_time_reserve_n", ar->m_pub_loop_time_reserve.n());
-      write(writer, "pub_loop_time_reserve_mean", ar->m_pub_loop_time_reserve.mean());
-      write(writer, "pub_loop_time_reserve_M2", ar->m_pub_loop_time_reserve.m2());
-      write(writer, "pub_loop_time_reserve_variance", ar->m_pub_loop_time_reserve.variance());
-      write(writer, "sub_loop_time_reserve_min", ar->m_sub_loop_time_reserve.min());
-      write(writer, "sub_loop_time_reserve_max", ar->m_sub_loop_time_reserve.max());
-      write(writer, "sub_loop_time_reserve_n", ar->m_sub_loop_time_reserve.n());
-      write(writer, "sub_loop_time_reserve_mean", ar->m_sub_loop_time_reserve.mean());
-      write(writer, "sub_loop_time_reserve_M2", ar->m_sub_loop_time_reserve.m2());
-      write(writer, "sub_loop_time_reserve_variance", ar->m_sub_loop_time_reserve.variance());
 #if !defined(WIN32)
       write(writer, "sys_tracker_ru_utime", ar->m_sys_usage.ru_utime);
       write(writer, "sys_tracker_ru_stime", ar->m_sys_usage.ru_stime);

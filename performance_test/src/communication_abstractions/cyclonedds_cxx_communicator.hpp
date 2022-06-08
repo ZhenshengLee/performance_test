@@ -143,23 +143,20 @@ public:
     this->m_publisher = dds::core::null;
   }
 
-  void publish(
-    std::int64_t time,
-    std::chrono::duration<double> remaining_time_to_publish =
-    std::chrono::duration<double>{}) override
+  void publish(std::int64_t time) override
   {
     if (m_ec.is_zero_copy_transfer()) {
       DataType & loaned_sample = m_datawriter.delegate()->loan_sample();
       m_stats.lock();
       init_msg(loaned_sample, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       m_datawriter->write(loaned_sample);
     } else {
       DataType sample;
       m_stats.lock();
       init_msg(sample, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       m_datawriter->write(sample);
     }

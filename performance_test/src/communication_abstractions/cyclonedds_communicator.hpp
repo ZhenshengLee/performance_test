@@ -147,10 +147,7 @@ public:
     m_participant(ResourceManager::get().cyclonedds_participant()),
     m_datawriter(0), m_datareader(0) {}
 
-  void publish(
-    std::int64_t time,
-    std::chrono::duration<double> remaining_time_to_publish =
-    std::chrono::duration<double>{}) override
+  void publish(std::int64_t time) override
   {
     if (m_datawriter == 0) {
       dds_qos_t * dw_qos = dds_create_qos();
@@ -178,7 +175,7 @@ public:
       DataType * sample = static_cast<DataType *>(loaned_sample);
       m_stats.lock();
       init_msg(*sample, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       status = dds_write(m_datawriter, sample);
       if (status == DDS_RETCODE_UNSUPPORTED) {
@@ -189,7 +186,7 @@ public:
     } else {
       m_stats.lock();
       init_msg(m_data, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       if (dds_write(m_datawriter, static_cast<void *>(&m_data)) < 0) {
         throw std::runtime_error("Failed to write to sample");

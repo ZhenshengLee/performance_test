@@ -118,10 +118,7 @@ public:
     register_topic();
   }
 
-  void publish(
-    std::int64_t time,
-    std::chrono::duration<double> remaining_time_to_publish =
-    std::chrono::duration<double>{}) override
+  void publish(std::int64_t time) override
   {
     if (m_datawriter == nullptr) {
       DDSPublisher * publisher;
@@ -156,7 +153,7 @@ public:
       init_data(*sample);
       m_stats.lock();
       init_msg(*sample, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       auto retcode = m_typed_datawriter->write(*sample, DDS_HANDLE_NIL);
       if (retcode != DDS_RETCODE_OK) {
@@ -166,7 +163,7 @@ public:
       init_data(m_data);
       m_stats.lock();
       init_msg(m_data, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       auto retcode = m_typed_datawriter->write(m_data, DDS_HANDLE_NIL);
       if (retcode != DDS_RETCODE_OK) {

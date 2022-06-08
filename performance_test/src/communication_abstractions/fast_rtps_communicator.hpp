@@ -140,10 +140,7 @@ public:
     }
   }
 
-  void publish(
-    std::int64_t time,
-    std::chrono::duration<double> remaining_time_to_publish =
-    std::chrono::duration<double>{}) override
+  void publish(std::int64_t time) override
   {
     if (!m_publisher) {
       const FastRTPSQOSAdapter qos(m_ec.qos());
@@ -168,7 +165,7 @@ public:
     }
     m_stats.lock();
     init_msg(m_data, time);
-    m_stats.update_publisher_stats(remaining_time_to_publish);
+    m_stats.update_publisher_stats();
     m_stats.unlock();
     m_publisher->write(static_cast<void *>(&m_data));
   }

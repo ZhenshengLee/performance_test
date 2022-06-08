@@ -88,10 +88,7 @@ public:
   : Communicator(stats), m_node(ResourceManager::get().rclcpp_node()),
     m_ROS2QOSAdapter(ROS2QOSAdapter(m_ec.qos()).get()) {}
 
-  void publish(
-    std::int64_t time,
-    std::chrono::duration<double> remaining_time_to_publish =
-    std::chrono::duration<double>{}) override
+  void publish(std::int64_t time) override
   {
     if (!m_publisher) {
       auto ros2QOSAdapter = m_ROS2QOSAdapter;
@@ -113,7 +110,7 @@ public:
       auto borrowed_message{m_publisher->borrow_loaned_message()};
       m_stats.lock();
       init_msg(borrowed_message.get(), time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       m_publisher->publish(std::move(borrowed_message));
       #else
@@ -122,7 +119,7 @@ public:
     } else {
       m_stats.lock();
       init_msg(m_data, time);
-      m_stats.update_publisher_stats(remaining_time_to_publish);
+      m_stats.update_publisher_stats();
       m_stats.unlock();
       m_publisher->publish(m_data);
     }
