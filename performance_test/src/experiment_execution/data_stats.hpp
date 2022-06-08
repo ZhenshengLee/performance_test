@@ -208,6 +208,19 @@ struct DataStats
     m_latencies.push_back(sec_diff);
   }
 
+
+  void check_data_consistency(std::int64_t time_ns_since_epoch)
+  {
+    if (m_prev_timestamp_ns_since_epoch >= time_ns_since_epoch) {
+      throw std::runtime_error(
+              "Data not consistent: received sample with not strictly older "
+              "timestamp. Time diff: " +
+              std::to_string(time_ns_since_epoch - m_prev_timestamp_ns_since_epoch) +
+              " Data Time: " + std::to_string(time_ns_since_epoch));
+    }
+    m_prev_timestamp_ns_since_epoch = time_ns_since_epoch;
+  }
+
 private:
   std::vector<double> m_latencies;
   std::uint64_t m_sent_sample_counter{};
@@ -220,6 +233,7 @@ private:
   std::uint64_t m_prev_sample_id{};
   std::size_t m_data_received_bytes{};
   SpinLock m_lock;
+  std::int64_t m_prev_timestamp_ns_since_epoch{};
 
 #if defined(QNX)
   std::uint64_t m_cps;

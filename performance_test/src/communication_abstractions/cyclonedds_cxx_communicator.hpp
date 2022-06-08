@@ -200,7 +200,7 @@ private:
   {
     msg.time(time);
     msg.id(m_stats.next_sample_id());
-    ensure_fixed_size(msg);
+    MsgTraits::ensure_fixed_size(msg);
   }
 };
 

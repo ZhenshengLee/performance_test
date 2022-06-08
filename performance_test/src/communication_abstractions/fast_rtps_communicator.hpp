@@ -32,6 +32,7 @@
 #include "communicator.hpp"
 #include "resource_manager.hpp"
 #include "../experiment_configuration/qos_abstraction.hpp"
+#include "../utilities/msg_traits.hpp"
 
 namespace performance_test
 {
@@ -192,7 +193,7 @@ public:
     m_stats.lock();
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
-        check_data_consistency(m_data.time());
+        m_stats.check_data_consistency(m_data.time());
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           m_stats.unlock();
           publish(m_data.time());
@@ -222,7 +223,7 @@ private:
   {
     msg.time(time);
     msg.id(m_stats.next_sample_id());
-    ensure_fixed_size(msg);
+    MsgTraits::ensure_fixed_size(msg);
   }
 };
 

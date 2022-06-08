@@ -206,7 +206,7 @@ public:
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
         const auto & data = m_data_seq[j];
         if (m_sample_info_seq[j].valid_data) {
-          check_data_consistency(data.time);
+          m_stats.check_data_consistency(data.time);
           m_stats.update_subscriber_stats(data.time, data.id, sizeof(DataType));
         }
       }

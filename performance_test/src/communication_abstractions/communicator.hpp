@@ -21,6 +21,7 @@
 #include <vector>
 
 #include "../experiment_execution/data_stats.hpp"
+#include "../utilities/msg_traits.hpp"
 
 namespace performance_test
 {
@@ -48,67 +49,15 @@ public:
 
 protected:
   DataStats & m_stats;
-  /// The experiment configuration.
   const ExperimentConfiguration & m_ec;
-
-  // TODO(erik.snider) switch to std::void_t when upgrading to C++17
-  template<class ...>
-  using void_t = void;
-
-  template<typename T, typename = void>
-  struct has_bounded_sequence : std::false_type {};
-
-  template<typename T>
-  struct has_bounded_sequence<
-    T, void_t<decltype(std::declval<T>().bounded_sequence)>>
-    : std::true_type {};
-
-  template<typename T, typename = void>
-  struct has_unbounded_sequence : std::false_type {};
-
-  template<typename T>
-  struct has_unbounded_sequence<
-    T, void_t<decltype(std::declval<T>().unbounded_sequence)>>
-    : std::true_type {};
-
-  template<typename T, typename = void>
-  struct has_unbounded_string : std::false_type {};
-
-  template<typename T>
-  struct has_unbounded_string<
-    T, void_t<decltype(std::declval<T>().unbounded_string)>>
-    : std::true_type {};
 
   template<typename T>
   inline void init_msg(T & msg, std::int64_t time)
   {
     msg.time = time;
     msg.id = m_stats.next_sample_id();
-    ensure_fixed_size(msg);
+    MsgTraits::ensure_fixed_size(msg);
   }
-
-  template<typename T>
-  inline std::enable_if_t<has_bounded_sequence<T>::value ||
-    has_unbounded_sequence<T>::value ||
-    has_unbounded_string<T>::value,
-    void>
-  ensure_fixed_size(T &)
-  {
-    throw std::runtime_error(
-            "This plugin only supports messages with a fixed size");
-  }
-
-  template<typename T>
-  inline std::enable_if_t<!has_bounded_sequence<T>::value &&
-    !has_unbounded_sequence<T>::value &&
-    !has_unbounded_string<T>::value,
-    void>
-  ensure_fixed_size(T &) {}
-  void check_data_consistency(const std::int64_t time_ns_since_epoch);
-
-private:
-  /// The time the last sample was received [ns since epoc].
-  std::int64_t m_prev_timestamp;
 };
 
 }  // namespace performance_test

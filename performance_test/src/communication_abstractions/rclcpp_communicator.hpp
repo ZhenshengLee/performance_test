@@ -23,6 +23,7 @@
 #include <utility>
 
 #include "../experiment_configuration/qos_abstraction.hpp"
+#include "../utilities/msg_traits.hpp"
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
@@ -150,7 +151,7 @@ protected:
       typename std::remove_cv<
         typename std::remove_reference<T>::type>::type>::value,
       "Parameter type passed to callback() does not match");
-    check_data_consistency(data.time);
+    m_stats.check_data_consistency(data.time);
     if (m_ec.roundtrip_mode() ==
       ExperimentConfiguration::RoundTripMode::RELAY)
     {
@@ -164,7 +165,6 @@ protected:
 
 private:
   std::shared_ptr<::rclcpp::Publisher<DataType>> m_publisher;
-
   DataType m_data;
 
   inline
@@ -179,7 +179,7 @@ private:
 
   template<typename T>
   inline
-  std::enable_if_t<has_bounded_sequence<T>::value, void>
+  std::enable_if_t<MsgTraits::has_bounded_sequence<T>::value, void>
   init_bounded_sequence(T & msg)
   {
     msg.bounded_sequence.resize(msg.bounded_sequence.capacity());
@@ -187,12 +187,12 @@ private:
 
   template<typename T>
   inline
-  std::enable_if_t<!has_bounded_sequence<T>::value, void>
+  std::enable_if_t<!MsgTraits::has_bounded_sequence<T>::value, void>
   init_bounded_sequence(T &) {}
 
   template<typename T>
   inline
-  std::enable_if_t<has_unbounded_sequence<T>::value, void>
+  std::enable_if_t<MsgTraits::has_unbounded_sequence<T>::value, void>
   init_unbounded_sequence(T & msg)
   {
     msg.unbounded_sequence.resize(m_ec.unbounded_msg_size());
@@ -200,12 +200,12 @@ private:
 
   template<typename T>
   inline
-  std::enable_if_t<!has_unbounded_sequence<T>::value, void>
+  std::enable_if_t<!MsgTraits::has_unbounded_sequence<T>::value, void>
   init_unbounded_sequence(T &) {}
 
   template<typename T>
   inline
-  std::enable_if_t<has_unbounded_string<T>::value, void>
+  std::enable_if_t<MsgTraits::has_unbounded_string<T>::value, void>
   init_unbounded_string(T & msg)
   {
     msg.unbounded_string.resize(m_ec.unbounded_msg_size());
@@ -213,7 +213,7 @@ private:
 
   template<typename T>
   inline
-  std::enable_if_t<!has_unbounded_string<T>::value, void>
+  std::enable_if_t<!MsgTraits::has_unbounded_string<T>::value, void>
   init_unbounded_string(T &) {}
 };
 }  // namespace performance_test

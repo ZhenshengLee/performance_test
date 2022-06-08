@@ -228,7 +228,7 @@ public:
       m_stats.lock();
       const DataType * data = static_cast<DataType *>(untyped);
       if (si.valid_data) {
-        check_data_consistency(data->time);
+        m_stats.check_data_consistency(data->time);
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           m_stats.unlock();
           publish(data->time);

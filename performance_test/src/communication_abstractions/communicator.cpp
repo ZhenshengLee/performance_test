@@ -20,20 +20,8 @@ namespace performance_test
 {
 
 Communicator::Communicator(DataStats & stats)
-: m_stats(stats), m_ec(ExperimentConfiguration::get()), m_prev_timestamp()
+: m_stats(stats), m_ec(ExperimentConfiguration::get())
 {
-}
-
-void Communicator::check_data_consistency(std::int64_t time_ns_since_epoch)
-{
-  if (m_prev_timestamp >= time_ns_since_epoch) {
-    throw std::runtime_error(
-            "Data not consistent: received sample with not strictly older "
-            "timestamp. Time diff: " +
-            std::to_string(time_ns_since_epoch - m_prev_timestamp) +
-            " Data Time: " + std::to_string(time_ns_since_epoch));
-  }
-  m_prev_timestamp = time_ns_since_epoch;
 }
 
 }  // namespace performance_test

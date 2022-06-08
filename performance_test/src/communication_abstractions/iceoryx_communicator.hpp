@@ -111,7 +111,7 @@ public:
             m_subscriber->take()
             .and_then(
               [this](auto & data) {
-                check_data_consistency(data->time);
+                m_stats.check_data_consistency(data->time);
                 m_stats.update_subscriber_stats(
                   data->time, data->id,
                   sizeof(DataType));
