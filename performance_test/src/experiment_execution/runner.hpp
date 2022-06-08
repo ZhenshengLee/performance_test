@@ -29,6 +29,11 @@
 #include "../utilities/rt_enabler.hpp"
 #include "analysis_result.hpp"
 
+// if Apex.OS
+#include "../data_running/apex_os_entity_factory.hpp"
+#include <executor/executor_factory.hpp>
+#include <executor/executor_runner.hpp>
+
 namespace performance_test
 {
 
@@ -47,6 +52,18 @@ public:
       output->open();
     }
 
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+    for (uint32_t i = 0; i < ec.number_of_publishers(); ++i) {
+
+      m_pubs.push_back(performance_test::ApexOsEntityFactory::get(
+          ec.msg_name(), RunType::PUBLISHER, m_pub_stats.at(i), m_ec));
+    }
+
+    for (uint32_t i = 0; i < ec.number_of_subscribers(); ++i) {
+      m_subs.push_back(performance_test::ApexOsEntityFactory::get(
+          ec.msg_name(), RunType::SUBSCRIBER, m_sub_stats.at(i), m_ec));
+    }
+#else
     for (uint32_t i = 0; i < ec.number_of_subscribers(); ++i) {
       m_subs.push_back(
         DataEntityFactory::get(
@@ -60,6 +77,7 @@ public:
         DataEntityFactory::get(
           ec.msg_name(), ec.com_mean(), RunType::PUBLISHER, m_pub_stats.at(i)));
     }
+#endif // PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
 
 #if PERFORMANCE_TEST_RT_ENABLED
     if (m_ec.is_rt_init_required()) {
@@ -82,10 +100,50 @@ public:
 
   void run()
   {
-    const auto experiment_start = perf_clock::now();
+    m_running = true;
+
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+
+    const auto executor = apex::executor::executor_factory::create();
+    for (auto &pub : m_pubs) {
+
+      if (true /*m_ec.execution_mode == "chain"*/) {
+
+        std::vector<apex::executor::executable_item_ptr> chain_of_nodes;
+        chain_of_nodes.reserve(m_pubs.size() + m_subs.size());
+        for (auto &pub : m_pubs) {
+          chain_of_nodes.push_back(pub->get_publisher_item());
+        }
+        for (auto &sub : m_subs) {
+          chain_of_nodes.push_back(sub->get_subscriber_item());
+        }
+
+        executor->add(chain_of_nodes,
+                      std::chrono::duration_cast<std::chrono::microseconds>(
+                          std::chrono::duration<double>(1.0 / m_ec.rate())));
+      } else {
+
+        for (auto &pub : m_pubs) {
+
+          executor->add(std::move(pub->get_publisher_item()),
+                        std::chrono::duration_cast<std::chrono::microseconds>(
+                            std::chrono::duration<double>(1.0 / m_ec.rate())));
+        }
+        for (auto &sub : m_subs) {
+          executor->add(std::move(sub->get_subscriber_item()));
+        }
+
+        executor->add(std::move(pub->get_publisher_item()),
+                      std::chrono::duration_cast<std::chrono::microseconds>(
+                          std::chrono::duration<double>(1.0 / m_ec.rate())));
+      }
+    for (auto &sub : m_subs) {
+      executor->add(std::move(sub->get_subscriber_item()));
+    }
+    const apex::executor::executor_runner runner{*executor};
+#else
 
     m_thread_pool.reserve(m_pubs.size() + m_subs.size());
-    m_running = true;
 
     for (auto & sub : m_subs) {
       m_thread_pool.emplace_back(
@@ -104,7 +162,9 @@ public:
           }
         });
     }
+#endif
 
+    const auto experiment_start = perf_clock::now();
     perf_clock::time_point last_measurement_time{};
 
     while (!check_exit(experiment_start)) {

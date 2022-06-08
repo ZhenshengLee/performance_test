@@ -13,7 +13,12 @@
 
   <build_depend>osrf_testing_tools_cpp</build_depend>
   <build_depend>rclcpp</build_depend>
+  <build_depend>executor</build_depend>
+  <build_depend>apexcpp</build_depend>
+  <build_depend>std_msgs</build_depend>
 
+  <exec_depend>apexcpp</exec_depend>
+  <exec_depend>executor</exec_depend>
   <exec_depend>rclcpp</exec_depend>
   <exec_depend>rmw_implementation</exec_depend>
   <exec_depend>rosidl_default_runtime</exec_depend>

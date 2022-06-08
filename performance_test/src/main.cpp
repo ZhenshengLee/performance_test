@@ -37,6 +37,11 @@ int main(int argc, char ** argv)
   }
 #endif
 
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  performance_test::Runner<performance_test::ApexOsEntity> r(ec);
+#else
   performance_test::Runner<performance_test::DataEntity> r(ec);
+#endif
+
   r.run();
 }
