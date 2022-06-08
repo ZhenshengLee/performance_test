@@ -1,5 +1,9 @@
 # Changelog for package performance_report
 
+## X.Y.Z (YYYY/MM/DD)
+
+## 1.1.2 (2022/06/08)
+
 ## 1.1.1 (2022/06/07)
 
 ### Fixed

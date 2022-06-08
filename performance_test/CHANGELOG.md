@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.1.2 (2022/06/08)
+
 ### Changed
 - Use `steady_clock` for all platforms, including QNX QOS
 
