@@ -450,6 +450,48 @@ test:
     paths:
       - log
 
+test_performance_report:
+  stage: test
+  image: osrf/ros:rolling-desktop
+  needs:
+    - build_rclcpp_rolling
+  script:
+    - apt-get update
+    - sudo apt-get install -y python3-pip 
+    - python3 -m pip install bokeh selenium pandas
+    - rosdep update --include-eol-distros
+    - rosdep install --from-paths performance_test --ignore-src -y
+    - tar xzf opt.tar.gz -C /
+    - source /opt/performance_test/setup.bash
+    # Using runnner to test performance_report
+    - '
+      ros2 run performance_report runner
+      --log-dir perf_logs
+      --test-name experiments
+      --configs performance_report/cfg/runner/run_one_experiment.yaml
+      '
+    - '
+      ros2 run performance_report reporter
+      --log-dir perf_logs
+      --configs performance_report/cfg/reporter/report_one_experiment.yaml
+      '
+    # Verfying the generated report files from reporter
+    - find ./perf_logs/time_vs_latency.html
+    # Using commander to test performance_report
+    - '
+      ros2 run performance_report commander --log-dir perf_logs_commander   --test-name experiments   
+      --configs performance_report/cfg/runner/run_one_experiment.yaml > commands.sh
+      '
+    - chmod +x commands.sh
+    - ./commands.sh
+    - '
+      ros2 run performance_report reporter
+      --log-dir perf_logs_commander
+      --configs performance_report/cfg/reporter/report_one_experiment.yaml
+      '
+    # Verfying the generated report files form reporter
+    - find ./perf_logs_commander/time_vs_latency.html
+
 .smoke_test:
   stage: test
   image: osrf/ros:rolling-desktop
@@ -473,7 +515,6 @@ test:
             --max-runtime 15;
       done;
       '
-
 
 smoke_test_rclcpp_ste_rolling:
   extends:
