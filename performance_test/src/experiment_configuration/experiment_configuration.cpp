@@ -484,13 +484,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       }
     }
 
-    if (m_is_zero_copy_transfer) {
-      if (m_number_of_publishers > 0 && m_number_of_subscribers > 0) {
-        throw std::invalid_argument(
-                "Zero copy transfer only makes sense for interprocess communication!");
-      }
-    }
-
     m_roundtrip_mode = RoundTripMode::NONE;
     const auto mode = roundtrip_mode_str;
     if (mode == "None") {

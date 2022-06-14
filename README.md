@@ -175,7 +175,8 @@ their own thread.
 - [Eclipse Cyclone DDS 0.9.0b1](https://github.com/eclipse-cyclonedds/cyclonedds/tree/0.9.0b1)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS`
-- Zero copy transport (`--zero-copy`): yes
+- Docker file: [Dockerfile.CycloneDDS](dockerfiles/Dockerfile.CycloneDDS)
+- Available transports:
   - Cyclone DDS zero copy requires the
     [runtime switch](https://github.com/eclipse-cyclonedds/cyclonedds/blob/iceoryx/docs/manual/shared_memory.rst)
     to be enabled.
@@ -185,18 +186,18 @@ their own thread.
   - If the runtime switch is enabled, but `--zero-copy` is not added, then the plugin will not use
     the loaned sample API, but iceoryx will still transport the samples.
   - See [Dockerfile.mashup](dockerfiles/Dockerfile.mashup)
-- Docker file: [Dockerfile.CycloneDDS](dockerfiles/Dockerfile.CycloneDDS)
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
-  |-------|---------------------|--------------------|
-  | INTRA | UDP                 | UDP                |
+  -
+    | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
+    |-------|---------------------|--------------------|
+    | INTRA (default), LoanedSamples (`--zero-copy`) | UDP (default), LoanedSamples (`--zero-copy`), SHMEM (enable runtime switch)                 | UDP                |
 
 ### Eclipse Cyclone DDS C++ binding
 
 - [Eclipse Cyclone DDS C++ bindings 0.9.0b1](https://github.com/eclipse-cyclonedds/cyclonedds-cxx/tree/0.9.0b1)
 - CMake build flag: `-DPERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED=ON`
 - Communication plugin: `-c CycloneDDS-CXX`
-- Zero copy transport (`--zero-copy`): yes
+- Docker file: [Dockerfile.CycloneDDS-CXX](dockerfiles/Dockerfile.CycloneDDS-CXX)
+- Available transports:
   - Cyclone DDS zero copy requires the
     [runtime switch](https://github.com/eclipse-cyclonedds/cyclonedds/blob/iceoryx/docs/manual/shared_memory.rst)
     to be enabled.
@@ -206,38 +207,35 @@ their own thread.
   - If the runtime switch is enabled, but `--zero-copy` is not added, then the plugin will not use
     the loaned sample API, but iceoryx will still transport the samples.
   - See [Dockerfile.mashup](dockerfiles/Dockerfile.mashup)
-- Docker file: [Dockerfile.CycloneDDS-CXX](dockerfiles/Dockerfile.CycloneDDS-CXX)
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
-  |-------|---------------------|--------------------|
-  | INTRA | UDP                 | UDP                |
+  -
+    | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
+    |-------|---------------------|--------------------|
+    | INTRA (default), LoanedSamples (`--zero-copy`), SHMEM (enable runtime switch) | UDP (default), LoanedSamples (`--zero-copy`), SHMEM (enable runtime switch)                 | UDP                |
 
 ### Eclipse iceoryx
 
 - [iceoryx 1.0](https://github.com/eclipse-iceoryx/iceoryx/tree/release_1.0)
 - CMake build flag: `-DPERFORMANCE_TEST_ICEORYX_ENABLED=ON`
 - Communication plugin: `-c iceoryx`
-- Zero copy transport (`--zero-copy`): yes
 - Docker file: [Dockerfile.iceoryx](dockerfiles/Dockerfile.iceoryx)
 - The iceoryx plugin is not a DDS implementation.
   - The DDS-specific options (such as domain ID, durability, and reliability) do not apply.
 - To run with the iceoryx plugin,
   [RouDi](https://github.com/eclipse-iceoryx/iceoryx/blob/master/doc/website/getting-started/overview.md#roudi)
   must be running.
-- Default transports:
-  | INTRA     | IPC on same machine | Distributed system                |
+- Available transports:
+  | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-----------|---------------------|-----------------------------------|
-  | zero copy | zero copy           | Not supported by performance_test |
+  | LoanedSamples (`--zero-copy`) | LoanedSamples (`--zero-copy`) | Not supported by performance_test |
 
 ### eProsima Fast DDS
 
 - [FastDDS 2.6.0](https://github.com/eProsima/Fast-DDS/tree/v2.6.0)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c FastRTPS`
-- Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
+- Available transports:
+  | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-------|---------------------|--------------------|
   | UDP   | UDP                 | UDP                |
 
@@ -246,10 +244,9 @@ their own thread.
 - [OpenDDS 3.13.2](https://github.com/objectcomputing/OpenDDS/tree/DDS-3.13.2)
 - CMake build flag: `-DPERFORMANCE_TEST_OPENDDS_ENABLED=ON`
 - Communication plugin: `-c OpenDDS`
-- Zero copy transport (`--zero-copy`): no
 - Docker file: [Dockerfile.OpenDDS](dockerfiles/Dockerfile.OpenDDS)
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
+- Available transports:
+  | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-------|---------------------|--------------------|
   | TCP   | TCP                 | TCP                |
 
@@ -258,7 +255,6 @@ their own thread.
 - [RTI Connext DDS 5.3.1+](https://www.rti.com/products/connext-dds-professional)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDS_ENABLED=ON`
 - Communication plugin: `-c ConnextDDS`
-- Zero copy transport (`--zero-copy`): no
 - Docker file: Not available
 - A license is required
 - You need to source an RTI Connext DDS environment.
@@ -267,8 +263,8 @@ their own thread.
   - If RTI Connext DDS is installed separately, you can source the following script to set the
     environment:
     - `source <connextdds_install_path>/resource/scripts/rtisetenv_<arch>.bash`
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
+- Available transports:
+  | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-------|---------------------|--------------------|
   | INTRA | SHMEM               | UDP                |
 
@@ -277,18 +273,18 @@ their own thread.
 - [Connext DDS Micro 3.0.3](https://www.rti.com/products/connext-dds-micro)
 - CMake build flag: `-DPERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED=ON`
 - Communication plugin: `-c ConnextDDSMicro`
-- Zero copy transport (`--zero-copy`): no
 - Docker file: Not available
 - A license is required
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
+- Available transports:
+  | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-------|---------------------|--------------------|
   | INTRA | SHMEM               | UDP                |
 
 ## Framework plugins
 
 The performance_test tool can also measure the end-to-end latency of a framework. In this case, the
-executor of the framework is used to run the publisher(s) and/or the subscriber(s)
+executor of the framework is used to run the publisher(s) and/or the subscriber(s). The potential overhead of the [rclcpp or rmw
+layer](http://docs.ros2.org/beta2/developer_overview.html#internal-api-architecture-overview) is measured.
 
 ### ROS 2
 
@@ -301,27 +297,25 @@ through the ROS2 `rclcpp::publisher` and `rclcpp::subscriber` API.
   - Callback with Single Threaded Executor: `-c rclcpp-single-threaded-executor`
   - Callback with Static Single Threaded Executor: `-c rclcpp-static-single-threaded-executor`
   - [`rclcpp::WaitSet`](https://github.com/ros2/rclcpp/pull/1047): `-c rclcpp-waitset`
-- Zero copy transport (`--zero-copy`): yes (for `ROS_DISTRO = foxy` and above )
 - Docker file: [Dockerfile.rclcpp](dockerfiles/Dockerfile.rclcpp)
-- These plugins will use the ROS 2 RMW implementation that is configured on your system.
-  - ROS 2 Rolling is pre-configured to use rmw_cyclonedds_cpp.
-    - Follow [these instructions](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html)
-      to use a different RMW implementation with ROS 2.
-    - You can find a list of several other middleware options
-      [here](https://docs.ros.org/en/rolling/Concepts/About-Different-Middleware-Vendors.html).
-- Default transports: depends on underlying RMW implementation
+- [Available underlying RMW implementations](https://docs.ros.org/en/rolling/Concepts/About-Different-Middleware-Vendors.html):
+  - ROS 2 Rolling is pre-configured to use `rmw_fastrtps_cpp`
+  - Follow [these instructions](https://docs.ros.org/en/rolling/Guides/Working-with-multiple-RMW-implementations.html)
+      to use a different RMW implementation
+- Available transports: depends on underlying RMW implementation
+  - LoanedSamples are available (`--zero-copy`) for `ROS_DISTRO = foxy` and above
 
 ### Apex.OS
 
-- Apex.OS Polling Subscription with wait-set
+- Apex.OS
 - CMake build flag: `-DPERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED=ON`
 - Communication plugin: `-c ApexOSPollingSubscription`
-- Zero copy transport (`--zero_copy`): yes (see the Apex.OS documentation for configuration instructions)
 - Docker file: Not available
-- Default transports:
-  | INTRA | IPC on same machine | Distributed system |
+- Available underlying RMW implementations: `rmw_apex_middleware`
+- Available transports:
+  | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-------|---------------------|--------------------|
-  | INTRA | UDP                 | UDP                |
+  | UDP (default), LoanedSamples (`--zero_copy`), SHMEM (configurable with Apex.OS)  | UDP (default), LoanedSamples (`--zero_copy`), SHMEM (configurable with Apex.OS)                | UDP                |
 
 ## Analyze the results
 
