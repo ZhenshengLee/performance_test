@@ -20,6 +20,7 @@ class TRANSPORT(str, Enum):
     UDP = "UDP"
     SHMEM = "SHMEM"
     ZERO_COPY = "ZERO_COPY"
+    CHAIN = "CHAIN"
 
     def __str__(self):
         if self == TRANSPORT.INTRA:
@@ -30,3 +31,5 @@ class TRANSPORT(str, Enum):
             return "shmem"
         if self == TRANSPORT.ZERO_COPY:
             return "zc"
+        if self == TRANSPORT.CHAIN:
+            return "chain"

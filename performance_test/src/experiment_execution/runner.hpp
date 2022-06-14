@@ -29,11 +29,11 @@
 #include "../utilities/rt_enabler.hpp"
 #include "analysis_result.hpp"
 
-// if Apex.OS
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
 #include "../data_running/apex_os_entity_factory.hpp"
 #include <executor/executor_factory.hpp>
 #include <executor/executor_runner.hpp>
-
+#endif
 namespace performance_test
 {
 
@@ -103,42 +103,32 @@ public:
     m_running = true;
 
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-
     const auto executor = apex::executor::executor_factory::create();
-    for (auto &pub : m_pubs) {
 
-      if (true /*m_ec.execution_mode == "chain"*/) {
+    if (m_ec.is_chain_execution()) {
+      std::vector<apex::executor::executable_item_ptr> chain_of_nodes;
+      chain_of_nodes.reserve(m_pubs.size() + m_subs.size());
+      for (auto &pub : m_pubs) {
+        chain_of_nodes.push_back(pub->get_publisher_item());
+      }
+      for (auto &sub : m_subs) {
+        chain_of_nodes.push_back(sub->get_subscriber_item());
+      }
 
-        std::vector<apex::executor::executable_item_ptr> chain_of_nodes;
-        chain_of_nodes.reserve(m_pubs.size() + m_subs.size());
-        for (auto &pub : m_pubs) {
-          chain_of_nodes.push_back(pub->get_publisher_item());
-        }
-        for (auto &sub : m_subs) {
-          chain_of_nodes.push_back(sub->get_subscriber_item());
-        }
+      executor->add(chain_of_nodes,
+                    std::chrono::duration_cast<std::chrono::microseconds>(
+                        std::chrono::duration<double>(1.0 / m_ec.rate())));
+    } else {
 
-        executor->add(chain_of_nodes,
-                      std::chrono::duration_cast<std::chrono::microseconds>(
-                          std::chrono::duration<double>(1.0 / m_ec.rate())));
-      } else {
-
-        for (auto &pub : m_pubs) {
-
-          executor->add(std::move(pub->get_publisher_item()),
-                        std::chrono::duration_cast<std::chrono::microseconds>(
-                            std::chrono::duration<double>(1.0 / m_ec.rate())));
-        }
-        for (auto &sub : m_subs) {
-          executor->add(std::move(sub->get_subscriber_item()));
-        }
+      for (auto &pub : m_pubs) {
 
         executor->add(std::move(pub->get_publisher_item()),
                       std::chrono::duration_cast<std::chrono::microseconds>(
                           std::chrono::duration<double>(1.0 / m_ec.rate())));
       }
-    for (auto &sub : m_subs) {
-      executor->add(std::move(sub->get_subscriber_item()));
+      for (auto &sub : m_subs) {
+        executor->add(std::move(sub->get_subscriber_item()));
+      }
     }
     const apex::executor::executor_runner runner{*executor};
 #else

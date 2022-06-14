@@ -139,6 +139,9 @@ public:
   /// \returns Returns whether to use zero copy transfer. This will throw if the experiment
   /// configuration is not set up.
   bool is_zero_copy_transfer() const;
+  /// \returns Returns whether to use chain execution mode. This will throw if
+  /// the experiment configuration is not set up.
+  bool is_chain_execution() const;
   /// \returns Returns the roundtrip mode.
   RoundTripMode roundtrip_mode() const;
   /// \returns Returns current rmw_implementation. This will throw if the experiment configuration
@@ -198,6 +201,7 @@ private:
   bool m_is_rt_init_required;
   bool m_with_security;
   bool m_is_zero_copy_transfer;
+  bool m_is_chain_execution;
 
   RoundTripMode m_roundtrip_mode;
 

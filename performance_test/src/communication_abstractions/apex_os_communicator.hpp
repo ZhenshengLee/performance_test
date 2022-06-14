@@ -211,7 +211,7 @@ template <typename MsgType> class ApexOsPublisher : public ApexOsEntity {
 
 public:
   ApexOsPublisher(DataStats &stats, const ExperimentConfiguration &ec)
-      : m_node("node"), m_node_state(&m_node, std::chrono::seconds::max()),
+      : m_node("apex_os_publisher_node"), m_node_state(&m_node, std::chrono::seconds::max()),
         m_publisher_item(std::make_shared<PublisherItem<MsgType>>(
             m_node, m_node_state, stats, ec)) {}
 
@@ -230,7 +230,7 @@ template <typename MsgType> class ApexOsSubscriber : public ApexOsEntity {
 
 public:
   ApexOsSubscriber(DataStats &stats, const ExperimentConfiguration &ec)
-      : m_node("node"), m_node_state(&m_node, std::chrono::seconds::max()),
+      : m_node("apex_os_subscriber_node"), m_node_state(&m_node, std::chrono::seconds::max()),
         m_subscriber_item(std::make_shared<SubscriberItem<MsgType>>(
             m_node, m_node_state, stats, ec)) {}
 

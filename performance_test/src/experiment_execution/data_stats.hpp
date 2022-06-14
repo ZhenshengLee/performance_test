@@ -227,7 +227,6 @@ private:
     m_sent_sample_counter += increment;
   }
 
-private:
   std::vector<double> m_latencies;
   std::uint64_t m_sent_sample_counter{};
   std::uint64_t m_received_sample_counter{};

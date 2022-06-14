@@ -96,22 +96,12 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
 }
 
 ExperimentConfiguration::ExperimentConfiguration()
-: m_id(sole::uuid4().str()),
-  m_is_setup(false),
-  m_dds_domain_id(),
-  m_rate(),
-  m_max_runtime(),
-  m_rows_to_ignore(),
-  m_number_of_publishers(),
-  m_number_of_subscribers(),
-  m_expected_num_pubs(),
-  m_expected_num_subs(),
-  m_wait_for_matched_timeout(),
-  m_check_memory(false),
-  m_is_rt_init_required(false),
-  m_is_zero_copy_transfer(false),
-  m_roundtrip_mode(RoundTripMode::NONE)
-{}
+    : m_id(sole::uuid4().str()), m_is_setup(false), m_dds_domain_id(), m_rate(),
+      m_max_runtime(), m_rows_to_ignore(), m_number_of_publishers(),
+      m_number_of_subscribers(), m_expected_num_pubs(), m_expected_num_subs(),
+      m_wait_for_matched_timeout(), m_check_memory(false),
+      m_is_rt_init_required(false), m_is_zero_copy_transfer(false),
+      m_is_chain_execution(false), m_roundtrip_mode(RoundTripMode::NONE) {}
 
 void ExperimentConfiguration::setup(int argc, char ** argv)
 {
@@ -155,6 +145,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     allowedCommunications.push_back("ApexOSPollingSubscription");
+
+    TCLAP::SwitchArg executorChainArg("", "chain", "Run the items in a chain.",
+                                      cmd, false);
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     allowedCommunications.push_back("FastRTPS");
@@ -314,6 +307,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_expected_num_subs = expectedNumSubsArg.getValue();
     m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
     m_is_zero_copy_transfer = zeroCopyArg.getValue();
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+    m_is_chain_execution = executorChainArg.getValue();
+#endif
     m_unbounded_msg_size = unboundedMsgSizeArg.getValue();
 
     // Configure outputs
@@ -368,11 +364,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean = CommunicationMean::RCLCPP_WAITSET;
     }
 #endif
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-    if (comm_str == "ApexOSPollingSubscription") {
-      m_com_mean = CommunicationMean::ApexOSPollingSubscription;
-    }
-#endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     if (comm_str == "FastRTPS") {
       m_com_mean = CommunicationMean::FASTRTPS;
@@ -406,6 +397,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
     if (comm_str == "OpenDDS") {
       m_com_mean = CommunicationMean::OPENDDS;
+    }
+#endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+    if (comm_str == "ApexOSPollingSubscription") {
+      m_com_mean = CommunicationMean::ApexOSPollingSubscription;
+    } else {
+      throw std::invalid_argument(
+          "Only Apex.OS communication mean can be used when the "
+          "performance_test tool has been built with the "
+          "PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED flag!");
     }
 #endif
 
@@ -473,6 +474,25 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     if (m_with_security) {
       if (!use_ros2_layers()) {
         throw std::invalid_argument("Only ROS2 supports security!");
+      }
+    }
+
+    if (m_is_chain_execution) {
+      if (m_number_of_publishers != 1) {
+        throw std::invalid_argument(
+            "Chain execution requires exactly one publisher.");
+      }
+      if (m_number_of_subscribers < 1) {
+        throw std::invalid_argument(
+            "Chain execution requires at least one subscriber.");
+      }
+      if (!m_is_zero_copy_transfer) {
+        throw std::invalid_argument(
+            "Chain execution only works with loaned messages (zero copy).");
+      }
+      if (m_roundtrip_mode != RoundTripMode::NONE) {
+        throw std::invalid_argument(
+            "Chain execution only works with RoundTripMode NONE.");
       }
     }
 
@@ -633,6 +653,11 @@ bool ExperimentConfiguration::is_zero_copy_transfer() const
 {
   check_setup();
   return m_is_zero_copy_transfer;
+}
+
+bool ExperimentConfiguration::is_chain_execution() const {
+  check_setup();
+  return m_is_chain_execution;
 }
 
 ExperimentConfiguration::RoundTripMode ExperimentConfiguration::roundtrip_mode() const

@@ -142,6 +142,15 @@ class ExperimentConfig:
         commands = []
         cleanup_commands = []
         if len(args) == 1:
+            if self.transport == TRANSPORT.CHAIN:
+                if is_ros2_plugin(self.com_mean):
+                    if get_rmw_implementation_identifier() == "rmw_apex_middleware":
+                        commands.extend(generate_commands_yml(output_dir))
+                        cleanup_commands.append('unset APEX_MIDDLEWARE_SETTINGS')
+                    else:
+                        print("Unsupported Middleware: ", get_rmw_implementation_identifier())
+                else:
+                    print("Unsupported com_mean: ", self.com_mean)
             commands.append(perf_test_exe_cmd + args[0])
         elif len(args) == 2:
             if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
@@ -165,9 +174,9 @@ class ExperimentConfig:
             commands.append('sleep 1')
             commands.append(perf_test_exe_cmd + pub_args)
             commands.append('sleep 5')
-            commands.extend(cleanup_commands)
         else:
             raise RuntimeError('Unreachable code')
+        commands.extend(cleanup_commands)
         return commands
 
     def cli_args(self, output_dir) -> list:
@@ -195,6 +204,12 @@ class ExperimentConfig:
         if self.transport == TRANSPORT.INTRA:
             args += f" -p {self.pubs} -s {self.subs}"
             args += f" --logfile {os.path.join(output_dir, self.log_file_name_intra())}"
+            return [args]
+        if self.transport == TRANSPORT.CHAIN:
+            args += f" -p {self.pubs} -s {self.subs}"
+            args += f" --logfile {os.path.join(output_dir, self.log_file_name_intra())}"
+            args += " --chain"
+            args += " --zero-copy"
             return [args]
         else:
             args_sub = args + f" -p 0 -s {self.subs} --expected-num-pubs {self.pubs}"
