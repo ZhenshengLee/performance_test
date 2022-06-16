@@ -126,7 +126,9 @@ datasets:
 reports:
   time_vs_latency_cpu_mem:
     report_title: Latency, CPU and Memory Usage over Time
-    template_name: ./many.html
+    template_name:
+      - ./many.html
+      - ./many.md
     figures:
       - name: compare_transport
         title: Comparing different Apex.OS Transports

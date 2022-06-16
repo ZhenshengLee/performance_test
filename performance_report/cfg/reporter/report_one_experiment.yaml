@@ -33,7 +33,9 @@ datasets:
 reports:
   time_vs_latency:
     report_title: Latency over Time
-    template_name: ./single.html
+    template_name:
+      - ./single.html
+      - ./single.md
     figures:
       - name: figure_single
         title: Comparing different Apex.OS Transports
