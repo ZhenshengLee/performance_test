@@ -127,7 +127,7 @@ public:
         results->m_experiment_start = loop_start - experiment_start;
         results->m_time_between_two_measurements =
           time_between_two_measurements;
-        results->m_cpu_info = cpu_usage_tracker.get_cpu_usage() = cpu_usage_tracker.get_cpu_usage();
+        results->m_cpu_info = cpu_usage_tracker.get_cpu_usage();
 
         for (auto & pub : m_pub_stats) {
           pub.populate_stats(RunType::PUBLISHER, results);
