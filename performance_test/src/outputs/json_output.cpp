@@ -33,11 +33,11 @@ JsonOutput::~JsonOutput()
 
 void JsonOutput::open()
 {
-  if (m_ec.is_setup() && !m_ec.json_logfile().empty()) {
-    m_os.open(m_ec.json_logfile(), std::ofstream::out);
+  if (m_ec.is_setup() && !m_ec.logfile_name().empty()) {
+    m_os.open(m_ec.logfile_name(), std::ofstream::out);
     m_is_open = true;
 
-    std::cout << "Writing JSON output to: " << m_ec.json_logfile() << std::endl;
+    std::cout << "Writing JSON output to: " << m_ec.logfile_name() << std::endl;
   }
 }
 void JsonOutput::update(std::shared_ptr<const AnalysisResult> result)

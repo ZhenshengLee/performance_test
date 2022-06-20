@@ -193,14 +193,14 @@ class ExperimentConfig:
         args += f" --max-runtime {self.max_runtime}"
         args += f" --ignore {self.ignore_seconds}"
         if self.transport == TRANSPORT.INTRA:
-            args += f" -p {self.pubs} -s {self.subs} -o json"
-            args += f" --json-logfile {os.path.join(output_dir, self.log_file_name_intra())}"
+            args += f" -p {self.pubs} -s {self.subs}"
+            args += f" --logfile {os.path.join(output_dir, self.log_file_name_intra())}"
             return [args]
         else:
-            args_sub = args + f" -p 0 -s {self.subs} --expected-num-pubs {self.pubs} -o json"
-            args_sub += f" --json-logfile {os.path.join(output_dir, self.log_file_name_sub())}"
-            args_pub = args + f" -s 0 -p {self.pubs} --expected-num-subs {self.subs} -o json"
-            args_pub += f" --json-logfile {os.path.join(output_dir, self.log_file_name_pub())}"
+            args_sub = args + f" -p 0 -s {self.subs} --expected-num-pubs {self.pubs}"
+            args_sub += f" --logfile {os.path.join(output_dir, self.log_file_name_sub())}"
+            args_pub = args + f" -s 0 -p {self.pubs} --expected-num-subs {self.subs}"
+            args_pub += f" --logfile {os.path.join(output_dir, self.log_file_name_pub())}"
             if self.transport == TRANSPORT.ZERO_COPY:
                 args_sub += " --zero-copy"
                 args_pub += " --zero-copy"

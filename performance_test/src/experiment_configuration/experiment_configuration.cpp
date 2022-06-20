@@ -29,6 +29,7 @@
 #include <iostream>
 #include <iomanip>
 #include <exception>
+#include <regex>
 #include <string>
 #include <vector>
 #include <memory>
@@ -71,7 +72,7 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
     return stream <<
            "Experiment id: " << e.id() <<
            "\nPerformance Test Version: " << e.perf_test_version() <<
-           "\nLogfile name: " << e.csv_logfile() <<
+           "\nLogfile name: " << e.logfile_name() <<
            "\nCommunication mean: " << e.com_mean() <<
            "\nRMW Implementation: " << e.rmw_implementation() <<
            "\nDDS domain id: " << e.dds_domain_id() <<
@@ -130,18 +131,12 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   try {
     TCLAP::CmdLine cmd("Apex.AI performance_test");
 
-    std::vector<std::string> allowedOutputs{"stdout", "csv", "json", "none"};
-    TCLAP::ValuesConstraint<std::string> allowedOutputConstraint(
-      allowedOutputs);
-    TCLAP::MultiArg<std::string> outputArg(
-      "o", "output", "Specify format to output experiment results. Default is stdout.", false,
-      &allowedOutputConstraint, cmd);
+    TCLAP::SwitchArg printToConsoleArg("", "print-to-console",
+      "Print metrics to console.", cmd, false);
 
-    TCLAP::ValueArg<std::string> csvLogfileArg("l", "csv-logfile",
-      "Optionally specify a file name for the csv results.", false, "", "name", cmd);
-
-    TCLAP::ValueArg<std::string> jsonLogfileArg("", "json-logfile",
-      "Optionally specify a file name for the json results.", false, "", "name", cmd);
+    TCLAP::ValueArg<std::string> LogfileArg("l", "logfile",
+      "Specify the name of the log file, e.g. -l \"log_$(date +%F_%H-%M-%S).json\"."
+      " Supported formats: csv, json", false, "", "name", cmd);
 
     TCLAP::ValueArg<uint32_t> rateArg("r", "rate",
       "The publishing rate. 0 means publish as fast as possible. "
@@ -290,35 +285,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     cmd.parse(argc, argv);
 
-    // default to only stdout output
-    if (outputArg.getValue().empty()) {
-      m_configured_output_types.push_back(SupportedOutput::STDOUT);
-      m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
-    }
-
-    // set up configured outputs
-    for (const auto & output : outputArg.getValue()) {
-      if (output == "stdout") {
-        m_configured_output_types.push_back(SupportedOutput::STDOUT);
-        m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
-      } else if (output == "csv") {
-        m_configured_output_types.push_back(SupportedOutput::CSV);
-        m_configured_outputs.push_back(std::make_shared<CsvOutput>());
-      } else if (output == "json") {
-        m_configured_output_types.push_back(SupportedOutput::JSON);
-        m_configured_outputs.push_back(std::make_shared<JsonOutput>());
-      } else if (output == "none") {
-        // do nothing
-      } else {
-        std::cerr << "Unknown output type specified: " << output << std::endl;
-        std::terminate();
-      }
-    }
-
-    m_csv_logfile = csvLogfileArg.getValue();
-    m_json_logfile = jsonLogfileArg.getValue();
     m_rate = rateArg.getValue();
     comm_str = communicationArg.getValue();
+    m_logfile_name = LogfileArg.getValue();
     m_topic_name = topicArg.getValue();
     m_msg_name = msgArg.getValue();
     print_msg_list = msgListArg.getValue();
@@ -345,6 +314,28 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
     m_is_zero_copy_transfer = zeroCopyArg.getValue();
     m_unbounded_msg_size = unboundedMsgSizeArg.getValue();
+
+    // Configure outputs
+    if (printToConsoleArg.getValue()) {
+      std::cout << "WARNING: Printing to the console degrades the performance." << std::endl;
+      std::cout << "It is recommended to use a log file instead with --logfile." << std::endl;
+      m_configured_outputs.push_back(std::make_shared<StdoutOutput>());
+    }
+
+    if (!m_logfile_name.empty()) {
+      if (std::regex_match(m_logfile_name, std::regex(".*\\.csv$"))) {
+        m_configured_outputs.push_back(std::make_shared<CsvOutput>());
+      } else if (std::regex_match(m_logfile_name, std::regex(".*\\.json$"))) {
+        m_configured_outputs.push_back(std::make_shared<JsonOutput>());
+      } else {
+        std::cerr << "Unsupported log file type: " << m_logfile_name << std::endl;
+        std::terminate();
+      }
+    }
+
+    if (m_configured_outputs.empty()) {
+      std::cout << "WARNING: No output configured" << std::endl;
+    }
   } catch (TCLAP::ArgException & e) {
     std::cerr << "error: " << e.error() << " for arg " << e.argId() << std::endl;
   }
@@ -501,23 +492,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #else
     m_rmw_implementation = "N/A";
 #endif
-
-    // define default output files if none specified
-    if (m_csv_logfile == "") {
-      auto t = std::time(nullptr);
-      auto tm = *std::gmtime(&t);
-      auto oss = std::ostringstream();
-      oss << "results_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S") << ".csv";
-      m_csv_logfile = oss.str();
-    }
-    if (m_json_logfile == "") {
-      auto t = std::time(nullptr);
-      auto tm = *std::gmtime(&t);
-      auto oss = std::ostringstream();
-      oss << "results_" << m_topic_name << std::put_time(&tm, "_%d-%m-%Y_%H-%M-%S") << ".json";
-      m_json_logfile = oss.str();
-    }
-
     m_is_setup = true;
   } catch (const std::exception & e) {
     std::cerr << "ERROR: ";
@@ -706,17 +680,10 @@ std::string ExperimentConfiguration::id() const
   return m_id;
 }
 
-std::string ExperimentConfiguration::csv_logfile() const
+std::string ExperimentConfiguration::logfile_name() const
 {
   check_setup();
-  return m_csv_logfile;
-}
-
-const std::vector<ExperimentConfiguration::SupportedOutput> &
-ExperimentConfiguration::configured_output_types() const
-{
-  check_setup();
-  return m_configured_output_types;
+  return m_logfile_name;
 }
 
 const std::vector<std::shared_ptr<Output>> &
@@ -724,12 +691,6 @@ ExperimentConfiguration::configured_outputs() const
 {
   check_setup();
   return m_configured_outputs;
-}
-
-std::string ExperimentConfiguration::json_logfile() const
-{
-  check_setup();
-  return m_json_logfile;
 }
 
 size_t ExperimentConfiguration::unbounded_msg_size() const

@@ -72,7 +72,7 @@ mkdir experiment
                                                           --rate 100
                                                           --topic test_topic
                                                           --max-runtime 30
-                                                          --logfile experiment/log
+                                                          --logfile experiment/log.csv
 ```
 
 At the end of the experiment, a CSV log file will be generated in the experiment folder with a name
@@ -357,7 +357,7 @@ pip3 install .
 
 #### Usage
 
-To generate a PDF from the logfile, invoke the `perfplot` binary installed in the previous step:
+To generate a PDF from the log file, invoke the `perfplot` binary installed in the previous step:
 
 `perfplot <filename1> <filename2> ...`
 
@@ -371,8 +371,8 @@ For interprocess communication, it is recommended to provide different prefixes 
 the log files:
 
 ```bash
-perf_test -c rclcpp-single-threaded-executor --msg Array1k -p 0 -s 1 -l log_sub
-perf_test -c rclcpp-single-threaded-executor --msg Array1k -p 1 -s 0 -l log_pub
+perf_test -c rclcpp-single-threaded-executor --msg Array1k -p 0 -s 1 -l log_sub.csv
+perf_test -c rclcpp-single-threaded-executor --msg Array1k -p 1 -s 0 -l log_pub.csv
 ```
 
 Then, to plot the latency metrics, invoke perfplot on the subscriber's log file.

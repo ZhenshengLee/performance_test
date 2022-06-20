@@ -66,7 +66,7 @@ public:
     RELAY  /// Relays packages from MAIN back to MAIN.
   };
 
-  /// Specfies the supported output implementations.
+  /// Specifies the supported output implementations.
   enum class SupportedOutput
   {
     STDOUT,  // print results to stdout in readable format
@@ -155,15 +155,10 @@ public:
   /// experiment configuration is not set up.
   std::string id() const;
   /// The configured logfile name. This will throw if the experiment configuration is not set up.
-  std::string csv_logfile() const;
-  /// The configured JSON logfile name.
-  /// This will throw if the experiment configuration is not set up.
-  std::string json_logfile() const;
+  std::string logfile_name() const;
   /// The number of bytes to use for an unbounded message.
   /// This will throw if the experiment configuration is not set up.
   size_t unbounded_msg_size() const;
-  /// The configured outputs types.
-  const std::vector<ExperimentConfiguration::SupportedOutput> & configured_output_types() const;
   const std::vector<std::shared_ptr<Output>> & configured_outputs() const;
   /// \return Returns true if the user requested the application to exit.
   bool exit_requested() const;
@@ -182,9 +177,7 @@ private:
   std::string m_id;
   bool m_is_setup;
   std::string m_logfile;
-  std::string m_json_logfile;
-  std::string m_csv_logfile;
-  std::vector<SupportedOutput> m_configured_output_types{};
+  std::string m_logfile_name;
   std::vector<std::shared_ptr<Output>> m_configured_outputs{};
   CommunicationMean m_com_mean;
   uint32_t m_dds_domain_id;
