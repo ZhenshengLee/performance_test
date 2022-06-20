@@ -1,5 +1,6 @@
 stages:
   - bootstrap
+  - build_artifacts
   - build
   - test
   - deploy
@@ -16,8 +17,211 @@ Draft MR:
 workflow:
   rules:
     - if: $CI_MERGE_REQUEST_ID != null && $CI_MERGE_REQUEST_TITLE !~ /^Draft:/
-    - when: always
- 
+      when: always
+
+build_cyclonedds_library:
+  rules:
+    - if: $BUILD_CYCLONEDDS_LIBRARY == "true"
+      when: always
+    - when: never
+  stage: build_artifacts
+  image: osrf/ros:rolling-desktop
+  script:
+    - source /opt/ros/rolling/setup.bash
+    - apt-get update
+   
+    - '
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz
+      '
+    - tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /
+    - source /opt/iceoryx/setup.bash
+
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
+    - cd cyclonedds
+    - mkdir -p build
+    - cd build
+    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SECURITY=ON -DENABLE_SHM=ON ..
+    - cmake --build .
+    - cmake --build . --target install
+    
+    - tar cfz opt-cyclonedds-v0.9.0b1.tar.gz /opt/cyclonedds
+    - '
+      curl 
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+          --upload-file opt-cyclonedds-v0.9.0b1.tar.gz
+"https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-v0.9.0b1.tar.gz"
+      '
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - opt-cyclonedds-v0.9.0b1.tar.gz
+
+build_cyclonedds_cxx_libary:
+  rules:
+    - if: $BUILD_CYCLONEDDS_CXX_LIBRARY == "true"
+      when: always
+    - when: never
+  stage: build_artifacts
+  image: osrf/ros:rolling-desktop
+  script:
+    - source /opt/ros/rolling/setup.bash
+    - apt-get update
+
+    - '
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz
+      '
+    - tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /
+    - source /opt/iceoryx/setup.bash
+
+    - 'curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-v0.9.0b1.tar.gz" > opt-cyclonedds-v0.9.0b1.tar.gz
+      '
+    - tar -xzf opt-cyclonedds-v0.9.0b1.tar.gz -C /
+    
+    - git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.9.0b1 --depth 1
+    - cd cyclonedds-cxx
+    - mkdir -p build
+    - cd build
+    - '
+      cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds-cxx
+            -DCMAKE_PREFIX_PATH=/opt/cyclonedds
+            -DENABLE_SHM=ON
+            ..
+      '
+    - cmake --build .
+    - cmake --build . --target install
+    - tar cfz opt-cyclonedds-cxx-v0.9.0b1.tar.gz /opt/cyclonedds-cxx
+    - '
+      curl 
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+          --upload-file opt-cyclonedds-cxx-v0.9.0b1.tar.gz
+"https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-cxx-v0.9.0b1.tar.gz"
+      '
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - opt-cyclonedds-cxx-v0.9.0b1.tar.gz
+
+build_iceoryx_library:
+  rules:
+    - if: $BUILD_ICEORYX_LIBRARY == "true"
+      when: always
+    - when: never
+  stage: build_artifacts
+  image: osrf/ros:rolling-desktop
+  script:
+    - source /opt/ros/rolling/setup.bash
+    - apt-get update
+    - apt-get install -y libacl1-dev
+
+    - mkdir -p /iceoryx_ws/src
+    - cd /iceoryx_ws/src/
+    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
+    - rosdep install --from-paths iceoryx --ignore-src -y
+    - cd /iceoryx_ws
+    - '
+      colcon build
+          --install-base /opt/iceoryx
+          --cmake-args
+            -DIOX_MAX_PUBLISHERS=32
+            -DIOX_MAX_SUBSCRIBERS=32
+            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
+      '
+    - source /opt/iceoryx/setup.bash
+    - tar cfz opt-iceoryx-v2.0.0.tar.gz /opt/iceoryx
+    - '
+      curl 
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+          --upload-file opt-iceoryx-v2.0.0.tar.gz
+"https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz"
+      '
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - opt-iceoryx-v2.0.0.tar.gz
+
+build_opendds_library:
+  rules:
+    - if: $BUILD_OPENDDS_LIBRARY == "true"
+      when: always
+    - when: never
+  stage: build_artifacts
+  image: osrf/ros:rolling-desktop
+  script:
+    - source /opt/ros/rolling/setup.bash
+    - apt-get update
+
+    - mkdir -p /opendds/src
+    - cd /opendds/src/
+    - git clone https://github.com/objectcomputing/OpenDDS.git -b DDS-3.13.2 --depth 1
+    - cd OpenDDS
+    - ./configure --no-debug --optimize --no-tests --prefix=/opt/opendds
+    - make -j$(nproc)
+    - make install
+
+    - tar cfz opt-opendds-3.13.2.tar.gz /opt/opendds
+    - '
+      curl 
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+          --upload-file opt-opendds-3.13.2.tar.gz
+"https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-opendds-3.13.2.tar.gz"
+      '
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - opt-opendds-3.13.2.tar.gz
+
+
+build_fastrtps_library:
+  rules:
+    - if: $BUILD_FASTRTPS_LIBRARY == "true"
+      when: always
+    - when: never
+  stage: build_artifacts
+  image: osrf/ros:rolling-desktop
+  script:
+    - source /opt/ros/rolling/setup.bash
+    - apt-get update
+    - apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
+    - rosdep update
+    - apt remove -y ros-rolling-fastrtps
+    - mkdir -p Fast-DDS
+    - cd Fast-DDS
+    - git clone https://github.com/eProsima/foonathan_memory_vendor.git -b v1.2.1
+    - mkdir foonathan_memory_vendor/build
+    - cd foonathan_memory_vendor/build && \
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DBUILD_SHARED_LIBS=ON
+    - cmake --build . --target install
+
+    - cd ../../
+    - git clone https://github.com/eProsima/Fast-CDR.git -b v1.0.24
+    - mkdir Fast-CDR/build
+    - cd Fast-CDR/build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
+    - cmake --build . --target install
+
+    - cd ../../
+    - git clone https://github.com/eProsima/Fast-DDS.git -b v2.6.0
+    - mkdir Fast-DDS/build
+    - cd Fast-DDS/build
+    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
+    - cmake --build . --target install
+    - tar cfz opt-fastdds-v1.2.1.tar.gz /opt/Fast-DDS
+    - '
+      curl 
+          --header "JOB-TOKEN: ${CI_JOB_TOKEN}"
+          --upload-file opt-fastdds-v1.2.1.tar.gz
+"https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-fastdds-v1.2.1.tar.gz"
+      '
+  artifacts:
+    expire_in: 1 day
+    when: always
+    paths:
+      - opt-fastdds-v1.2.1.tar.gz
+
 build_cross_image:
   stage: build
   image: docker
@@ -99,33 +303,22 @@ build_cyclonedds:
   script:
     - source /opt/ros/rolling/setup.bash
     - apt-get update
-    - apt-get install -y bison default-jdk libacl1-dev
 
     - rosdep update
     - rosdep install --from-paths performance_test --ignore-src -y
 
-    - mkdir -p /iceoryx_ws/src
-    - cd /iceoryx_ws/src/
-    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
-    - rosdep install --from-paths iceoryx --ignore-src -y
-    - cd /iceoryx_ws
     - '
-      colcon build
-          --install-base /opt/iceoryx
-          --cmake-args
-            -DIOX_MAX_PUBLISHERS=32
-            -DIOX_MAX_SUBSCRIBERS=32
-            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz
       '
+    - tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /
+    - find /opt/iceoryx/
     - source /opt/iceoryx/setup.bash
 
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
-    - cd cyclonedds
-    - mkdir -p build
-    - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SECURITY=ON -DENABLE_SHM=ON ..
-    - cmake --build .
-    - cmake --build . --target install
+    - '
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-v0.9.0b1.tar.gz" > opt-cyclonedds-v0.9.0b1.tar.gz
+      '
+    - tar -xzf opt-cyclonedds-v0.9.0b1.tar.gz -C /
+    - find /opt/cyclonedds/
 
     - cd $CI_PROJECT_DIR
     - '
@@ -140,8 +333,6 @@ build_cyclonedds:
       '
     
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-iceoryx.tar.gz /opt/iceoryx
-    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -149,58 +340,6 @@ build_cyclonedds:
     paths:
       - log
       - build
-      - opt-iceoryx.tar.gz
-      - opt-cyclonedds.tar.gz
-      - opt.tar.gz
-
-build_rmw_cyclonedds_cpp:
-  stage: build
-  image: osrf/ros:rolling-desktop
-  script:
-    - source /opt/ros/rolling/setup.bash
-    - apt-get update
-    - apt-get install -y bison default-jdk libacl1-dev
-
-    - rosdep update
-    - rosdep install --from-paths performance_test --ignore-src -y
-
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
-    - cd cyclonedds
-    - mkdir -p build
-    - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SECURITY=ON -DENABLE_SHM=OFF ..
-    - cmake --build .
-    - cmake --build . --target install
-
-    - mkdir -p /rmw_ws/src
-    - cd /rmw_ws/src/
-    - git clone https://github.com/ros2/rmw_cyclonedds.git -b 1.2.0 --depth 1
-    - cd ..
-    - colcon build --install-base /opt/rmw_cyclonedds_cpp
-
-    - cd $CI_PROJECT_DIR
-    - '
-      colcon build
-          --install-base /opt/performance_test
-          --merge-install
-          --cmake-args
-            -DCMAKE_BUILD_TYPE=Release
-            -DPERFORMANCE_TEST_MINIMAL_MESSAGES=ON
-          --base-path performance_test
-      '
-    
-    - cp LICENSE /opt/performance_test
-    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
-    - tar cfz opt-rmw_cyclonedds_cpp.tar.gz /opt/rmw_cyclonedds_cpp
-    - tar cfz opt.tar.gz /opt/performance_test
-  artifacts:
-    expire_in: 1 day
-    when: always
-    paths:
-      - log
-      - build
-      - opt-cyclonedds.tar.gz
-      - opt-rmw_cyclonedds_cpp.tar.gz
       - opt.tar.gz
 
 build_cyclonedds_cxx:
@@ -209,46 +348,28 @@ build_cyclonedds_cxx:
   script:
     - source /opt/ros/rolling/setup.bash
     - apt-get update
-    - apt-get install -y bison default-jdk libacl1-dev
 
     - rosdep update
     - rosdep install --from-paths performance_test --ignore-src -y
 
-    - mkdir -p /iceoryx_ws/src
-    - cd /iceoryx_ws/src/
-    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
-    - rosdep install --from-paths iceoryx --ignore-src -y
-    - cd /iceoryx_ws
     - '
-      colcon build
-          --install-base /opt/iceoryx
-          --cmake-args
-            -DIOX_MAX_PUBLISHERS=32
-            -DIOX_MAX_SUBSCRIBERS=32
-            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz
       '
+    - tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /
+    - find /opt/iceoryx/
     - source /opt/iceoryx/setup.bash
 
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds.git -b 0.9.0b1 --depth 1
-    - cd cyclonedds
-    - mkdir -p build
-    - cd build
-    - cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds -DENABLE_SHM=ON ..
-    - cmake --build .
-    - cmake --build . --target install
-
-    - git clone https://github.com/eclipse-cyclonedds/cyclonedds-cxx.git -b 0.9.0b1 --depth 1
-    - cd cyclonedds-cxx
-    - mkdir -p build
-    - cd build
     - '
-      cmake -DCMAKE_INSTALL_PREFIX=/opt/cyclonedds-cxx
-            -DCMAKE_PREFIX_PATH=/opt/cyclonedds
-            -DENABLE_SHM=ON
-            ..
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-v0.9.0b1.tar.gz" > opt-cyclonedds-v0.9.0b1.tar.gz
       '
-    - cmake --build .
-    - cmake --build . --target install
+    - tar -xzf opt-cyclonedds-v0.9.0b1.tar.gz -C /
+    - find /opt/cyclonedds/
+
+    - '
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-cxx-v0.9.0b1.tar.gz" > opt-cyclonedds-cxx-v0.9.0b1.tar.gz
+        '
+    - tar -xzf opt-cyclonedds-cxx-v0.9.0b1.tar.gz -C /
+    - find /opt/cyclonedds-cxx/
 
     - cd $CI_PROJECT_DIR
     - '
@@ -263,9 +384,6 @@ build_cyclonedds_cxx:
       '
     
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-iceoryx.tar.gz /opt/iceoryx
-    - tar cfz opt-cyclonedds.tar.gz /opt/cyclonedds
-    - tar cfz opt-cyclonedds-cxx.tar.gz /opt/cyclonedds-cxx
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -273,9 +391,6 @@ build_cyclonedds_cxx:
     paths:
       - log
       - build
-      - opt-iceoryx.tar.gz
-      - opt-cyclonedds.tar.gz
-      - opt-cyclonedds-cxx.tar.gz
       - opt.tar.gz
 
 build_iceoryx:
@@ -284,21 +399,12 @@ build_iceoryx:
   script:
     - source /opt/ros/rolling/setup.bash
     - apt-get update
-    - apt-get install -y libacl1-dev
 
-    - mkdir -p /iceoryx_ws/src
-    - cd /iceoryx_ws/src/
-    - git clone https://github.com/eclipse-iceoryx/iceoryx.git -b v2.0.0 --depth 1
-    - rosdep install --from-paths iceoryx --ignore-src -y
-    - cd /iceoryx_ws
     - '
-      colcon build
-          --install-base /opt/iceoryx
-          --cmake-args
-            -DIOX_MAX_PUBLISHERS=32
-            -DIOX_MAX_SUBSCRIBERS=32
-            -DIOX_MAX_CHUNKS_HELD_PER_SUBSCRIBER_SIMULTANEOUSLY=1000
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz
       '
+    - tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /
+    - find /opt/iceoryx/
     - source /opt/iceoryx/setup.bash
 
     - cd $CI_PROJECT_DIR
@@ -313,7 +419,6 @@ build_iceoryx:
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-iceoryx.tar.gz /opt/iceoryx
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -321,7 +426,6 @@ build_iceoryx:
     paths:
       - log
       - build
-      - opt-iceoryx.tar.gz
       - opt.tar.gz
 
 build_opendds:
@@ -330,10 +434,12 @@ build_opendds:
   script:
     - source /opt/ros/rolling/setup.bash
     - apt-get update
-    - apt-get install -y wget
+
     - rosdep update
     - rosdep install --from-paths performance_test --ignore-src -y
-    - wget https://s3-us-west-2.amazonaws.com/public.apex.ai/opt-opendds-3.13.2.tar.gz
+    - '
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-opendds-3.13.2.tar.gz" > opt-opendds-3.13.2.tar.gz
+      '
     - tar -xzf opt-opendds-3.13.2.tar.gz -C /
     - find /opt/opendds
     - cd $CI_PROJECT_DIR
@@ -344,12 +450,12 @@ build_opendds:
           --merge-install
           --cmake-args
             -DCMAKE_BUILD_TYPE=Release
+            -DCMAKE_CXX_FLAGS="-w"
             -DPERFORMANCE_TEST_OPENDDS_ENABLED=ON
             -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
           --base-path performance_test
       '
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-opendds.tar.gz /opt/opendds
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -357,7 +463,6 @@ build_opendds:
     paths:
     - log
     - build
-    - opt-opendds.tar.gz
     - opt.tar.gz
 
 build_fastrtps:
@@ -366,32 +471,15 @@ build_fastrtps:
   script:
     - source /opt/ros/rolling/setup.bash
     - apt-get update
-    - apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
+
     - rosdep update
     - rosdep install --from-paths performance_test --ignore-src -y
     - apt remove -y ros-rolling-fastrtps
-    - mkdir -p Fast-DDS
-    - cd Fast-DDS
-    - git clone https://github.com/eProsima/foonathan_memory_vendor.git -b v1.2.1
-    - mkdir foonathan_memory_vendor/build
-    - cd foonathan_memory_vendor/build && \
-    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DBUILD_SHARED_LIBS=ON
-    - cmake --build . --target install
-
-    - cd ../../
-    - git clone https://github.com/eProsima/Fast-CDR.git -b v1.0.24
-    - mkdir Fast-CDR/build
-    - cd Fast-CDR/build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
-    - cmake --build . --target install
-
-    - cd ../../
-    - git clone https://github.com/eProsima/Fast-DDS.git -b v2.6.0
-    - mkdir Fast-DDS/build
-    - cd Fast-DDS/build
-    - cmake .. -DCMAKE_INSTALL_PREFIX=/opt/Fast-DDS -DCMAKE_PREFIX_PATH=/opt/Fast-DDS
-    - cmake --build . --target install
-
+    - '
+      curl "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-fastdds-v1.2.1.tar.gz" > opt-fastdds-v1.2.1.tar.gz
+      '
+    - tar -xzf opt-fastdds-v1.2.1.tar.gz -C /
+    - find /opt/Fast-DDS
     - cd $CI_PROJECT_DIR
     - '
       colcon build
@@ -404,7 +492,6 @@ build_fastrtps:
             -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
       '
     - cp LICENSE /opt/performance_test
-    - tar cfz opt-fastdds.tar.gz /opt/Fast-DDS
     - tar cfz opt.tar.gz /opt/performance_test
   artifacts:
     expire_in: 1 day
@@ -412,7 +499,6 @@ build_fastrtps:
     paths:
       - log
       - build
-      - opt-fastdds.tar.gz
       - opt.tar.gz
 
 build_ros1:
@@ -461,7 +547,7 @@ test_performance_report:
     - python3 -m pip install bokeh selenium pandas
     - rosdep update --include-eol-distros
     - rosdep install --from-paths performance_test --ignore-src -y
-    - tar xzf opt.tar.gz -C /
+    - tar -xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Using runnner to test performance_report
     - '
@@ -500,7 +586,7 @@ test_performance_report:
     - rosdep update --include-eol-distros
     - rosdep install --from-paths performance_test --ignore-src -y
     - 'if [[ -n "${SMOKE_TEST_BEFORE_SCRIPT}" ]]; then eval "${SMOKE_TEST_BEFORE_SCRIPT}"; fi'
-    - tar xzf opt.tar.gz -C /
+    - tar -xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     - '
       MSGS=${SMOKE_TEST_TOPICS:-Array16k};
@@ -651,7 +737,8 @@ smoke_test_fastrtps:
   variables:
     COMMUNICATION_MEAN: FastRTPS
     SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-fastdds.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-fastdds-v1.2.1.tar.gz" > opt-fastdds-v1.2.1.tar.gz;
+        tar -xzf opt-fastdds-v1.2.1.tar.gz -C /;
         LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/Fast-DDS/lib";
     '
 
@@ -663,8 +750,10 @@ smoke_test_cyclonedds:
   variables:
     COMMUNICATION_MEAN: CycloneDDS
     SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-iceoryx.tar.gz -C /;
-        tar xzf opt-cyclonedds.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz;
+        tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-v0.9.0b1.tar.gz" > opt-cyclonedds-v0.9.0b1.tar.gz;
+        tar -xzf opt-cyclonedds-v0.9.0b1.tar.gz -C /;
         source /opt/iceoryx/setup.bash;
         LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib";
     '
@@ -678,9 +767,12 @@ smoke_test_cyclonedds_cxx:
   variables:
     COMMUNICATION_MEAN: CycloneDDS-CXX
     SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-iceoryx.tar.gz -C /;
-        tar xzf opt-cyclonedds.tar.gz -C /;
-        tar xzf opt-cyclonedds-cxx.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz;
+        tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-v0.9.0b1.tar.gz" > opt-cyclonedds-v0.9.0b1.tar.gz;
+        tar -xzf opt-cyclonedds-v0.9.0b1.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-cyclonedds-cxx-v0.9.0b1.tar.gz" > opt-cyclonedds-cxx-v0.9.0b1.tar.gz;
+        tar -xzf opt-cyclonedds-cxx-v0.9.0b1.tar.gz -C /;
         source /opt/iceoryx/setup.bash;
         LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/cyclonedds/lib:/opt/cyclonedds-cxx/lib";
     '
@@ -693,7 +785,8 @@ smoke_test_iceoryx:
   variables:
     COMMUNICATION_MEAN: iceoryx
     SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-iceoryx.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-iceoryx-v2.0.0.tar.gz" > opt-iceoryx-v2.0.0.tar.gz;
+        tar -xzf opt-iceoryx-v2.0.0.tar.gz -C /;
         source /opt/iceoryx/setup.bash;
         mkdir -p /etc/iceoryx;
         printf "[general]\nversion = 1\n\n[[segment]]\n\n[[segment.mempool]]\nsize = 128\ncount = 1000\n\n[[segment.mempool]]\nsize = 1024\ncount = 1000\n\n[[segment.mempool]]\nsize = 16384\ncount = 100\n\n[[segment.mempool]]\nsize = 131072\ncount = 10" > /etc/iceoryx/roudi_config.toml;
@@ -708,7 +801,8 @@ smoke_test_opendds:
   variables:
     COMMUNICATION_MEAN: OpenDDS
     SMOKE_TEST_BEFORE_SCRIPT: '
-        tar xzf opt-opendds.tar.gz -C /;
+        curl  "https://gitlab.com/api/v4/projects/14953417/packages/generic/performance_test/1.0.0/opt-opendds-3.13.2.tar.gz" > opt-opendds-3.13.2.tar.gz;
+        tar -xzf opt-opendds-3.13.2.tar.gz -C /;
     '
 
 test_plotter:
@@ -732,7 +826,7 @@ test_security_fast_dds:
     - apt-get update
     - rosdep update
     - rosdep install --from-paths performance_test --ignore-src -y
-    - tar xzf opt.tar.gz -C /
+    - tar -xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
     # Enable security
     - cd performance_test/helper_scripts
@@ -754,24 +848,16 @@ test_security_cyclone_dds:
   stage: test
   image: osrf/ros:rolling-desktop
   needs:
-    - build_rmw_cyclonedds_cpp
+    - build_rclcpp_rolling
   variables:
     ROS_DOMAIN_ID: 41
   script:
     - apt-get update
+    - apt-get install -y ros-rolling-rmw-cyclonedds-cpp
     - rosdep update
     - rosdep install --from-paths performance_test --ignore-src -y
-
-    - tar xzf opt-cyclonedds.tar.gz -C /
-    - export LD_LIBRARY_PATH=/opt/cyclonedds/lib:$LD_LIBRARY_PATH
-
-    - tar xzf opt-rmw_cyclonedds_cpp.tar.gz -C /
-    - source /opt/rmw_cyclonedds_cpp/local_setup.bash
-    - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
-
-    - tar xzf opt.tar.gz -C /
+    - tar -xzf opt.tar.gz -C /
     - source /opt/performance_test/setup.bash
-
     # Enable security
     - cd performance_test/helper_scripts
     - source security_setup.bash enable ./demo_keys
