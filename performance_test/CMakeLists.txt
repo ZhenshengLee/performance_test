@@ -230,14 +230,10 @@ if(PERFORMANCE_TEST_RCLCPP_ENABLED OR PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPT
 endif()
 
 
-set(${PROJECT_NAME}_HEADERS
-    src/experiment_configuration/experiment_configuration.hpp
-    src/experiment_execution/analysis_result.hpp)
-
 set(sources
     src/main.cpp
-    src/communication_abstractions/communicator.hpp
     src/communication_abstractions/communicator.cpp
+    src/communication_abstractions/communicator.hpp
     src/communication_abstractions/resource_manager.cpp
     src/communication_abstractions/resource_manager.hpp
     src/outputs/stdout_output.cpp
@@ -249,6 +245,7 @@ set(sources
     src/data_running/data_entity_factory.cpp
     src/data_running/data_entity_factory.hpp
     src/experiment_execution/analysis_result.cpp
+    src/experiment_execution/analysis_result.hpp
     src/experiment_execution/runner.hpp
     src/experiment_execution/data_stats.hpp
     src/experiment_execution/run_type.hpp
@@ -257,8 +254,9 @@ set(sources
     src/experiment_configuration/qos_abstraction.cpp
     src/experiment_configuration/qos_abstraction.hpp
     src/experiment_configuration/experiment_configuration.cpp
-    src/experiment_configuration/external_info_storage.hpp
+    src/experiment_configuration/experiment_configuration.hpp
     src/experiment_configuration/external_info_storage.cpp
+    src/experiment_configuration/external_info_storage.hpp
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp
     src/utilities/cpu_usage_tracker.hpp
@@ -398,7 +396,7 @@ externalproject_add(
 include_directories(SYSTEM ${EXTERNAL_INSTALL_LOCATION})
 
 set(EXE_NAME perf_test)
-add_executable(${EXE_NAME} ${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
+add_executable(${EXE_NAME} ${sources})
 add_dependencies(${EXE_NAME} tclap rapidjson tabulate sole)
 
 
@@ -455,10 +453,24 @@ target_link_libraries(
 )
 
 if(BUILD_TESTING)
-    find_package(ament_lint_auto REQUIRED)
-    ament_lint_auto_find_test_dependencies()
-    list(APPEND AMENT_LINT_AUTO_EXCLUDE ament_cmake_copyright)
-    ament_copyright(${${PROJECT_NAME}_SOURCES} ${sources} ${${PROJECT_NAME}_HEADERS})
+    find_package(ament_cmake_copyright REQUIRED)
+    ament_copyright()
+
+    find_package(ament_cmake_cppcheck REQUIRED)
+    ament_cppcheck(
+        ${sources})
+
+    find_package(ament_cmake_cpplint REQUIRED)
+    ament_cpplint(
+        FILTERS "-build/include_order")
+
+    find_package(ament_cmake_uncrustify REQUIRED)
+    ament_uncrustify(
+        CONFIG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/../ament_code_style.cfg"
+        ${sources})
+
+    find_package(ament_cmake_lint_cmake REQUIRED)
+    ament_lint_cmake()
 
     set(APEX_PERFORMANCE_TEST_GTEST apex_performance_test_gtest)
 
