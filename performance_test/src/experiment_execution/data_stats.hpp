@@ -49,51 +49,6 @@ struct DataStats
     m_latencies.clear();
   }
 
-  /**
-   * \brief Increment the number of received samples.
-   * \param increment Optional different increment step.
-   */
-  void increment_received(const std::uint64_t & increment = 1)
-  {
-    m_received_sample_counter += increment;
-  }
-
-  /**
-   * \brief Increment the number of sent samples.
-   * \param increment Optional different increment step.
-   */
-  void increment_sent(const std::uint64_t & increment = 1)
-  {
-    m_sent_sample_counter += increment;
-  }
-
-  std::uint64_t num_sent_samples() const {return m_sent_sample_counter;}
-
-  /**
-   * \brief Given a sample id this function check if and how many samples were
-   * lost and updates counters accordingly. \param sample_id The sample id to
-   * check.
-   */
-  void update_lost_samples_counter(const std::uint64_t sample_id)
-  {
-    // We can lose samples, but samples always arrive in the right order and
-    // no duplicates exist.
-    if (sample_id <= m_prev_sample_id) {
-      throw std::runtime_error(
-              "Data not consistent: received sample with not strictly greater id."
-              " Received sample id: " +
-              std::to_string(sample_id) +
-              " Previous sample id: " + std::to_string(m_prev_sample_id));
-    }
-    m_num_lost_samples += sample_id - m_prev_sample_id - 1;
-    m_prev_sample_id = sample_id;
-  }
-
-  void update_data_received(const std::size_t data_type_size)
-  {
-    m_data_received_bytes = m_received_sample_counter * data_type_size;
-  }
-
   /// Get the the id for the next sample to publish.
   std::uint64_t next_sample_id()
   {
@@ -179,7 +134,40 @@ struct DataStats
     m_lock.unlock();
   }
 
-  /**
+   void check_data_consistency(std::int64_t time_ns_since_epoch)
+  {
+    if (m_prev_timestamp_ns_since_epoch >= time_ns_since_epoch) {
+      throw std::runtime_error(
+              "Data not consistent: received sample with not strictly older "
+              "timestamp. Time diff: " +
+              std::to_string(time_ns_since_epoch - m_prev_timestamp_ns_since_epoch) +
+              " Data Time: " + std::to_string(time_ns_since_epoch));
+    }
+    m_prev_timestamp_ns_since_epoch = time_ns_since_epoch;
+  }
+
+private:
+/**
+   * \brief Given a sample id this function check if and how many samples were
+   * lost and updates counters accordingly. \param sample_id The sample id to
+   * check.
+   */
+  void update_lost_samples_counter(const std::uint64_t sample_id)
+  {
+    // We can lose samples, but samples always arrive in the right order and
+    // no duplicates exist.
+    if (sample_id <= m_prev_sample_id) {
+      throw std::runtime_error(
+              "Data not consistent: received sample with not strictly greater id."
+              " Received sample id: " +
+              std::to_string(sample_id) +
+              " Previous sample id: " + std::to_string(m_prev_sample_id));
+    }
+    m_num_lost_samples += sample_id - m_prev_sample_id - 1;
+    m_prev_sample_id = sample_id;
+  }
+
+   /**
    * \brief Adds a sample timestamp to the latency statistics.
    * \param sample_timestamp The timestamp the sample was sent.
    */
@@ -208,20 +196,29 @@ struct DataStats
     m_latencies.push_back(sec_diff);
   }
 
-
-  void check_data_consistency(std::int64_t time_ns_since_epoch)
+  /**
+   * \brief Increment the number of received samples.
+   * \param increment Optional different increment step.
+   */
+  void increment_received(const std::uint64_t & increment = 1)
   {
-    if (m_prev_timestamp_ns_since_epoch >= time_ns_since_epoch) {
-      throw std::runtime_error(
-              "Data not consistent: received sample with not strictly older "
-              "timestamp. Time diff: " +
-              std::to_string(time_ns_since_epoch - m_prev_timestamp_ns_since_epoch) +
-              " Data Time: " + std::to_string(time_ns_since_epoch));
-    }
-    m_prev_timestamp_ns_since_epoch = time_ns_since_epoch;
+    m_received_sample_counter += increment;
   }
 
-private:
+  void update_data_received(const std::size_t data_type_size)
+  {
+    m_data_received_bytes = m_received_sample_counter * data_type_size;
+  }
+
+    /**
+   * \brief Increment the number of sent samples.
+   * \param increment Optional different increment step.
+   */
+  void increment_sent(const std::uint64_t & increment = 1)
+  {
+    m_sent_sample_counter += increment;
+  }
+
   std::vector<double> m_latencies;
   std::uint64_t m_sent_sample_counter{};
   std::uint64_t m_received_sample_counter{};
