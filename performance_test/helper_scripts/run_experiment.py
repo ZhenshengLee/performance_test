@@ -17,7 +17,6 @@ import argparse
 from dataclasses import dataclass
 from enum import Enum
 import itertools
-from typing import List
 import os
 import signal
 import subprocess
@@ -73,7 +72,7 @@ class OutputType(ValueEnum):
 
     def to_cmd_args(self, test_args):
         filepath = test_args.directory + test_args.filename
-        return '-l {}.{}'.format(filepath,self)
+        return '-l {}.{}'.format(filepath, self)
 
 
 def get_flag_from_holder(self, flag_holder, flag):

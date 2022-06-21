@@ -83,7 +83,7 @@ struct DataStats
     RunType run_type,
     std::chrono::duration<double> iteration_duration)
   {
-    m_lock.lock();
+    lock();
     switch (run_type) {
       case RunType::PUBLISHER:
         m_sent_samples_per_iteration =
@@ -109,14 +109,14 @@ struct DataStats
         m_num_lost_samples = 0;
         break;
     }
-    m_lock.unlock();
+    unlock();
   }
 
   void populate_stats(
     RunType run_type,
     std::shared_ptr<AnalysisResult> & results)
   {
-    m_lock.lock();
+    lock();
     switch (run_type) {
       case RunType::PUBLISHER:
         results->m_num_samples_sent += m_sent_samples_per_iteration;
@@ -131,10 +131,10 @@ struct DataStats
         break;
     }
 
-    m_lock.unlock();
+    unlock();
   }
 
-   void check_data_consistency(std::int64_t time_ns_since_epoch)
+  void check_data_consistency(std::int64_t time_ns_since_epoch)
   {
     if (m_prev_timestamp_ns_since_epoch >= time_ns_since_epoch) {
       throw std::runtime_error(
@@ -167,10 +167,10 @@ private:
     m_prev_sample_id = sample_id;
   }
 
-   /**
-   * \brief Adds a sample timestamp to the latency statistics.
-   * \param sample_timestamp The timestamp the sample was sent.
-   */
+  /**
+  * \brief Adds a sample timestamp to the latency statistics.
+  * \param sample_timestamp The timestamp the sample was sent.
+  */
   void add_latency_to_statistics(const std::int64_t sample_timestamp)
   {
 #if defined(QNX)
@@ -210,10 +210,10 @@ private:
     m_data_received_bytes = m_received_sample_counter * data_type_size;
   }
 
-    /**
-   * \brief Increment the number of sent samples.
-   * \param increment Optional different increment step.
-   */
+  /**
+ * \brief Increment the number of sent samples.
+ * \param increment Optional different increment step.
+ */
   void increment_sent(const std::uint64_t & increment = 1)
   {
     m_sent_sample_counter += increment;
