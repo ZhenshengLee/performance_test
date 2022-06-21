@@ -68,19 +68,12 @@ class InstanceType(ValueEnum):
 class OutputType(ValueEnum):
     """Define the enumeration for the output types."""
 
-    STDOUT = "stdout"
     CSV = "csv"
     JSON = "json"
 
     def to_cmd_args(self, test_args):
-        args = ['-o {}'.format(self.value)]
-        if self != OutputType.STDOUT:
-            filepath = test_args.directory + test_args.filename
-            if self == OutputType.CSV:
-                args.append('-l {}.csv'.format(filepath))
-            elif self == OutputType.JSON:
-                args.append('--json-logfile {}.json'.format(filepath))
-        return args
+        filepath = test_args.directory + test_args.filename
+        return '-l {}.{}'.format(filepath,self)
 
 
 def get_flag_from_holder(self, flag_holder, flag):
@@ -146,7 +139,7 @@ class MessageType(ValueEnum):
 class TestArguments:
     """Define the struct for the test arguments."""
 
-    output_types: List[OutputType]
+    output_type: OutputType
     rate: int
     subscribers: int
     middleware: str
@@ -183,9 +176,7 @@ class TestArguments:
         args.append('--rate {}'.format(self.rate))
         args.append('-c {}'.format(self.middleware))
         args.append('--max-runtime {}'.format(self.duration))
-
-        for t in self.output_types:
-            args.extend(t.to_cmd_args(self))
+        args.extend(self.output_type.to_cmd_args())
         args.extend(self.message.to_cmd_args())
         args.extend(self.reliability.to_cmd_args())
         args.extend(self.durability.to_cmd_args())
@@ -320,9 +311,8 @@ parser.add_argument(
     '--output',
     nargs='*',
     type=OutputType,
-    default=defaults['OUTPUT_TYPE'],
     choices=OutputType,
-    help='logs output type')
+    help='log output type')
 parser.add_argument(
     '-m',
     '--msg',
