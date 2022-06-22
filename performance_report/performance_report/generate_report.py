@@ -20,7 +20,7 @@ import bokeh.util.version
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from .figures import generateFigure
-from .logs import getDatasets
+from .logs import getDatasets, coerce_to_list
 from .utils import PerfArgParser
 
 
@@ -39,7 +39,7 @@ def generateReports(report_cfg_file, log_dir):
                 # add current bokeh CDN version to template variables
                 html_figures['bokeh_version'] = bokeh.util.version.base_version()
                 # fill in templates
-                for template in report_cfg['template_name']:
+                for template in coerce_to_list(report_cfg['template_name']):
                     template_dir, template_file = os.path.split(template)
                     loader_dir = os.path.join(cfg_dir, template_dir)
                     env = Environment(
