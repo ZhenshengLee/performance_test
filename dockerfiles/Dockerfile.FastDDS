@@ -1,6 +1,6 @@
 # docker build . -f dockerfiles/Dockerfile.FastDDS -t performance_test_fast_dds
 # docker run -it performance_test_fast_dds bash
-# /opt/performance_test/lib/performance_test/perf_test -c FastRTPS --msg Array1k
+# /opt/performance_test/lib/performance_test/perf_test -c FastRTPS --msg Array1k --print-to-console
 
 FROM osrf/ros:rolling-desktop
 

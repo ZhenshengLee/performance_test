@@ -1,8 +1,8 @@
 # docker build . -f dockerfiles/Dockerfile.rclcpp -t performance_test_rclcpp
 # docker run -it performance_test_rclcpp bash
-# /opt/performance_test/lib/performance_test/perf_test -c rclcpp-single-threaded-executor --msg Array1k
-# /opt/performance_test/lib/performance_test/perf_test -c rclcpp-static-single-threaded-executor --msg Array1k
-# /opt/performance_test/lib/performance_test/perf_test -c rclcpp-waitset --msg Array1k
+# /opt/performance_test/lib/performance_test/perf_test -c rclcpp-single-threaded-executor --msg Array1k --print-to-console
+# /opt/performance_test/lib/performance_test/perf_test -c rclcpp-static-single-threaded-executor --msg Array1k --print-to-console
+# /opt/performance_test/lib/performance_test/perf_test -c rclcpp-waitset --msg Array1k --print-to-console
 
 FROM osrf/ros:rolling-desktop
 

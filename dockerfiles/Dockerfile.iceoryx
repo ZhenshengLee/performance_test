@@ -1,6 +1,6 @@
 # docker build . -f dockerfiles/Dockerfile.iceoryx -t performance_test_iceoryx
 # docker run -it --shm-size 2G performance_test_iceoryx bash
-# ros2 run performance_test perf_test -c iceoryx --msg Array1k
+# ros2 run performance_test perf_test -c iceoryx --msg Array1k --print-to-console
 
 FROM osrf/ros:rolling-desktop
 

@@ -1,8 +1,8 @@
 # docker build . -f dockerfiles/Dockerfile.CycloneDDS -t performance_test_cyclone_dds
 # docker run -it --shm-size 2G performance_test_cyclone_dds bash
-# ros2 run performance_test perf_test -c CycloneDDS -p 0 -s 1 --zero-copy --reliable --keep-last --history-depth 16 --max-runtime 60 &
+# ros2 run performance_test perf_test -c CycloneDDS -p 0 -s 1 --zero-copy --reliability RELIABLE --history KEEP_LAST --history-depth 16 --max-runtime 60 --print-to-console &
 # sleep 1
-# ros2 run performance_test perf_test -c CycloneDDS -p 1 -s 0 --zero-copy --reliable --keep-last --history-depth 16
+# ros2 run performance_test perf_test -c CycloneDDS -p 1 -s 0 --zero-copy --reliability RELIABLE --history KEEP_LAST --history-depth 16
 
 FROM osrf/ros:rolling-desktop
 

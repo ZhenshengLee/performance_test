@@ -1,6 +1,6 @@
 # docker build . -f dockerfiles/Dockerfile.mashup -t performance_test_mashup
 # docker run -it --shm-size 2G performance_test_mashup bash
-# /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test-topic --msg Array1k -p 0 -s 1 --zero-copy &
+# /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test-topic --msg Array1k -p 0 -s 1 --zero-copy --print-to-console &
 # /opt/performance_test/lib/performance_test/perf_test -c CycloneDDS -t test-topic --msg Array1k -p 1 -s 0 --zero-copy
 
 FROM osrf/ros:rolling-desktop

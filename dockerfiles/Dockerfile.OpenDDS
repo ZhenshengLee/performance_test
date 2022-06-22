@@ -1,6 +1,6 @@
 # docker build . -f dockerfiles/Dockerfile.OpenDDS -t performance_test_open_dds
 # docker run -it performance_test_open_dds bash
-# /opt/performance_test/lib/performance_test/perf_test -c OpenDDS --msg Array1k
+# /opt/performance_test/lib/performance_test/perf_test -c OpenDDS --msg Array1k --print-to-console
 
 FROM osrf/ros:rolling-desktop
 
