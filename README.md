@@ -6,15 +6,20 @@ This is not the official repo of apex.ai performance_test, please goto [the gitl
 
 ### Added works
 
-- eCAL support
+- eCAL5.10.x rosidl type support
+- eCAL5.10.x protobuf type support
+- FastRTPS upgrade to 2.3.x
 - FastDDS upgrade to 2.3.x
-- And more!
+- FastDDS zero-copy transport
+- performance test automation tool for jetson
 
 stars and issues are welcomed!
 
 ### version control policy
 
 I'll try my best to make the branch of repo to rebase with the latest commit of the official one ant take good care of the conflicts.
+
+the latest MR canbe seen in [gitlab official repo](https://gitlab.com/ApexAI/performance_test/-/merge_requests/322)
 
 ## Middleware plugins
 
@@ -136,7 +141,9 @@ mkdir experiment
 
 ## Performance test results
 
-under construction.
+see github repo [ros2_jetson_benchmarks](https://github.com/ZhenshengLee/ros2_jetson_benchmarks)
+
+or goto the [zhenshenglee.github.io/ros2_jetson_benchmarks/](https://zhenshenglee.github.io/ros2_jetson_benchmarks/)
 
 # performance_test
 
