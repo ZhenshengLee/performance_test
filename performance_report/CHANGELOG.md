@@ -2,6 +2,11 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.2.0 (2022/06/28)
+
+### Changed
+- In the `reporter` configuration, the `template_name` value may be an array
+
 ## 1.1.2 (2022/06/08)
 
 ## 1.1.1 (2022/06/07)

@@ -2,6 +2,24 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.2.0 (2022/06/28)
+
+### Changed
+- The CLI arguments for specifying the output type have changed:
+   - For console output, updated every second, add `--print-to-console`
+   - For file output, use `--logfile my_file.csv` or `--logfile my_file.json`
+      - The type will be deduced from the file name
+   - If neither of these options is specified, then a warning will print,
+     and the experiment will still run
+- The linter configurations are now configured locally. This means that the output
+  of `colcon test` should be the same no matter the installed ROS distribution.
+- The `--zero-copy` arg is now valid even if the publisher and subscriber(s)
+  are in the same process
+### Removed
+- The publisher and subscriber loop reserve metrics are no longer recorded or reported
+### Fixed
+- CPU usage will no longer be stuck at `0`
+
 ### Removed
 - The pub/sub loop reserve time metrics
 
