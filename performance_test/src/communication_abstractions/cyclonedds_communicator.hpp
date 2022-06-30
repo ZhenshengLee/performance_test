@@ -225,6 +225,7 @@ public:
     dds_sample_info_t si;
     int32_t n;
     while ((n = dds_take(m_datareader, &untyped, &si, 1, 1)) > 0) {
+      const auto received_time = m_stats.now();
       m_stats.lock();
       const DataType * data = static_cast<DataType *>(untyped);
       if (si.valid_data) {
@@ -235,7 +236,7 @@ public:
           m_stats.lock();
         } else {
           m_stats.update_subscriber_stats(
-            data->time, data->id,
+            data->time, received_time, data->id,
             sizeof(DataType));
         }
       }

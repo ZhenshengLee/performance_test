@@ -106,15 +106,17 @@ public:
       auto eventVector = m_waitset->timedWait(iox::units::Duration::fromSeconds(15));
       for (auto & event : eventVector) {
         if (event->doesOriginateFrom(m_subscriber.get())) {
-          m_stats.lock();
           while (m_subscriber->hasData()) {
             m_subscriber->take()
             .and_then(
               [this](auto & data) {
+                const auto received_time = m_stats.now();
+                m_stats.lock();
                 m_stats.check_data_consistency(data->time);
                 m_stats.update_subscriber_stats(
-                  data->time, data->id,
+                  data->time, received_time, data->id,
                   sizeof(DataType));
+                m_stats.unlock();
               })
             .or_else(
               [](auto & result) {
@@ -126,7 +128,6 @@ public:
                 }
               });
           }
-          m_stats.unlock();
         }
       }
     } else {

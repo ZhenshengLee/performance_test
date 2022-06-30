@@ -2,6 +2,10 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Fixed
+- Capture the timestamp as soon as a message is received, instead of just before
+  storing the metrics, to reduce the reported latency to a more correct value
+
 ## 1.2.0 (2022/06/28)
 
 ### Changed

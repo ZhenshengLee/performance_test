@@ -173,6 +173,7 @@ public:
       return;
     }
     dds::sub::LoanedSamples<DataType> samples = m_datareader->take();
+    const auto received_time = m_stats.now();
     for (auto & sample : samples) {
       if (sample->info().valid()) {
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
@@ -180,7 +181,7 @@ public:
         } else {
           m_stats.lock();
           m_stats.update_subscriber_stats(
-            sample->data().time(), sample->data().id(), sizeof(DataType));
+            sample->data().time(), received_time, sample->data().id(), sizeof(DataType));
           m_stats.unlock();
         }
       }

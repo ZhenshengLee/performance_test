@@ -190,9 +190,10 @@ public:
     }
 
     m_subscriber->waitForUnreadMessage();
-    m_stats.lock();
     while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
+      const auto received_time = m_stats.now();
       if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
+        m_stats.lock();
         m_stats.check_data_consistency(m_data.time());
         if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
           m_stats.unlock();
@@ -200,12 +201,12 @@ public:
           m_stats.lock();
         } else {
           m_stats.update_subscriber_stats(
-            m_data.time(), m_data.id(),
+            m_data.time(), received_time, m_data.id(),
             sizeof(DataType));
         }
+        m_stats.unlock();
       }
     }
-    m_stats.unlock();
   }
 
 private:

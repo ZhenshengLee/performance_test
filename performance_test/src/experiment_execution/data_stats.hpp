@@ -60,12 +60,13 @@ struct DataStats
   }
 
   void update_subscriber_stats(
-    const std::int64_t time_ns_since_epoch,
+    const std::int64_t time_msg_sent_ns,
+    const std::int64_t time_msg_received_ns,
     const std::uint64_t sample_id,
     const std::size_t data_type_size)
   {
     update_lost_samples_counter(sample_id);
-    add_latency_to_statistics(time_ns_since_epoch);
+    add_latency_to_statistics(time_msg_sent_ns, time_msg_received_ns);
     increment_received();
     update_data_received(data_type_size);
   }
@@ -146,12 +147,25 @@ struct DataStats
     m_prev_timestamp_ns_since_epoch = time_ns_since_epoch;
   }
 
-private:
-/**
-   * \brief Given a sample id this function check if and how many samples were
-   * lost and updates counters accordingly. \param sample_id The sample id to
-   * check.
+  /**
+   * \brief Measure current time
+   * \return Current time in nanoseconds or number of clock cycles
    */
+  std::int64_t now() const
+  {
+#if defined(QNX)
+    return static_cast<std::int64_t>(ClockCycles());
+#else
+    return perf_clock::now().time_since_epoch().count();
+#endif
+  }
+
+private:
+  /**
+  * \brief Given a sample id this function check if and how many samples were
+  * lost and updates counters accordingly. \param sample_id The sample id to
+  * check.
+  */
   void update_lost_samples_counter(const std::uint64_t sample_id)
   {
     // We can lose samples, but samples always arrive in the right order and
@@ -167,33 +181,27 @@ private:
     m_prev_sample_id = sample_id;
   }
 
-  /**
-  * \brief Adds a sample timestamp to the latency statistics.
-  * \param sample_timestamp The timestamp the sample was sent.
-  */
-  void add_latency_to_statistics(const std::int64_t sample_timestamp)
+  void add_latency_to_statistics(
+    const std::int64_t time_msg_sent_ns,
+    const std::int64_t time_msg_received_ns)
   {
 #if defined(QNX)
     // Since clock resolution on QNX is 1ms or above, it is better to use
     // clock cycles to calculate latencies instead of CLOCK_REALTIME or
     // CLOCK_MONOTONIC.
-    std::uint64_t rclk_cyc = ClockCycles();
-    std::uint64_t sclk_cyc = static_cast<std::uint64_t>(sample_timestamp);
-    std::uint64_t ncycles = (rclk_cyc - sclk_cyc);
-    // std::uint64_t m_cpms = (m_cps/1000);
-    // std::uint64_t m_cpus = (m_cpms/1000);
-    const double sec_diff =
+    const double ncycles = time_msg_received_ns - time_msg_sent_ns;
+    const double latency_s =
       static_cast<double>(ncycles) / static_cast<double>(m_cps);
 #else
-    std::chrono::nanoseconds st(sample_timestamp);
-    const auto diff = std::chrono::steady_clock::now().time_since_epoch() - st;
-
-    const auto sec_diff =
-      std::chrono::duration_cast<std::chrono::duration<double>>(diff).count();
+    std::chrono::nanoseconds time_msg_sent(time_msg_sent_ns);
+    std::chrono::nanoseconds time_msg_received(time_msg_received_ns);
+    const auto latency = time_msg_received - time_msg_sent;
+    const auto latency_s =
+      std::chrono::duration_cast<std::chrono::duration<double>>(latency).count();
 #endif
     // Converting to double for easier calculations. Because the two
     // timestamps are very close double precision is enough.
-    m_latencies.push_back(sec_diff);
+    m_latencies.push_back(latency_s);
   }
 
   /**

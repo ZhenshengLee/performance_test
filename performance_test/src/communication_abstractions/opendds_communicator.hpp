@@ -222,13 +222,14 @@ public:
       m_data_seq, m_sample_info_seq, DDS::LENGTH_UNLIMITED,
       DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,
       DDS::ANY_INSTANCE_STATE);
+    const auto received_time = m_stats.now();
     if (ret == DDS::RETCODE_OK) {
       m_stats.lock();
       for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
         const auto & data = m_data_seq[j];
         if (m_sample_info_seq[j].valid_data) {
           m_stats.check_data_consistency(data.time);
-          m_stats.update_subscriber_stats(data.time, data.id, sizeof(DataType));
+          m_stats.update_subscriber_stats(data.time, received_time, data.id, sizeof(DataType));
         }
       }
       m_stats.unlock();

@@ -146,6 +146,7 @@ protected:
   template<class T>
   void callback(const T & data)
   {
+    const auto received_time = m_stats.now();
     static_assert(
       std::is_same<DataType,
       typename std::remove_cv<
@@ -158,7 +159,9 @@ protected:
       publish(data.time);
     } else {
       m_stats.lock();
-      m_stats.update_subscriber_stats(data.time, data.id, sizeof(DataType));
+      m_stats.update_subscriber_stats(
+        data.time, received_time, data.id,
+        sizeof(DataType));
       m_stats.unlock();
     }
   }

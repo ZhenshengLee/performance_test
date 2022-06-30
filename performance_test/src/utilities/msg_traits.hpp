@@ -20,7 +20,8 @@ namespace performance_test
 struct MsgTraits
 {
   // TODO(erik.snider) switch to std::void_t when upgrading to C++17
-  template<class ...> using void_t = void;
+  template<class ...>
+  using void_t = void;
 
   template<typename T, typename = void>
   struct has_bounded_sequence : std::false_type {};
