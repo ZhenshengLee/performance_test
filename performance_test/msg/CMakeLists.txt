@@ -69,6 +69,7 @@ option(PERFORMANCE_TEST_MINIMAL_MESSAGES
   "Include only a small subset of messages, for quick compilation of smoke tests" OFF)
 if(PERFORMANCE_TEST_MINIMAL_MESSAGES)
   set(SUPPORTED_IDL_FILES
+      ${CMAKE_CURRENT_SOURCE_DIR}/Array1k.idl
       ${CMAKE_CURRENT_SOURCE_DIR}/Array16k.idl
       ${CMAKE_CURRENT_SOURCE_DIR}/Array1m.idl
 
