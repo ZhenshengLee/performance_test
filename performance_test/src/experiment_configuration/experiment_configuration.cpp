@@ -243,15 +243,16 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       "This will slow down the application!", cmd, false);
 
     TCLAP::ValueArg<int32_t> useRtPrioArg("", "use-rt-prio",
-      "Set RT priority. "
-      "Only certain platforms (i.e. Drive PX) have the right "
-      "configuration to support this. Default is 0 (disabled).",
+      "Set RT priority using a SCHED_FIFO real-time policy. "
+      "This option requires permissions to set a real-time priority. "
+      "Default is 0 (disabled).",
       false, 0, "N", cmd);
 
     TCLAP::ValueArg<uint32_t> useRtCpusArg("", "use-rt-cpus",
       "Set RT CPU affinity mask. "
-      "Only certain platforms (i.e. Drive PX) have the right "
-      "configuration to support this. Default is 0 (disabled).",
+      "The affinity mask has to be in decimal system. "
+      "For example, 10 sets the affinity for processors 1 and 3. "
+      "Default is 0 (disabled).",
       false, 0, "N", cmd);
 
     TCLAP::SwitchArg withSecurityArg("", "with-security",
