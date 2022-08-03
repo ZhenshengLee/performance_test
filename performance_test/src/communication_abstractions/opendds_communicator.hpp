@@ -15,6 +15,8 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__OPENDDS_COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__OPENDDS_COMMUNICATOR_HPP_
 
+#include <vector>
+
 #include <dds/DCPS/Marked_Default_Qos.h>
 #include <dds/DCPS/WaitSet.h>
 
@@ -41,18 +43,9 @@ namespace performance_test
 class OpenDdsQOSAdapter
 {
 public:
-  /**
-   * \brief Constructs the QOS adapter.
-   * \param qos The abstract QOS settings the adapter should use to derive the implementation specific QOS settings.
-   */
   explicit OpenDdsQOSAdapter(const QOSAbstraction qos)
   : m_qos(qos)
   {}
-  /**
-   * \brief  Applies the abstract QOS to an existing QOS leaving unsupported values as they were.
-   * \tparam ConnextDDSMicroQos The type of the QOS setting, for example data reader or data writer QOS.
-   * \param qos The QOS settings to fill supported values in.
-   */
 
   void apply_dr(DDS::DataReaderQos & qos)
   {
@@ -124,171 +117,192 @@ private:
   const QOSAbstraction m_qos;
 };
 
-/**
- * \brief The plugin for OpenDDS.
- * \tparam Topic The topic type to use.
- */
+class OpenDDSResources {
+public:
+  template<class Topic>
+  static DDS::Topic_ptr find_or_create_topic(
+    const ExperimentConfiguration & ec,
+    DDS::DomainParticipant_ptr participant)
+  {
+    DDS::Duration_t timeout;
+    timeout.sec = 0;
+    timeout.nanosec = 500;
+
+    DDS::Topic_ptr topic = participant->find_topic(
+      ec.topic_name().c_str(),
+      timeout);
+
+    if (CORBA::is_nil(topic)) {
+      DDS::ReturnCode_t retcode;
+      retcode = Topic::get_type_support()->register_type(
+        participant,
+        Topic::msg_name().c_str());
+      if (retcode != DDS::RETCODE_OK) {
+        throw std::runtime_error("failed to register type");
+      }
+      topic = participant->create_topic(
+        ec.topic_name().c_str(),
+        Topic::msg_name().c_str(),
+        TOPIC_QOS_DEFAULT,
+        nullptr,
+        OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+      if (CORBA::is_nil(topic)) {
+        throw std::runtime_error("topic == nullptr");
+      }
+    }
+
+    return topic;
+  }
+};
+
 template<class Topic>
-class OpenDDSCommunicator : public Communicator
+class OpenDDSPublisher : public Publisher
 {
 public:
-  /// The data type to use.
   using DataType = typename Topic::OpenDDSTopicType;
-  /// The type of the data writer.
   using DataWriterType = typename Topic::OpenDDSDataWriterType;
-  /// The type of the data reader.
-  using DataReaderType = typename Topic::OpenDDSDataReaderType;
-  /// The type of a sequence of data.
-  using DataTypeSeq = typename Topic::OpenDDSDataTypeSeq;
 
-  explicit OpenDDSCommunicator(DataStats & stats)
-  : Communicator(stats), m_datawriter(nullptr), m_datareader(nullptr),
-    m_typed_datareader(nullptr)
+  explicit OpenDDSPublisher(const ExperimentConfiguration & ec)
+  : m_participant(ResourceManager::get().opendds_participant()),
+    m_datawriter(make_opendds_datawriter(ec, m_participant))
   {
-    m_participant = ResourceManager::get().opendds_participant();
-    register_topic();
   }
 
-  void publish(std::int64_t time) override
+  void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
-    if (m_datawriter == nullptr) {
-      DDS::Publisher_ptr publisher;
-      DDS::DataWriterQos dw_qos;
-      ResourceManager::get().opendds_publisher(publisher, dw_qos);
-
-      OpenDdsQOSAdapter qos_adapter(m_ec.qos());
-      qos_adapter.apply_dw(dw_qos);
-
-      m_datawriter = publisher->create_datawriter(
-        m_topic,
-        dw_qos, nullptr, OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-      if (CORBA::is_nil(m_datawriter)) {
-        throw std::runtime_error("Could not create datawriter");
-      }
-
-      m_typed_datawriter = DataWriterType::_narrow(m_datawriter);
-      if (CORBA::is_nil(m_typed_datawriter)) {
-        throw std::runtime_error("failed datawriter narrow");
-      }
-    }
-    if (m_ec.is_zero_copy_transfer()) {
-      throw std::runtime_error("This plugin does not support zero copy transfer");
-    }
-    m_stats.lock();
-    init_msg(m_data, time);
-    m_stats.update_publisher_stats();
-    m_stats.unlock();
-    auto retcode = m_typed_datawriter->write(m_data, DDS::HANDLE_NIL);
+    init_msg(m_data, time, sample_id);
+    auto retcode = m_datawriter->write(m_data, DDS::HANDLE_NIL);
     if (retcode != DDS::RETCODE_OK) {
       throw std::runtime_error("Failed to write to sample");
     }
   }
 
-  void update_subscription() override
+  void publish_loaned(std::int64_t time, std::uint64_t sample_id) override
   {
-    if (CORBA::is_nil(m_datareader)) {
-      DDS::Subscriber_ptr subscriber = nullptr;
-      DDS::DataReaderQos dr_qos;
-      ResourceManager::get().opendds_subscriber(subscriber, dr_qos);
-
-      OpenDdsQOSAdapter qos_adapter(m_ec.qos());
-      qos_adapter.apply_dr(dr_qos);
-
-      /* Only DDS_DATA_AVAILABLE_STATUS supported currently */
-      m_datareader = subscriber->create_datareader(
-        m_topic,
-        dr_qos,
-        nullptr,
-        OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-
-      if (CORBA::is_nil(m_datareader)) {
-        throw std::runtime_error("datareader == nullptr");
-      }
-
-      m_condition = m_datareader->get_statuscondition();
-      m_condition->set_enabled_statuses(DDS::DATA_AVAILABLE_STATUS);
-      m_waitset.attach_condition(m_condition);
-
-      m_typed_datareader = DataReaderType::_narrow(m_datareader);
-      if (m_typed_datareader == nullptr) {
-        throw std::runtime_error("m_typed_datareader == nullptr");
-      }
-    }
-
-    DDS::Duration_t wait_timeout = {15, 0};
-    m_waitset.wait(m_condition_seq, wait_timeout);
-
-    auto ret = m_typed_datareader->take(
-      m_data_seq, m_sample_info_seq, DDS::LENGTH_UNLIMITED,
-      DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,
-      DDS::ANY_INSTANCE_STATE);
-    const auto received_time = m_stats.now();
-    if (ret == DDS::RETCODE_OK) {
-      m_stats.lock();
-      for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
-        const auto & data = m_data_seq[j];
-        if (m_sample_info_seq[j].valid_data) {
-          m_stats.check_data_consistency(data.time);
-          m_stats.update_subscriber_stats(data.time, received_time, data.id, sizeof(DataType));
-        }
-      }
-      m_stats.unlock();
-
-      if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-        throw std::runtime_error("Round trip mode is not implemented for OpenDDS!");
-      }
-
-      m_typed_datareader->return_loan(
-        m_data_seq,
-        m_sample_info_seq);
-    }
+    throw std::runtime_error("This plugin does not support zero copy transfer");
   }
 
 private:
-  /// Registers a topic to the participant. It makes sure that each topic is only registered once.
-  void register_topic()
-  {
-    if (CORBA::is_nil(m_topic)) {
-      DDS::ReturnCode_t retcode;
-      retcode = Topic::get_type_support()->register_type(
-        m_participant,
-        Topic::msg_name().c_str());
-      if (retcode != DDS::RETCODE_OK) {
-        throw std::runtime_error("failed to register type");
-      }
-      m_topic = m_participant->create_topic(
-        m_ec.topic_name().c_str(),
-        Topic::msg_name().c_str(),
-        TOPIC_QOS_DEFAULT,
-        nullptr,
-        OpenDDS::DCPS::DEFAULT_STATUS_MASK);
-      if (CORBA::is_nil(m_topic)) {
-        throw std::runtime_error("topic == nullptr");
-      }
-    }
-  }
-
   DDS::DomainParticipant_ptr m_participant;
-
-  DDS::DataWriter_ptr m_datawriter;
-  DDS::DataReader_ptr m_datareader;
-
-  DDS::WaitSet m_waitset;
-  DDS::StatusCondition_ptr m_condition;
-  DDS::ConditionSeq m_condition_seq;
-
-  DataReaderType * m_typed_datareader;
-  DataWriterType * m_typed_datawriter;
-
-  DataTypeSeq m_data_seq;
-  DDS::SampleInfoSeq m_sample_info_seq;
-  static DDS::Topic_ptr m_topic;
-
+  DataWriterType * m_datawriter;
   DataType m_data;
+
+  DataWriterType * make_opendds_datawriter(
+    const ExperimentConfiguration & ec,
+    DDS::DomainParticipant_ptr participant)
+  {
+    DDS::Publisher_ptr publisher;
+    DDS::DataWriterQos dw_qos;
+    ResourceManager::get().opendds_publisher(publisher, dw_qos);
+
+    OpenDdsQOSAdapter qos_adapter(ec.qos());
+    qos_adapter.apply_dw(dw_qos);
+
+    DDS::DataWriter_ptr datawriter = publisher->create_datawriter(
+      OpenDDSResources::find_or_create_topic<Topic>(ec, participant),
+      dw_qos,
+      nullptr,
+      OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+    if (CORBA::is_nil(datawriter)) {
+      throw std::runtime_error("Could not create datawriter");
+    }
+
+    DataWriterType * typed_datawriter = DataWriterType::_narrow(datawriter);
+    if (CORBA::is_nil(typed_datawriter)) {
+      throw std::runtime_error("failed datawriter narrow");
+    }
+    return typed_datawriter;
+  }
 };
 
 template<class Topic>
-DDS::Topic_ptr OpenDDSCommunicator<Topic>::m_topic = nullptr;
+class OpenDDSSubscriber : public Subscriber
+{
+public:
+  using DataType = typename Topic::OpenDDSTopicType;
+  using DataReaderType = typename Topic::OpenDDSDataReaderType;
+  using DataTypeSeq = typename Topic::OpenDDSDataTypeSeq;
+
+  explicit OpenDDSSubscriber(const ExperimentConfiguration & ec)
+  : m_participant(ResourceManager::get().opendds_participant()),
+    m_datareader(make_opendds_datareader(ec, m_participant)),
+    m_condition(m_datareader->get_statuscondition())
+  {
+    m_condition->set_enabled_statuses(DDS::DATA_AVAILABLE_STATUS);
+    m_waitset.attach_condition(m_condition);
+  }
+
+  std::vector<ReceivedMsgStats> update_subscription() override
+  {
+    DDS::Duration_t wait_timeout = {15, 0};
+    m_waitset.wait(m_condition_seq, wait_timeout);
+    return take();
+  }
+
+  std::vector<ReceivedMsgStats> take() override
+  {
+    std::vector<ReceivedMsgStats> stats;
+    auto ret = m_datareader->take(
+      m_data_seq, m_sample_info_seq, DDS::LENGTH_UNLIMITED,
+      DDS::ANY_SAMPLE_STATE, DDS::ANY_VIEW_STATE,
+      DDS::ANY_INSTANCE_STATE);
+    const auto received_time = now_int64_t();
+    if (ret == DDS::RETCODE_OK) {
+      for (decltype(m_data_seq.length()) j = 0; j < m_data_seq.length(); ++j) {
+        const auto & data = m_data_seq[j];
+        if (m_sample_info_seq[j].valid_data) {
+          stats.emplace_back(
+            data.time,
+            received_time,
+            data.id,
+            sizeof(DataType)
+          );
+        }
+      }
+      m_datareader->return_loan(
+        m_data_seq,
+        m_sample_info_seq);
+    }
+    return stats;
+  }
+
+private:
+  DDS::DomainParticipant_ptr m_participant;
+  DataReaderType * m_datareader;
+  DDS::StatusCondition_ptr m_condition;
+  DDS::WaitSet m_waitset;
+
+  DDS::ConditionSeq m_condition_seq;
+  DataTypeSeq m_data_seq;
+  DDS::SampleInfoSeq m_sample_info_seq;
+
+  DataReaderType * make_opendds_datareader(
+    const ExperimentConfiguration & ec,
+    DDS::DomainParticipant_ptr participant)
+  {
+    DDS::Subscriber_ptr subscriber;
+    DDS::DataReaderQos dr_qos;
+    ResourceManager::get().opendds_subscriber(subscriber, dr_qos);
+
+    OpenDdsQOSAdapter qos_adapter(ec.qos());
+    qos_adapter.apply_dr(dr_qos);
+
+    DDS::DataReader_ptr datareader = subscriber->create_datareader(
+      OpenDDSResources::find_or_create_topic<Topic>(ec, participant),
+      dr_qos,
+      nullptr,
+      OpenDDS::DCPS::DEFAULT_STATUS_MASK);
+    if (CORBA::is_nil(datareader)) {
+      throw std::runtime_error("Could not create datareader");
+    }
+
+    DataReaderType * typed_datareader = DataReaderType::_narrow(datareader);
+    if (typed_datareader == nullptr) {
+      throw std::runtime_error("failed datareader narrow");
+    }
+    return typed_datareader;
+  }
+};
 
 }  // namespace performance_test
 

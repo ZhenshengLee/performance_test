@@ -21,9 +21,6 @@
 namespace performance_test
 {
 
-/**
- * \brief Holds limited QOS information in an DDS implementation independent way.
- */
 struct QOSAbstraction
 {
   QOSAbstraction()
@@ -33,34 +30,26 @@ struct QOSAbstraction
     history_depth(),
     sync_pubsub(false) {}
 
-  /// Abstract type for DDS reliability.
   enum class Reliability
   {
     BEST_EFFORT,
     RELIABLE
   };
-  /// Abstract type for DDS durability.
   enum class Durability
   {
     VOLATILE,
     TRANSIENT_LOCAL
   };
-  /// Abstract type for DDS history kind.
   enum class HistoryKind
   {
     KEEP_ALL,
     KEEP_LAST
   };
 
-  /// Stored DDS reliability kind.
   Reliability reliability;
-  /// Stored DDS durability kind.
   Durability durability;
-  /// Stored DDS history kind.
   HistoryKind history_kind;
-  /// Stored DDS history depth.
   uint32_t history_depth;
-  /// Use synchronous pub/sub.
   bool sync_pubsub;
 };
 

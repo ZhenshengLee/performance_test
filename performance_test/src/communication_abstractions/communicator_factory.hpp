@@ -12,16 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <chrono>
+#ifndef COMMUNICATION_ABSTRACTIONS__COMMUNICATOR_FACTORY_HPP_
+#define COMMUNICATION_ABSTRACTIONS__COMMUNICATOR_FACTORY_HPP_
 
+#include <memory>
+#include <string>
+
+#include "../experiment_configuration/experiment_configuration.hpp"
 #include "communicator.hpp"
 
 namespace performance_test
 {
-
-Communicator::Communicator(DataStats & stats)
-: m_stats(stats), m_ec(ExperimentConfiguration::get())
+class CommunicatorFactory
 {
-}
+public:
+  static std::shared_ptr<Publisher> get_publisher(
+    const ExperimentConfiguration & ec);
 
+  static std::shared_ptr<Subscriber> get_subscriber(
+    const ExperimentConfiguration & ec);
+};
 }  // namespace performance_test
+
+#endif  // COMMUNICATION_ABSTRACTIONS__COMMUNICATOR_FACTORY_HPP_

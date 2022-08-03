@@ -86,17 +86,14 @@ public:
   ResourceManager & operator=(ResourceManager &&) = delete;
 
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-  /// Returns the ROS 2 node.
   std::shared_ptr<rclcpp::Node> rclcpp_node() const;
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  /// Returns FastRTPS participant.
   eprosima::fastrtps::Participant * fastrtps_participant() const;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
-  /// Returns Connext DDS Micro participant.
   DDSDomainParticipant * connext_DDS_micro_participant() const;
 
   /**
@@ -115,7 +112,6 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDS_ENABLED
-  /// Returns Connext DDS participant.
   DDSDomainParticipant * connext_dds_participant() const;
 
   /**
@@ -134,7 +130,6 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_CYCLONEDDS_ENABLED
-  /// Returns Cyclone DDS participant.
   dds_entity_t cyclonedds_participant() const;
 #endif
 
@@ -147,7 +142,6 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_OPENDDS_ENABLED
-  /// Returns OpenDDS participant.
   DDS::DomainParticipant_ptr opendds_participant() const;
 
   /**

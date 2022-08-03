@@ -12,28 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef UTILITIES__PERF_CLOCK_HPP_
-#define UTILITIES__PERF_CLOCK_HPP_
+#include "execution_strategy.hpp"
 
-#include <chrono>
-
-#if defined(QNX)
-#include <inttypes.h>
-#include <sys/neutrino.h>
-#include <sys/syspage.h>
-#endif
+#include <string>
 
 namespace performance_test
 {
-using perf_clock = std::chrono::steady_clock;
 
-inline std::int64_t now_int64_t()
+std::string to_string(const ExecutionStrategy x)
 {
-#if defined(QNX)
-  return static_cast<std::int64_t>(ClockCycles());
-#else
-  return perf_clock::now().time_since_epoch().count();
-#endif
+  if (x == ExecutionStrategy::INTER_THREAD) {
+    return "INTER_THREAD";
+  }
+  if (x == ExecutionStrategy::INTRA_THREAD) {
+    return "INTRA_THREAD";
+  }
+  throw std::invalid_argument("Enum value not supported!");
 }
+
+ExecutionStrategy execution_strategy_from_string(const std::string & s)
+{
+  if (s == "INTER_THREAD") {
+    return ExecutionStrategy::INTER_THREAD;
+  }
+  if (s == "INTRA_THREAD") {
+    return ExecutionStrategy::INTRA_THREAD;
+  }
+  throw std::invalid_argument("Invalid execution strategy string!");
+}
+
 }  // namespace performance_test
-#endif  // UTILITIES__PERF_CLOCK_HPP_

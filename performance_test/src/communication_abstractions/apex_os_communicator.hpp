@@ -1,30 +1,50 @@
+// Copyright 2022 Apex.AI, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 #include <chrono>
 #include <memory>
 #include <ratio>
 #include <utility>
+#include <functional>
 
-#ifndef APEX_OS_COMMUNICATOR_HPP_
-#define APEX_OS_COMMUNICATOR_HPP_
+#ifndef COMMUNICATION_ABSTRACTIONS__APEX_OS_COMMUNICATOR_HPP_
+#define COMMUNICATION_ABSTRACTIONS__APEX_OS_COMMUNICATOR_HPP_
 
-#include "communicator.hpp"
-#include "rclcpp_communicator.hpp"
 #include <apexcpp/node_state.hpp>
 #include <cpputils/optional.hpp>
 #include <executor/executable_item.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-namespace performance_test {
+#include "ros2_qos_adapter.hpp"
+#include "../experiment_metrics/publisher_stats.hpp"
+#include "../experiment_metrics/subscriber_stats.hpp"
 
+namespace performance_test
+{
 template <class MsgType>
-class PublisherItem : public apex::executor::executable_item {
-
+class PublisherItem : public apex::executor::executable_item
+{
 public:
   PublisherItem(rclcpp::Node &node, apex::NodeState &node_state,
-                DataStats &stats, const ExperimentConfiguration &ec)
-      : apex::executor::executable_item(node, node_state), m_ec(ec),
-        m_stats(stats), m_publisher(node.create_publisher<MsgType>(
-                            ec.topic_name() + ec.pub_topic_postfix(),
-                            ROS2QOSAdapter(ec.qos()).get())) {
+                PublisherStats &stats, const ExperimentConfiguration &ec)
+      : apex::executor::executable_item(node, node_state),
+        m_ec(ec),
+        m_stats(stats),
+        m_publisher(node.create_publisher<MsgType>(
+            ec.topic_name() + ec.pub_topic_postfix(),
+            ROS2QOSAdapter(ec.qos()).get()))
+  {
     if (m_ec.expected_num_subs() > 0) {
       m_publisher->wait_for_matched(m_ec.expected_num_subs(),
                                     m_ec.expected_wait_for_matched_timeout());
@@ -39,27 +59,21 @@ private:
             "RMW implementation does not support zero copy!");
       }
       auto borrowed_message{m_publisher->borrow_loaned_message()};
-      m_stats.lock();
-      m_stats.update_publisher_stats();
-      const std::int64_t time = m_stats.now();
-      init_msg(borrowed_message.get(), time);
-      m_stats.unlock();
+      init_msg(borrowed_message.get(), now_int64_t(), m_stats.next_sample_id());
       m_publisher->publish(std::move(borrowed_message));
-    } else {
-      m_stats.lock();
       m_stats.update_publisher_stats();
-      const std::int64_t time = m_stats.now();
-      init_msg(m_data, time);
-      m_stats.unlock();
+    } else {
+      init_msg(m_data, now_int64_t(), m_stats.next_sample_id());
       m_publisher->publish(m_data);
+      m_stats.update_publisher_stats();
     }
   }
 
   inline
-  void init_msg(MsgType & msg, std::int64_t time)
+  void init_msg(MsgType & msg, std::int64_t time, std::uint64_t sample_id)
   {
     msg.time = time;
-    msg.id = m_stats.next_sample_id();
+    msg.id = sample_id;
     init_bounded_sequence(msg);
     init_unbounded_sequence(msg);
     init_unbounded_string(msg);
@@ -106,22 +120,23 @@ private:
 
   MsgType m_data;
   const ExperimentConfiguration &m_ec;
-  DataStats &m_stats;
+  PublisherStats &m_stats;
   const typename rclcpp::Publisher<MsgType>::SharedPtr m_publisher;
 };
 
 template <class MsgType>
-class SubscriberItem : public apex::executor::executable_item {
-
+class SubscriberItem : public apex::executor::executable_item
+{
 public:
   SubscriberItem(rclcpp::Node &node, apex::NodeState &node_state,
-                 DataStats &stats, const ExperimentConfiguration &ec)
-      : apex::executor::executable_item(node, node_state), m_ec(ec),
+                 SubscriberStats &stats, const ExperimentConfiguration &ec)
+      : apex::executor::executable_item(node, node_state),
+        m_ec(ec),
         m_stats(stats),
         m_subscription(node.template create_polling_subscription<MsgType>(
             ec.topic_name() + ec.sub_topic_postfix(),
-            ROS2QOSAdapter(ec.qos()).get())) {
-
+            ROS2QOSAdapter(ec.qos()).get()))
+  {
     if (m_ec.roundtrip_mode() ==
         ExperimentConfiguration::RoundTripMode::RELAY) {
       m_publisher.emplace(node.create_publisher<MsgType>(
@@ -139,15 +154,16 @@ public:
   }
 
   apex::executor::subscription_list
-  get_triggering_subscriptions_impl() const override {
+  get_triggering_subscriptions_impl() const override
+  {
     return {m_subscription};
   }
 
 private:
-  void execute_impl() override {
-
+  void execute_impl() override
+  {
     const auto loaned_msg = m_subscription->take();
-    const auto received_time = m_stats.now();
+    const auto received_time = now_int64_t();
     for (const auto msg : loaned_msg) {
       if (msg.info().valid()) {
         handle_message(msg, received_time);
@@ -176,47 +192,49 @@ private:
                      typename std::remove_cv<
                          typename std::remove_reference<T>::type>::type>::value,
         "Parameter type passed to callback() does not match");
-    m_stats.check_data_consistency(data.time);
-
     if (m_ec.roundtrip_mode() ==
         ExperimentConfiguration::RoundTripMode::RELAY) {
       m_publisher.value()->publish(data);
     } else {
-      m_stats.lock();
       m_stats.update_subscriber_stats(data.time, received_time, data.id,
                                       sizeof(MsgType));
-      m_stats.unlock();
     }
   }
 
   const ExperimentConfiguration &m_ec;
-  DataStats &m_stats;
+  SubscriberStats &m_stats;
   const typename rclcpp::PollingSubscription<MsgType>::SharedPtr m_subscription;
   apex::optional<typename rclcpp::Publisher<MsgType>::SharedPtr> m_publisher;
 };
 
-class ApexOsEntity {
+class ApexOsPublisherEntity {
 public:
   virtual std::shared_ptr<apex::executor::executable_item>
   get_publisher_item() {
     return nullptr;
   }
+};
+
+class ApexOsSubscriberEntity {
+public:
   virtual std::shared_ptr<apex::executor::executable_item>
   get_subscriber_item() {
     return nullptr;
   }
 };
 
-template <typename MsgType> class ApexOsPublisher : public ApexOsEntity {
-
+template <typename MsgType> class ApexOsPublisher : public ApexOsPublisherEntity
+{
 public:
-  ApexOsPublisher(DataStats &stats, const ExperimentConfiguration &ec)
-      : m_node("apex_os_publisher_node"), m_node_state(&m_node, std::chrono::seconds::max()),
+  ApexOsPublisher(PublisherStats &stats, const ExperimentConfiguration &ec)
+      : m_node("apex_os_publisher_node"),
+        m_node_state(&m_node, std::chrono::seconds::max()),
         m_publisher_item(std::make_shared<PublisherItem<MsgType>>(
             m_node, m_node_state, stats, ec)) {}
 
   std::shared_ptr<apex::executor::executable_item>
-  get_publisher_item() override {
+  get_publisher_item() override
+  {
     return m_publisher_item;
   }
 
@@ -226,16 +244,18 @@ private:
   std::shared_ptr<PublisherItem<MsgType>> m_publisher_item;
 };
 
-template <typename MsgType> class ApexOsSubscriber : public ApexOsEntity {
-
+template <typename MsgType> class ApexOsSubscriber : public ApexOsSubscriberEntity
+{
 public:
-  ApexOsSubscriber(DataStats &stats, const ExperimentConfiguration &ec)
-      : m_node("apex_os_subscriber_node"), m_node_state(&m_node, std::chrono::seconds::max()),
+  ApexOsSubscriber(SubscriberStats &stats, const ExperimentConfiguration &ec)
+      : m_node("apex_os_subscriber_node"),
+        m_node_state(&m_node, std::chrono::seconds::max()),
         m_subscriber_item(std::make_shared<SubscriberItem<MsgType>>(
             m_node, m_node_state, stats, ec)) {}
 
   std::shared_ptr<apex::executor::executable_item>
-  get_subscriber_item() override {
+  get_subscriber_item() override
+  {
     return m_subscriber_item;
   }
 
@@ -244,6 +264,6 @@ private:
   apex::NodeState m_node_state;
   std::shared_ptr<SubscriberItem<MsgType>> m_subscriber_item;
 };
-} // namespace performance_test
+}  // namespace performance_test
 
-#endif // APEX_OS_COMMUNICATOR_HPP_
+#endif  // COMMUNICATION_ABSTRACTIONS__APEX_OS_COMMUNICATOR_HPP_

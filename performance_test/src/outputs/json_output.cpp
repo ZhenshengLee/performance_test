@@ -18,7 +18,7 @@
 #include <iostream>
 #include <memory>
 
-#include "../experiment_execution/analysis_result.hpp"
+#include "../experiment_metrics/analysis_result.hpp"
 #include "../utilities/json_logger.hpp"
 
 namespace performance_test

@@ -16,9 +16,9 @@
 #include <rclcpp/rclcpp.hpp>
 #endif
 
-#include "data_running/data_entity.hpp"
 #include "experiment_configuration/experiment_configuration.hpp"
 #include "experiment_execution/runner.hpp"
+#include "experiment_execution/runner_factory.hpp"
 
 int main(int argc, char ** argv)
 {
@@ -37,11 +37,6 @@ int main(int argc, char ** argv)
   }
 #endif
 
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-  performance_test::Runner<performance_test::ApexOsEntity> r(ec);
-#else
-  performance_test::Runner<performance_test::DataEntity> r(ec);
-#endif
-
-  r.run();
+  auto r = performance_test::RunnerFactory::get(ec);
+  r->run();
 }

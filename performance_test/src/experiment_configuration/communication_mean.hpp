@@ -20,10 +20,6 @@
 
 namespace performance_test
 {
-
-/**
- * \brief Available means of communication.
- */
 enum class CommunicationMean
 {
 #ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
@@ -64,7 +60,6 @@ enum class CommunicationMean
 
 std::string to_string(const CommunicationMean cm);
 
-/// Outstream operator for CommunicationMean.
 inline std::ostream & operator<<(std::ostream & stream, const CommunicationMean cm)
 {
   return stream << to_string(cm);

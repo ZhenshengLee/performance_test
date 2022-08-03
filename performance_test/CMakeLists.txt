@@ -234,36 +234,49 @@ endif()
 
 set(sources
     src/main.cpp
-    src/communication_abstractions/communicator.cpp
     src/communication_abstractions/communicator.hpp
+    src/communication_abstractions/communicator_factory.cpp
+    src/communication_abstractions/communicator_factory.hpp
     src/communication_abstractions/resource_manager.cpp
     src/communication_abstractions/resource_manager.hpp
-    src/outputs/stdout_output.cpp
-    src/outputs/csv_output.cpp
-    src/outputs/json_output.cpp
-    src/data_running/data_publisher.hpp
-    src/data_running/data_subscriber.hpp
-    src/data_running/data_entity.hpp
-    src/data_running/data_entity_factory.cpp
-    src/data_running/data_entity_factory.hpp
-    src/experiment_execution/analysis_result.cpp
-    src/experiment_execution/analysis_result.hpp
-    src/experiment_execution/runner.hpp
-    src/experiment_execution/data_stats.hpp
-    src/experiment_execution/run_type.hpp
+    src/execution_tasks/publisher_task.hpp
+    src/execution_tasks/round_trip_relay_task.hpp
+    src/execution_tasks/subscriber_task.hpp
     src/experiment_configuration/communication_mean.cpp
     src/experiment_configuration/communication_mean.hpp
-    src/experiment_configuration/qos_abstraction.cpp
-    src/experiment_configuration/qos_abstraction.hpp
+    src/experiment_configuration/execution_strategy.cpp
+    src/experiment_configuration/execution_strategy.hpp
     src/experiment_configuration/experiment_configuration.cpp
     src/experiment_configuration/experiment_configuration.hpp
     src/experiment_configuration/external_info_storage.cpp
     src/experiment_configuration/external_info_storage.hpp
+    src/experiment_configuration/qos_abstraction.cpp
+    src/experiment_configuration/qos_abstraction.hpp
+    src/experiment_execution/runner_factory.cpp
+    src/experiment_execution/runner_factory.hpp
+    src/experiment_execution/runner.hpp
+    src/experiment_execution/threaded_runner.hpp
+    src/experiment_metrics/analysis_result.cpp
+    src/experiment_metrics/analysis_result.hpp
+    src/experiment_metrics/publisher_stats.hpp
+    src/experiment_metrics/subscriber_stats.hpp
+    src/outputs/csv_output.cpp
+    src/outputs/csv_output.hpp
+    src/outputs/json_output.cpp
+    src/outputs/json_output.hpp
+    src/outputs/output.hpp
+    src/outputs/stdout_output.cpp
+    src/outputs/stdout_output.hpp
+    src/utilities/cpu_usage_tracker.hpp
+    src/utilities/json_logger.hpp
+    src/utilities/memory_checker.cpp
+    src/utilities/memory_checker.hpp
+    src/utilities/msg_traits.hpp
+    src/utilities/perf_clock.hpp
+    src/utilities/qnx_res_usage.hpp
+    src/utilities/rt_enabler.hpp
     src/utilities/spin_lock.hpp
     src/utilities/statistics_tracker.hpp
-    src/utilities/cpu_usage_tracker.hpp
-    src/utilities/qnx_res_usage.hpp
-    src/utilities/json_logger.hpp
 )
 
 if(PERFORMANCE_TEST_RT_ENABLED)
@@ -272,29 +285,16 @@ if(PERFORMANCE_TEST_RT_ENABLED)
 endif()
 
 if(PERFORMANCE_TEST_RCLCPP_ENABLED)
-  list(APPEND sources src/communication_abstractions/rclcpp_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/rclcpp_publisher.hpp)
   list(APPEND sources src/communication_abstractions/rclcpp_callback_communicator.hpp)
-endif()
-
-if(PERFORMANCE_TEST_RCLCPP_STE_ENABLED)
-  list(APPEND sources src/data_running/factories/rclcpp_ste_data_runner_factory.cpp)
-  list(APPEND sources src/data_running/factories/rclcpp_ste_data_runner_factory.hpp)
-endif()
-
-if(PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED)
-  list(APPEND sources src/data_running/factories/rclcpp_sste_data_runner_factory.cpp)
-  list(APPEND sources src/data_running/factories/rclcpp_sste_data_runner_factory.hpp)
-endif()
-
-if(PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED)
-  list(APPEND sources src/communication_abstractions/apex_os_polling_subscription_communicator.hpp)
-  list(APPEND sources src/communication_abstractions/apex_os_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED)
   list(APPEND sources src/communication_abstractions/rclcpp_waitset_communicator.hpp)
-  list(APPEND sources src/data_running/factories/rclcpp_waitset_data_runner_factory.cpp)
-  list(APPEND sources src/data_running/factories/rclcpp_waitset_data_runner_factory.hpp)
+endif()
+
+if(PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED)
+  list(APPEND sources src/communication_abstractions/apex_os_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)

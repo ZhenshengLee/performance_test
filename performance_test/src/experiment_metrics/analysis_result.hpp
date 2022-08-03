@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXPERIMENT_EXECUTION__ANALYSIS_RESULT_HPP_
-#define EXPERIMENT_EXECUTION__ANALYSIS_RESULT_HPP_
+#ifndef EXPERIMENT_METRICS__ANALYSIS_RESULT_HPP_
+#define EXPERIMENT_METRICS__ANALYSIS_RESULT_HPP_
 
 #if !defined(WIN32)
 #include <sys/time.h>
@@ -31,27 +31,13 @@ namespace performance_test
 {
 
 #if !defined(WIN32)
-/// Outstream operator for timeval to seconds (double).
 std::ostream & operator<<(std::ostream & stream, const timeval & e);
 #endif  // !defined(WIN32)
 
 struct AnalysisResult
 {
   AnalysisResult();
-  /**
-   * \brief Returns a header for a CVS file containing the analysis result data
-   * as a string. \param pretty_print If set, inserts additional tabs to format
-   * the output nicer. \param st The data seperator. \return A string containing
-   * the CVS header.
-   */
   static std::string csv_header(const bool pretty_print = false, std::string st = ",");
-
-  /**
-   * \brief Returns the data contained the analysis result as a string.
-   * \param pretty_print If set, inserts additional tabs to format the output
-   * nicer. \param st The data seperator. \return A string with the contained
-   * data as CSV row.
-   */
   std::string to_csv_string(const bool pretty_print = false, std::string st = ",") const;
 
   std::chrono::nanoseconds m_experiment_start = {};
@@ -70,4 +56,4 @@ struct AnalysisResult
 
 }  // namespace performance_test
 
-#endif  // EXPERIMENT_EXECUTION__ANALYSIS_RESULT_HPP_
+#endif  // EXPERIMENT_METRICS__ANALYSIS_RESULT_HPP_

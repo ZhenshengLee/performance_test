@@ -27,7 +27,7 @@
 #include <fastrtps/subscriber/SampleInfo.h>
 #include <fastrtps/Domain.h>
 
-#include <atomic>
+#include <vector>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
@@ -41,15 +41,10 @@ namespace performance_test
 class FastRTPSQOSAdapter
 {
 public:
-  /**
-   * \brief Constructs the QOS adapter.
-   * \param qos The abstract QOS settings the adapter should use to derive the implementation specific QOS settings.
-   */
   explicit FastRTPSQOSAdapter(const QOSAbstraction qos)
   : m_qos(qos)
   {}
 
-  /// Returns derived FastRTPS reliability setting from the stored abstract QOS setting.
   inline eprosima::fastrtps::ReliabilityQosPolicyKind reliability() const
   {
     if (m_qos.reliability == QOSAbstraction::Reliability::BEST_EFFORT) {
@@ -60,7 +55,7 @@ public:
       throw std::runtime_error("Unsupported QOS!");
     }
   }
-  /// Returns derived FastRTPS durability setting from the stored abstract QOS setting.
+
   inline eprosima::fastrtps::DurabilityQosPolicyKind durability() const
   {
     if (m_qos.durability == QOSAbstraction::Durability::VOLATILE) {
@@ -71,7 +66,7 @@ public:
       throw std::runtime_error("Unsupported QOS!");
     }
   }
-  /// Returns derived FastRTPS history policy setting from the stored abstract QOS setting.
+
   inline eprosima::fastrtps::HistoryQosPolicyKind history_kind() const
   {
     if (m_qos.history_kind == QOSAbstraction::HistoryKind::KEEP_ALL) {
@@ -82,7 +77,7 @@ public:
       throw std::runtime_error("Unsupported QOS!");
     }
   }
-  /// Returns derived FastRTPS history depth setting from the stored abstract QOS setting.
+
   int32_t history_depth() const
   {
     if (m_qos.history_kind == QOSAbstraction::HistoryKind::KEEP_LAST) {
@@ -94,12 +89,12 @@ public:
       throw std::runtime_error("Unsupported QOS!");
     }
   }
-  /// Returns the number of samples to be allocated on the history
+
   int32_t resource_limits_samples() const
   {
     return static_cast<int32_t>(m_qos.history_depth);
   }
-  /// Returns the publish mode policy from the stored abstract QOS setting.
+
   inline eprosima::fastrtps::PublishModeQosPolicyKind publish_mode() const
   {
     if (m_qos.sync_pubsub) {
@@ -113,123 +108,146 @@ private:
   const QOSAbstraction m_qos;
 };
 
-/**
- * \brief Communication plugin for FastRTPS.
- * \tparam Topic The topic type to use.
- *
- * The code in there is derived from
- * https://github.com/eProsima/Fast-RTPS/tree/master/examples/C%2B%2B/HelloWorldExample.
- */
 template<class Topic>
-class FastRTPSCommunicator : public Communicator
+class FastRTPSPublisher : public Publisher
 {
 public:
-  /// The topic type to use.
   using TopicType = typename Topic::EprosimaTopicType;
-  /// The data type to publish and subscribe to.
   using DataType = typename Topic::EprosimaType;
 
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit FastRTPSCommunicator(DataStats & stats)
-  : Communicator(stats), m_publisher(nullptr), m_subscriber(nullptr),
-    m_topic_type(new TopicType())
+  explicit FastRTPSPublisher(const ExperimentConfiguration & ec)
+  : m_topic_type(new TopicType()),
+    m_participant(ResourceManager::get().fastrtps_participant()),
+    m_publisher(make_fastrtps_publisher(m_topic_type, m_participant, ec))
   {
-    m_participant = ResourceManager::get().fastrtps_participant();
-    if (!s_type_registered) {
-      s_type_registered = true;
-      eprosima::fastrtps::Domain::registerType(m_participant, m_topic_type);
-    }
   }
 
-  void publish(std::int64_t time) override
+  void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
-    if (!m_publisher) {
-      const FastRTPSQOSAdapter qos(m_ec.qos());
-
-      eprosima::fastrtps::PublisherAttributes wparam;
-      wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-      wparam.topic.topicDataType = m_topic_type->getName();
-      wparam.topic.topicName = m_ec.topic_name() + m_ec.pub_topic_postfix();
-      wparam.topic.historyQos.kind = qos.history_kind();
-      wparam.topic.historyQos.depth = qos.history_depth();
-      wparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
-      wparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
-      wparam.times.heartbeatPeriod.seconds = 2;
-      wparam.times.heartbeatPeriod.fraction(200 * 1000 * 1000);
-      wparam.qos.m_reliability.kind = qos.reliability();
-      wparam.qos.m_durability.kind = qos.durability();
-      wparam.qos.m_publishMode.kind = qos.publish_mode();
-      m_publisher = eprosima::fastrtps::Domain::createPublisher(m_participant, wparam);
-    }
-    if (m_ec.is_zero_copy_transfer()) {
-      throw std::runtime_error("This plugin does not support zero copy transfer");
-    }
-    m_stats.lock();
-    init_msg(m_data, time);
-    m_stats.update_publisher_stats();
-    m_stats.unlock();
+    init_msg(m_data, time, sample_id);
     m_publisher->write(static_cast<void *>(&m_data));
   }
 
-  void update_subscription() override
+  void publish_loaned(std::int64_t, std::uint64_t) override
   {
-    if (!m_subscriber) {
-      const FastRTPSQOSAdapter qos(m_ec.qos());
-
-      eprosima::fastrtps::SubscriberAttributes rparam;
-      rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-      rparam.topic.topicDataType = m_topic_type->getName();
-      rparam.topic.topicName = m_ec.topic_name() + m_ec.sub_topic_postfix();
-      rparam.topic.historyQos.kind = qos.history_kind();
-      rparam.topic.historyQos.depth = qos.history_depth();
-      rparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
-      rparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
-      rparam.qos.m_reliability.kind = qos.reliability();
-      rparam.qos.m_durability.kind = qos.durability();
-      m_subscriber = eprosima::fastrtps::Domain::createSubscriber(m_participant, rparam);
-    }
-
-    m_subscriber->waitForUnreadMessage();
-    while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
-      const auto received_time = m_stats.now();
-      if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
-        m_stats.lock();
-        m_stats.check_data_consistency(m_data.time());
-        if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-          m_stats.unlock();
-          publish(m_data.time());
-          m_stats.lock();
-        } else {
-          m_stats.update_subscriber_stats(
-            m_data.time(), received_time, m_data.id(),
-            sizeof(DataType));
-        }
-        m_stats.unlock();
-      }
-    }
+    throw std::runtime_error("This plugin does not support zero copy transfer");
   }
 
 private:
+  TopicType * m_topic_type;
   eprosima::fastrtps::Participant * m_participant;
   eprosima::fastrtps::Publisher * m_publisher;
-  eprosima::fastrtps::Subscriber * m_subscriber;
-
-  static bool s_type_registered;
-  eprosima::fastrtps::SampleInfo_t m_info;
-
-  TopicType * m_topic_type;
   DataType m_data;
 
-  void init_msg(DataType & msg, std::int64_t time)
+  static eprosima::fastrtps::Publisher * make_fastrtps_publisher(
+    TopicType * topic_type,
+    eprosima::fastrtps::Participant * participant,
+    const ExperimentConfiguration & ec
+  )
+  {
+    eprosima::fastrtps::Domain::registerType(participant, topic_type);
+
+    const FastRTPSQOSAdapter qos(ec.qos());
+
+    eprosima::fastrtps::PublisherAttributes wparam;
+
+    wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
+    wparam.topic.topicDataType = topic_type->getName();
+    wparam.topic.topicName = ec.topic_name() + ec.pub_topic_postfix();
+    wparam.topic.historyQos.kind = qos.history_kind();
+    wparam.topic.historyQos.depth = qos.history_depth();
+    wparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
+    wparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
+
+    wparam.times.heartbeatPeriod.seconds = 2;
+    wparam.times.heartbeatPeriod.fraction(200 * 1000 * 1000);
+
+    wparam.qos.m_reliability.kind = qos.reliability();
+    wparam.qos.m_durability.kind = qos.durability();
+    wparam.qos.m_publishMode.kind = qos.publish_mode();
+
+    return eprosima::fastrtps::Domain::createPublisher(participant, wparam);
+  }
+
+  void init_msg(DataType & msg, std::int64_t time, std::uint64_t sample_id)
   {
     msg.time(time);
-    msg.id(m_stats.next_sample_id());
+    msg.id(sample_id);
     MsgTraits::ensure_fixed_size(msg);
   }
 };
 
 template<class Topic>
-bool FastRTPSCommunicator<Topic>::s_type_registered = false;
+class FastRTPSSubscriber : public Subscriber
+{
+public:
+  using TopicType = typename Topic::EprosimaTopicType;
+  using DataType = typename Topic::EprosimaType;
+
+  explicit FastRTPSSubscriber(const ExperimentConfiguration & ec)
+  : m_topic_type(new TopicType()),
+    m_participant(ResourceManager::get().fastrtps_participant()),
+    m_subscriber(make_fastrtps_subscriber(m_topic_type, m_participant, ec))
+  {
+  }
+
+  std::vector<ReceivedMsgStats> update_subscription() override
+  {
+    m_subscriber->waitForUnreadMessage();
+    return take();
+  }
+
+  std::vector<ReceivedMsgStats> take() override
+  {
+    std::vector<ReceivedMsgStats> stats;
+    while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
+      const auto received_time = now_int64_t();
+      if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
+        stats.emplace_back(
+          m_data.time(),
+          received_time,
+          m_data.id(),
+          sizeof(DataType)
+        );
+      }
+    }
+    return stats;
+  }
+
+private:
+  TopicType * m_topic_type;
+  eprosima::fastrtps::Participant * m_participant;
+  eprosima::fastrtps::Subscriber * m_subscriber;
+
+  DataType m_data;
+  eprosima::fastrtps::SampleInfo_t m_info;
+
+  static eprosima::fastrtps::Subscriber * make_fastrtps_subscriber(
+    TopicType * topic_type,
+    eprosima::fastrtps::Participant * participant,
+    const ExperimentConfiguration & ec
+  )
+  {
+    eprosima::fastrtps::Domain::registerType(participant, topic_type);
+
+    const FastRTPSQOSAdapter qos(ec.qos());
+
+    eprosima::fastrtps::SubscriberAttributes rparam;
+
+    rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
+    rparam.topic.topicDataType = topic_type->getName();
+    rparam.topic.topicName = ec.topic_name() + ec.sub_topic_postfix();
+    rparam.topic.historyQos.kind = qos.history_kind();
+    rparam.topic.historyQos.depth = qos.history_depth();
+    rparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
+    rparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
+
+    rparam.qos.m_reliability.kind = qos.reliability();
+    rparam.qos.m_durability.kind = qos.durability();
+
+    return eprosima::fastrtps::Domain::createSubscriber(participant, rparam);
+  }
+};
 
 }  // namespace performance_test
 

@@ -18,58 +18,85 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <memory>
-#include <atomic>
+#include <vector>
 
-#include "rclcpp_communicator.hpp"
+#include "communicator.hpp"
+#include "ros2_qos_adapter.hpp"
 #include "resource_manager.hpp"
 
 namespace performance_test
 {
-/// Communication plugin for ROS 2 using ROS 2 callbacks for the subscription side.
+
 template<class Msg, class Executor>
-class RclcppCallbackCommunicator : public RclcppCommunicator<Msg>
+class RclcppCallbackSubscriber : public Subscriber
 {
 public:
-  /// The data type to publish and subscribe to.
-  using DataType = typename RclcppCommunicator<Msg>::DataType;
+  using DataType = typename Msg::RosType;
 
-  explicit RclcppCallbackCommunicator(DataStats & stats)
-  : RclcppCommunicator<Msg>(stats), m_subscription(nullptr)
+  explicit RclcppCallbackSubscriber(const ExperimentConfiguration & ec)
+  : m_node(ResourceManager::get().rclcpp_node()),
+    m_ROS2QOSAdapter(ROS2QOSAdapter(ec.qos()).get()),
+    m_subscription(m_node->create_subscription<DataType>(
+        ec.topic_name() + ec.sub_topic_postfix(),
+        m_ROS2QOSAdapter,
+        [this](const typename DataType::SharedPtr data) {this->callback(data);}))
   {
     m_executor.add_node(this->m_node);
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+    if (ec.expected_num_pubs() > 0) {
+      m_subscription->wait_for_matched(
+        ec.expected_num_pubs(),
+        ec.expected_wait_for_matched_timeout());
+    }
+#endif
   }
 
-  void update_subscription() override
+  std::vector<ReceivedMsgStats> update_subscription() override
   {
-    if (!m_subscription) {
-      m_subscription = this->m_node->template create_subscription<DataType>(
-        this->m_ec.topic_name() + this->m_ec.sub_topic_postfix(), this->m_ROS2QOSAdapter,
-        [this](const typename DataType::SharedPtr data) {this->callback(data);});
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-      if (this->m_ec.expected_num_pubs() > 0) {
-        m_subscription->wait_for_matched(
-          this->m_ec.expected_num_pubs(),
-          this->m_ec.expected_wait_for_matched_timeout());
-      }
-#endif
-    }
+    m_subscriber_stats.clear();
     m_executor.spin_once(std::chrono::milliseconds(100));
+    return m_subscriber_stats;
   }
 
 private:
+  std::shared_ptr<rclcpp::Node> m_node;
+  rclcpp::QoS m_ROS2QOSAdapter;
   Executor m_executor;
   std::shared_ptr<::rclcpp::Subscription<DataType>> m_subscription;
+  std::vector<ReceivedMsgStats> m_subscriber_stats;
+
+  void callback(const typename DataType::SharedPtr data)
+  {
+    callback(*data);
+  }
+
+  template<class T>
+  void callback(const T & data)
+  {
+    const auto received_time = now_int64_t();
+    static_assert(
+      std::is_same<DataType,
+      typename std::remove_cv<
+        typename std::remove_reference<T>::type>::type>::value,
+      "Parameter type passed to callback() does not match");
+    m_subscriber_stats.emplace_back(
+      data.time,
+      received_time,
+      data.id,
+      sizeof(DataType)
+    );
+  }
 };
 
 #ifdef PERFORMANCE_TEST_RCLCPP_STE_ENABLED
 template<class Msg>
-using RclcppSingleThreadedExecutorCommunicator =
-  RclcppCallbackCommunicator<Msg, rclcpp::executors::SingleThreadedExecutor>;
+using RclcppSingleThreadedExecutorSubscriber =
+  RclcppCallbackSubscriber<Msg, rclcpp::executors::SingleThreadedExecutor>;
 #endif
 #ifdef PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED
 template<class Msg>
-using RclcppStaticSingleThreadedExecutorCommunicator =
-  RclcppCallbackCommunicator<Msg, rclcpp::executors::StaticSingleThreadedExecutor>;
+using RclcppStaticSingleThreadedExecutorSubscriber =
+  RclcppCallbackSubscriber<Msg, rclcpp::executors::StaticSingleThreadedExecutor>;
 #endif
 }  // namespace performance_test
 #endif  // COMMUNICATION_ABSTRACTIONS__RCLCPP_CALLBACK_COMMUNICATOR_HPP_

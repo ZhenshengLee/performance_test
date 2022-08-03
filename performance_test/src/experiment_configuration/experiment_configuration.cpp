@@ -96,12 +96,22 @@ std::ostream & operator<<(std::ostream & stream, const ExperimentConfiguration &
 }
 
 ExperimentConfiguration::ExperimentConfiguration()
-    : m_id(sole::uuid4().str()), m_is_setup(false), m_dds_domain_id(), m_rate(),
-      m_max_runtime(), m_rows_to_ignore(), m_number_of_publishers(),
-      m_number_of_subscribers(), m_expected_num_pubs(), m_expected_num_subs(),
-      m_wait_for_matched_timeout(), m_check_memory(false),
-      m_is_rt_init_required(false), m_is_zero_copy_transfer(false),
-      m_is_chain_execution(false), m_roundtrip_mode(RoundTripMode::NONE) {}
+: m_id(sole::uuid4().str()),
+  m_is_setup(false),
+  m_dds_domain_id(),
+  m_rate(),
+  m_max_runtime(),
+  m_rows_to_ignore(),
+  m_number_of_publishers(),
+  m_number_of_subscribers(),
+  m_expected_num_pubs(),
+  m_expected_num_subs(),
+  m_wait_for_matched_timeout(),
+  m_check_memory(false),
+  m_is_rt_init_required(false),
+  m_is_zero_copy_transfer(false),
+  m_roundtrip_mode(RoundTripMode::NONE)
+{}
 
 void ExperimentConfiguration::setup(int argc, char ** argv)
 {
@@ -145,9 +155,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #endif
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     allowedCommunications.push_back("ApexOSPollingSubscription");
-
-    TCLAP::SwitchArg executorChainArg("", "chain", "Run the items in a chain.",
-                                      cmd, false);
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
     allowedCommunications.push_back("FastRTPS");
@@ -175,6 +182,15 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       "The communication plugin to use. "
       "Default is " + allowedCommunications[0] + ".", false, allowedCommunications[0],
       &allowedCommunicationVals, cmd);
+
+    std::vector<std::string> allowedExecStrats;
+    allowedExecStrats.push_back("INTER_THREAD");
+    allowedExecStrats.push_back("INTRA_THREAD");
+    TCLAP::ValuesConstraint<std::string> allowedExecStratVals(allowedExecStrats);
+    TCLAP::ValueArg<std::string> executionStrategyArg("e", "execution-strategy",
+      "The execution strategy to use. "
+      "Default is " + allowedExecStrats[0] + ".", false, allowedExecStrats[0],
+      &allowedExecStratVals, cmd);
 
     TCLAP::ValueArg<std::string> topicArg("t", "topic", "The topic name. Default is test_topic.",
       false, "test_topic", "topic", cmd);
@@ -281,6 +297,7 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 
     m_rate = rateArg.getValue();
     comm_str = communicationArg.getValue();
+    m_execution_strategy = execution_strategy_from_string(executionStrategyArg.getValue());
     m_logfile_name = LogfileArg.getValue();
     m_topic_name = topicArg.getValue();
     m_msg_name = msgArg.getValue();
@@ -307,9 +324,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     m_expected_num_subs = expectedNumSubsArg.getValue();
     m_wait_for_matched_timeout = waitForMatchedTimeoutArg.getValue();
     m_is_zero_copy_transfer = zeroCopyArg.getValue();
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-    m_is_chain_execution = executorChainArg.getValue();
-#endif
     m_unbounded_msg_size = unboundedMsgSizeArg.getValue();
 
     // Configure outputs
@@ -404,9 +418,9 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       m_com_mean = CommunicationMean::ApexOSPollingSubscription;
     } else {
       throw std::invalid_argument(
-          "Only Apex.OS communication mean can be used when the "
-          "performance_test tool has been built with the "
-          "PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED flag!");
+              "Only Apex.OS communication mean can be used when the "
+              "performance_test tool has been built with the "
+              "PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED flag!");
     }
 #endif
 
@@ -477,25 +491,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
       }
     }
 
-    if (m_is_chain_execution) {
-      if (m_number_of_publishers != 1) {
-        throw std::invalid_argument(
-            "Chain execution requires exactly one publisher.");
-      }
-      if (m_number_of_subscribers < 1) {
-        throw std::invalid_argument(
-            "Chain execution requires at least one subscriber.");
-      }
-      if (!m_is_zero_copy_transfer) {
-        throw std::invalid_argument(
-            "Chain execution only works with loaned messages (zero copy).");
-      }
-      if (m_roundtrip_mode != RoundTripMode::NONE) {
-        throw std::invalid_argument(
-            "Chain execution only works with RoundTripMode NONE.");
-      }
-    }
-
     m_roundtrip_mode = RoundTripMode::NONE;
     const auto mode = roundtrip_mode_str;
     if (mode == "None") {
@@ -529,6 +524,11 @@ CommunicationMean ExperimentConfiguration::com_mean() const
 {
   check_setup();
   return m_com_mean;
+}
+ExecutionStrategy ExperimentConfiguration::execution_strategy() const
+{
+  check_setup();
+  return m_execution_strategy;
 }
 bool ExperimentConfiguration::use_ros2_layers() const
 {
@@ -568,6 +568,16 @@ uint32_t ExperimentConfiguration::rate() const
 {
   check_setup();
   return m_rate;
+}
+std::chrono::duration<double> ExperimentConfiguration::period() const
+{
+  check_setup();
+  return std::chrono::duration<double>(1.0 / rate());
+}
+std::chrono::nanoseconds ExperimentConfiguration::period_ns() const
+{
+  check_setup();
+  return std::chrono::duration_cast<std::chrono::nanoseconds>(period());
 }
 std::string ExperimentConfiguration::topic_name() const
 {
@@ -653,11 +663,6 @@ bool ExperimentConfiguration::is_zero_copy_transfer() const
 {
   check_setup();
   return m_is_zero_copy_transfer;
-}
-
-bool ExperimentConfiguration::is_chain_execution() const {
-  check_setup();
-  return m_is_chain_execution;
 }
 
 ExperimentConfiguration::RoundTripMode ExperimentConfiguration::roundtrip_mode() const

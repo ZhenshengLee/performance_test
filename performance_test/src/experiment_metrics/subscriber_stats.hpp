@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef EXPERIMENT_EXECUTION__DATA_STATS_HPP_
-#define EXPERIMENT_EXECUTION__DATA_STATS_HPP_
+#ifndef EXPERIMENT_METRICS__SUBSCRIBER_STATS_HPP_
+#define EXPERIMENT_METRICS__SUBSCRIBER_STATS_HPP_
 
 #if defined(QNX)
 #include <inttypes.h>
@@ -30,14 +30,32 @@
 #include "../utilities/spin_lock.hpp"
 #include "../utilities/statistics_tracker.hpp"
 #include "../utilities/perf_clock.hpp"
-#include "run_type.hpp"
 
 namespace performance_test
 {
-
-struct DataStats
+struct ReceivedMsgStats
 {
-  DataStats()
+  std::int64_t time_msg_sent_ns;
+  std::int64_t time_msg_received_ns;
+  std::uint64_t sample_id;
+  std::size_t data_type_size;
+
+  ReceivedMsgStats(
+    std::int64_t time_msg_sent_ns,
+    std::int64_t time_msg_received_ns,
+    std::uint64_t sample_id,
+    std::size_t data_type_size
+  )
+  : time_msg_sent_ns(time_msg_sent_ns),
+    time_msg_received_ns(time_msg_received_ns),
+    sample_id(sample_id),
+    data_type_size(data_type_size)
+  {}
+};
+
+struct SubscriberStats
+{
+  SubscriberStats()
   {
 #if defined(QNX)
     m_cps = SYSPAGE_ENTRY(qtime)->cycles_per_sec;
@@ -49,14 +67,14 @@ struct DataStats
     m_latencies.clear();
   }
 
-  /// Get the the id for the next sample to publish.
-  std::uint64_t next_sample_id()
+  void update_subscriber_stats(const ReceivedMsgStats & stats)
   {
-    /* We never send a sample with id 0 to make sure we not just dealing with
-       default constructed samples.
-     */
-    m_prev_sample_id = m_prev_sample_id + 1;
-    return m_prev_sample_id;
+    update_subscriber_stats(
+      stats.time_msg_sent_ns,
+      stats.time_msg_received_ns,
+      stats.sample_id,
+      stats.data_type_size
+    );
   }
 
   void update_subscriber_stats(
@@ -65,77 +83,58 @@ struct DataStats
     const std::uint64_t sample_id,
     const std::size_t data_type_size)
   {
+    lock();
     update_lost_samples_counter(sample_id);
     add_latency_to_statistics(time_msg_sent_ns, time_msg_received_ns);
     increment_received();
     update_data_received(data_type_size);
+    unlock();
   }
 
-  void update_publisher_stats()
-  {
-    increment_sent();
-  }
-
-  void lock() {m_lock.lock();}
-
-  void unlock() {m_lock.unlock();}
-
-  void update_stats(
-    RunType run_type,
-    std::chrono::duration<double> iteration_duration)
+  void update_stats(std::chrono::duration<double> iteration_duration)
   {
     lock();
-    switch (run_type) {
-      case RunType::PUBLISHER:
-        m_sent_samples_per_iteration =
-          static_cast<decltype(m_sent_samples_per_iteration)>(
-          static_cast<double>(m_sent_sample_counter) /
-          iteration_duration.count());
-        m_sent_sample_counter = 0;
-        break;
-      case RunType::SUBSCRIBER:
-        m_received_samples_per_iteration =
-          static_cast<decltype(m_received_samples_per_iteration)>(
-          static_cast<double>(m_received_sample_counter) /
-          iteration_duration.count());
-        m_received_data_per_iteration =
-          static_cast<decltype(m_received_data_per_iteration)>(
-          static_cast<double>(m_data_received_bytes) /
-          iteration_duration.count());
-        m_lost_samples_per_iteration =
-          static_cast<decltype(m_lost_samples_per_iteration)>(
-          static_cast<double>(m_num_lost_samples) /
-          iteration_duration.count());
-        m_received_sample_counter = 0;
-        m_num_lost_samples = 0;
-        break;
+    m_received_samples_per_iteration =
+      static_cast<decltype(m_received_samples_per_iteration)>(
+      static_cast<double>(m_received_sample_counter) /
+      iteration_duration.count());
+    m_received_data_per_iteration =
+      static_cast<decltype(m_received_data_per_iteration)>(
+      static_cast<double>(m_data_received_bytes) /
+      iteration_duration.count());
+    m_lost_samples_per_iteration =
+      static_cast<decltype(m_lost_samples_per_iteration)>(
+      static_cast<double>(m_num_lost_samples) /
+      iteration_duration.count());
+    m_received_sample_counter = 0;
+    m_num_lost_samples = 0;
+    unlock();
+  }
+
+  void populate_stats(std::shared_ptr<AnalysisResult> & results)
+  {
+    lock();
+    results->m_num_samples_received += m_received_samples_per_iteration;
+    results->m_num_samples_lost += m_lost_samples_per_iteration;
+    results->m_total_data_received += m_received_data_per_iteration;
+    for (auto latency : m_latencies) {
+      results->m_latency.add_sample(latency);
     }
     unlock();
   }
 
-  void populate_stats(
-    RunType run_type,
-    std::shared_ptr<AnalysisResult> & results)
+private:
+  void lock()
   {
-    lock();
-    switch (run_type) {
-      case RunType::PUBLISHER:
-        results->m_num_samples_sent += m_sent_samples_per_iteration;
-        break;
-      case RunType::SUBSCRIBER:
-        results->m_num_samples_received += m_received_samples_per_iteration;
-        results->m_num_samples_lost += m_lost_samples_per_iteration;
-        results->m_total_data_received += m_received_data_per_iteration;
-        for (auto latency : m_latencies) {
-          results->m_latency.add_sample(latency);
-        }
-        break;
-    }
-
-    unlock();
+    m_lock.lock();
   }
 
-  void check_data_consistency(std::int64_t time_ns_since_epoch)
+  void unlock()
+  {
+    m_lock.unlock();
+  }
+
+  void verify_sample_chronological_order(std::int64_t time_ns_since_epoch)
   {
     if (m_prev_timestamp_ns_since_epoch >= time_ns_since_epoch) {
       throw std::runtime_error(
@@ -147,25 +146,6 @@ struct DataStats
     m_prev_timestamp_ns_since_epoch = time_ns_since_epoch;
   }
 
-  /**
-   * \brief Measure current time
-   * \return Current time in nanoseconds or number of clock cycles
-   */
-  std::int64_t now() const
-  {
-#if defined(QNX)
-    return static_cast<std::int64_t>(ClockCycles());
-#else
-    return perf_clock::now().time_since_epoch().count();
-#endif
-  }
-
-private:
-  /**
-  * \brief Given a sample id this function check if and how many samples were
-  * lost and updates counters accordingly. \param sample_id The sample id to
-  * check.
-  */
   void update_lost_samples_counter(const std::uint64_t sample_id)
   {
     // We can lose samples, but samples always arrive in the right order and
@@ -204,13 +184,9 @@ private:
     m_latencies.push_back(latency_s);
   }
 
-  /**
-   * \brief Increment the number of received samples.
-   * \param increment Optional different increment step.
-   */
-  void increment_received(const std::uint64_t & increment = 1)
+  void increment_received()
   {
-    m_received_sample_counter += increment;
+    m_received_sample_counter++;
   }
 
   void update_data_received(const std::size_t data_type_size)
@@ -218,21 +194,10 @@ private:
     m_data_received_bytes = m_received_sample_counter * data_type_size;
   }
 
-  /**
- * \brief Increment the number of sent samples.
- * \param increment Optional different increment step.
- */
-  void increment_sent(const std::uint64_t & increment = 1)
-  {
-    m_sent_sample_counter += increment;
-  }
-
   std::vector<double> m_latencies;
-  std::uint64_t m_sent_sample_counter{};
   std::uint64_t m_received_sample_counter{};
   std::uint64_t m_num_lost_samples{};
   std::size_t m_received_data_per_iteration{};
-  std::uint64_t m_sent_samples_per_iteration{};
   std::uint64_t m_received_samples_per_iteration{};
   std::uint64_t m_lost_samples_per_iteration{};
   std::uint64_t m_prev_sample_id{};
@@ -246,4 +211,4 @@ private:
 };
 }  // namespace performance_test
 
-#endif  // EXPERIMENT_EXECUTION__DATA_STATS_HPP_
+#endif  // EXPERIMENT_METRICS__SUBSCRIBER_STATS_HPP_

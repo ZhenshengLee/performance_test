@@ -20,7 +20,7 @@ import bokeh.util.version
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 from .figures import generateFigure
-from .logs import getDatasets, coerce_to_list
+from .logs import coerce_to_list, getDatasets
 from .utils import PerfArgParser
 
 

@@ -31,6 +31,7 @@ class ExperimentConfig:
     def __init__(
         self,
         com_mean: str = "rclcpp-single-threaded-executor",
+        execution_strategy: str = "INTER_THREAD",
         transport: TRANSPORT = TRANSPORT.INTRA,
         msg: str = "Array1k",
         pubs: int = 1,
@@ -46,6 +47,7 @@ class ExperimentConfig:
         ignore_seconds: int = 5,
     ) -> None:
         self.com_mean = str(com_mean)
+        self.execution_strategy = str(execution_strategy)
         self.transport = TRANSPORT(transport)
         self.msg = str(msg)
         self.pubs = int(pubs)
@@ -63,6 +65,7 @@ class ExperimentConfig:
     def __eq__(self, o: object) -> bool:
         same = True
         same = same and self.com_mean == o.com_mean
+        same = same and self.execution_strategy == o.execution_strategy
         same = same and self.transport == o.transport
         same = same and self.msg == o.msg
         same = same and self.pubs == o.pubs
@@ -88,6 +91,7 @@ class ExperimentConfig:
         params = [
             self.com_mean,
             str(self.transport) + com_mean_suffix,
+            self.execution_strategy,
             self.msg,
             self.pubs,
             self.subs,
@@ -114,6 +118,7 @@ class ExperimentConfig:
     def as_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame({
             'com_mean': self.com_mean,
+            'execution_strategy': self.execution_strategy,
             'transport': self.transport,
             'msg': self.msg,
             'pubs': self.pubs,
@@ -141,34 +146,26 @@ class ExperimentConfig:
         args = self.cli_args(output_dir)
         commands = []
         cleanup_commands = []
-        if len(args) == 1:
-            if self.transport == TRANSPORT.CHAIN:
-                if is_ros2_plugin(self.com_mean):
-                    if get_rmw_implementation_identifier() == "rmw_apex_middleware":
-                        commands.extend(generate_commands_yml(output_dir))
-                        cleanup_commands.append('unset APEX_MIDDLEWARE_SETTINGS')
-                    else:
-                        print("Unsupported Middleware: ", get_rmw_implementation_identifier())
-                else:
-                    print("Unsupported com_mean: ", self.com_mean)
-            commands.append(perf_test_exe_cmd + args[0])
-        elif len(args) == 2:
-            if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
-                if is_ros2_plugin(self.com_mean):
-                    if get_rmw_implementation_identifier() == "rmw_apex_middleware":
-                        commands.extend(generate_commands_yml(output_dir))
-                        cleanup_commands.append('unset APEX_MIDDLEWARE_SETTINGS')
-                    elif get_rmw_implementation_identifier() == "rmw_cyclonedds_cpp":
-                        commands.extend(generate_commands_xml(output_dir))
-                        cleanup_commands.append('unset CYCLONEDDS_URI')
-                    else:
-                        print("Unsupported Middleware: ", get_rmw_implementation_identifier())
-                elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
+
+        if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
+            if is_ros2_plugin(self.com_mean):
+                if get_rmw_implementation_identifier() == "rmw_apex_middleware":
+                    commands.extend(generate_commands_yml(output_dir))
+                    cleanup_commands.append('unset APEX_MIDDLEWARE_SETTINGS')
+                elif get_rmw_implementation_identifier() == "rmw_cyclonedds_cpp":
                     commands.extend(generate_commands_xml(output_dir))
                     cleanup_commands.append('unset CYCLONEDDS_URI')
                 else:
-                    print("Unsupported com_mean: ", self.com_mean)
+                    print("Unsupported Middleware: ", get_rmw_implementation_identifier())
+            elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
+                commands.extend(generate_commands_xml(output_dir))
+                cleanup_commands.append('unset CYCLONEDDS_URI')
+            else:
+                print("Unsupported com_mean: ", self.com_mean)
 
+        if len(args) == 1:
+            commands.append(perf_test_exe_cmd + args[0])
+        elif len(args) == 2:
             sub_args, pub_args = args
             commands.append(perf_test_exe_cmd + sub_args + ' &')
             commands.append('sleep 1')
@@ -176,12 +173,14 @@ class ExperimentConfig:
             commands.append('sleep 5')
         else:
             raise RuntimeError('Unreachable code')
+
         commands.extend(cleanup_commands)
         return commands
 
     def cli_args(self, output_dir) -> list:
         args = ""
         args += f" -c {self.com_mean}"
+        args += f" -e {self.execution_strategy}"
         args += f" -m {self.msg}"
         args += f" -r {self.rate}"
         if self.reliability == RELIABILITY.RELIABLE:
@@ -204,12 +203,6 @@ class ExperimentConfig:
         if self.transport == TRANSPORT.INTRA:
             args += f" -p {self.pubs} -s {self.subs}"
             args += f" --logfile {os.path.join(output_dir, self.log_file_name_intra())}"
-            return [args]
-        if self.transport == TRANSPORT.CHAIN:
-            args += f" -p {self.pubs} -s {self.subs}"
-            args += f" --logfile {os.path.join(output_dir, self.log_file_name_intra())}"
-            args += " --chain"
-            args += " --zero-copy"
             return [args]
         else:
             args_sub = args + f" -p 0 -s {self.subs} --expected-num-pubs {self.pubs}"

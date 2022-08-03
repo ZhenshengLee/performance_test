@@ -16,47 +16,40 @@
 #define COMMUNICATION_ABSTRACTIONS__COMMUNICATOR_HPP_
 
 #include <limits>
-#include <memory>
 #include <stdexcept>
 #include <vector>
 
-#include "../experiment_execution/data_stats.hpp"
+#include "../experiment_metrics/subscriber_stats.hpp"
 #include "../utilities/msg_traits.hpp"
 
 namespace performance_test
 {
 
-/// Helper base class for communication plugins which provides sample tracking
-/// helper functionality.
-class Communicator
+class Publisher
 {
 public:
-  explicit Communicator(DataStats & stats);
+  virtual void publish_copy(std::int64_t time, std::uint64_t sample_id) = 0;
 
-  /**
-   * \brief Reads received data from the middleware and compute some statistics
-   */
-  virtual void update_subscription() = 0;
-
-  /**
-   * \brief Publishes the provided data.
-   *
-   *  The first time this function is called it also creates the data writer.
-   *  Further it updates all internal counters while running.
-   * \param time The time to fill into the data field.
-   */
-  virtual void publish(std::int64_t time) = 0;
+  virtual void publish_loaned(std::int64_t time, std::uint64_t sample_id) = 0;
 
 protected:
-  DataStats & m_stats;
-  const ExperimentConfiguration & m_ec;
-
   template<typename T>
-  inline void init_msg(T & msg, std::int64_t time)
+  inline void init_msg(T & msg, std::int64_t time, std::uint64_t sample_id)
   {
     msg.time = time;
-    msg.id = m_stats.next_sample_id();
+    msg.id = sample_id;
     MsgTraits::ensure_fixed_size(msg);
+  }
+};
+
+class Subscriber
+{
+public:
+  virtual std::vector<ReceivedMsgStats> update_subscription() = 0;
+
+  virtual std::vector<ReceivedMsgStats> take()
+  {
+    throw std::runtime_error("This communicator does not support take!");
   }
 };
 

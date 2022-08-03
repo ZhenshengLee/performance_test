@@ -17,6 +17,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <dds/dds.hpp>
 
@@ -65,143 +66,146 @@ void apply_cylonedds_cxx_qos(
   }
 }
 
-/**
- * \brief Creates a CycloneDDS-CXX data writer.
- */
-template<typename DataType>
-dds::pub::DataWriter<DataType> make_cyclonedds_cxx_datawriter(
-  const dds::domain::DomainParticipant & participant,
-  const dds::pub::Publisher & publisher,
-  const ExperimentConfiguration & ec
-)
-{
-  std::string topic_name = ec.topic_name() + ec.pub_topic_postfix();
-  auto topic = dds::topic::Topic<DataType>(participant, topic_name);
-
-  dds::pub::qos::DataWriterQos dw_qos = publisher.default_datawriter_qos();
-  apply_cylonedds_cxx_qos(dw_qos, ec);
-
-  return dds::pub::DataWriter<DataType>(publisher, topic, dw_qos);
-}
-
-/**
- * \brief Creates a CycloneDDS-CXX data reader.
- */
-template<typename DataType>
-dds::sub::DataReader<DataType> make_cyclonedds_cxx_datareader(
-  const dds::domain::DomainParticipant & participant,
-  const dds::sub::Subscriber & subscriber,
-  const ExperimentConfiguration & ec
-)
-{
-  std::string topic_name = ec.topic_name() + ec.sub_topic_postfix();
-  auto topic = dds::topic::Topic<DataType>(participant, topic_name);
-
-  dds::sub::qos::DataReaderQos dr_qos = subscriber.default_datareader_qos();
-  apply_cylonedds_cxx_qos(dr_qos, ec);
-
-  return dds::sub::DataReader<DataType>(subscriber, topic, dr_qos);
-}
-
-
-/**
- * \brief The plugin for CycloneDDS-CXX.
- * \tparam Msg The msg type to use.
- */
 template<class Msg>
-class CycloneDDSCXXCommunicator : public Communicator
-{
+class CycloneDDSCXXPublisher : public Publisher {
 public:
-  /// The data type to use.
   using DataType = typename Msg::CycloneDDSCXXType;
 
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit CycloneDDSCXXCommunicator(DataStats & stats)
-  : Communicator(stats),
-    m_participant(ResourceManager::get().cyclonedds_cxx_participant()),
-    m_publisher(m_participant), m_subscriber(m_participant),
+  explicit CycloneDDSCXXPublisher(const ExperimentConfiguration & ec)
+  : m_participant(ResourceManager::get().cyclonedds_cxx_participant()),
+    m_publisher(m_participant),
     m_datawriter(make_cyclonedds_cxx_datawriter<DataType>(
-        m_participant, m_publisher, m_ec)),
-    m_datareader(make_cyclonedds_cxx_datareader<DataType>(
-        m_participant, m_subscriber, m_ec)),
-    m_read_condition(m_datareader,
-      dds::sub::status::SampleState::not_read()),
-    m_waitset()
+        m_participant, m_publisher, ec))
   {
-    m_waitset.attach_condition(m_read_condition);
-
-    if (m_ec.is_zero_copy_transfer() && !m_datawriter.delegate()->is_loan_supported()) {
+    if (ec.is_zero_copy_transfer() && !m_datawriter.delegate()->is_loan_supported()) {
       throw std::runtime_error("Zero-copy transfer is not supported.");
     }
   }
 
-  ~CycloneDDSCXXCommunicator()
+  ~CycloneDDSCXXPublisher()
   {
-    this->m_datareader = dds::core::null;
     this->m_datawriter = dds::core::null;
-    this->m_subscriber = dds::core::null;
     this->m_publisher = dds::core::null;
   }
 
-  void publish(std::int64_t time) override
+  void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
-    if (m_ec.is_zero_copy_transfer()) {
-      DataType & loaned_sample = m_datawriter.delegate()->loan_sample();
-      m_stats.lock();
-      init_msg(loaned_sample, time);
-      m_stats.update_publisher_stats();
-      m_stats.unlock();
-      m_datawriter->write(loaned_sample);
-    } else {
-      DataType sample;
-      m_stats.lock();
-      init_msg(sample, time);
-      m_stats.update_publisher_stats();
-      m_stats.unlock();
-      m_datawriter->write(sample);
-    }
+    DataType sample;
+    init_msg(sample, time, sample_id);
+    m_datawriter->write(sample);
   }
 
-  void update_subscription() override
+  void publish_loaned(std::int64_t time, std::uint64_t sample_id) override
   {
-    // Wait for the data to become available. This is the only condition, so no need to inspect the
-    // returned list of triggered conditions.
-    try {
-      m_waitset.wait(dds::core::Duration(15, 0));
-    } catch (dds::core::TimeoutError &) {
-      // The timeout probably comes from reaching the maximum runtime
-      return;
-    }
-    dds::sub::LoanedSamples<DataType> samples = m_datareader->take();
-    const auto received_time = m_stats.now();
-    for (auto & sample : samples) {
-      if (sample->info().valid()) {
-        if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-          publish(sample->data().time());
-        } else {
-          m_stats.lock();
-          m_stats.update_subscriber_stats(
-            sample->data().time(), received_time, sample->data().id(), sizeof(DataType));
-          m_stats.unlock();
-        }
-      }
-    }
+    DataType & loaned_sample = m_datawriter.delegate()->loan_sample();
+    init_msg(loaned_sample, time, sample_id);
+    m_datawriter->write(loaned_sample);
   }
 
 private:
   dds::domain::DomainParticipant m_participant;
   dds::pub::Publisher m_publisher;
-  dds::sub::Subscriber m_subscriber;
   dds::pub::DataWriter<DataType> m_datawriter;
+
+  template<typename DataType>
+  static dds::pub::DataWriter<DataType> make_cyclonedds_cxx_datawriter(
+    const dds::domain::DomainParticipant & participant,
+    const dds::pub::Publisher & publisher,
+    const ExperimentConfiguration & ec
+  )
+  {
+    std::string topic_name = ec.topic_name() + ec.pub_topic_postfix();
+    auto topic = dds::topic::Topic<DataType>(participant, topic_name);
+
+    dds::pub::qos::DataWriterQos dw_qos = publisher.default_datawriter_qos();
+    apply_cylonedds_cxx_qos(dw_qos, ec);
+
+    return dds::pub::DataWriter<DataType>(publisher, topic, dw_qos);
+  }
+
+  void init_msg(DataType & msg, std::int64_t time, std::uint64_t sample_id)
+  {
+    msg.time(time);
+    msg.id(sample_id);
+    MsgTraits::ensure_fixed_size(msg);
+  }
+};
+
+template<class Msg>
+class CycloneDDSCXXSubscriber : public Subscriber {
+public:
+  using DataType = typename Msg::CycloneDDSCXXType;
+
+  explicit CycloneDDSCXXSubscriber(const ExperimentConfiguration & ec)
+  : m_participant(ResourceManager::get().cyclonedds_cxx_participant()),
+    m_subscriber(m_participant),
+    m_datareader(make_cyclonedds_cxx_datareader<DataType>(
+        m_participant, m_subscriber, ec)),
+    m_read_condition(m_datareader,
+      dds::sub::status::SampleState::not_read()),
+    m_waitset()
+  {
+    m_waitset.attach_condition(m_read_condition);
+  }
+
+  ~CycloneDDSCXXSubscriber()
+  {
+    this->m_datareader = dds::core::null;
+    this->m_subscriber = dds::core::null;
+  }
+
+  std::vector<ReceivedMsgStats> update_subscription() override
+  {
+    // Wait for the data to become available. This is the only condition, so no need to inspect the
+    // returned list of triggered conditions.
+    try {
+      m_waitset.wait(dds::core::Duration(15, 0));
+      return take();
+    } catch (dds::core::TimeoutError &) {
+      // The timeout probably comes from reaching the maximum runtime
+      throw std::runtime_error("CycloneDDS-CXX waitset timeout exceeded");
+    }
+  }
+
+  std::vector<ReceivedMsgStats> take() override
+  {
+    std::vector<ReceivedMsgStats> stats;
+    dds::sub::LoanedSamples<DataType> samples = m_datareader->take();
+    const auto received_time = now_int64_t();
+    for (auto & sample : samples) {
+      if (sample->info().valid()) {
+        stats.emplace_back(
+          sample->data().time(),
+          received_time,
+          sample->data().id(),
+          sizeof(DataType)
+        );
+      }
+    }
+    return stats;
+  }
+
+private:
+  dds::domain::DomainParticipant m_participant;
+  dds::sub::Subscriber m_subscriber;
   dds::sub::DataReader<DataType> m_datareader;
   dds::sub::cond::ReadCondition m_read_condition;
   dds::core::cond::WaitSet m_waitset;
 
-  void init_msg(DataType & msg, std::int64_t time)
+  template<typename DataType>
+  static dds::sub::DataReader<DataType> make_cyclonedds_cxx_datareader(
+    const dds::domain::DomainParticipant & participant,
+    const dds::sub::Subscriber & subscriber,
+    const ExperimentConfiguration & ec
+  )
   {
-    msg.time(time);
-    msg.id(m_stats.next_sample_id());
-    MsgTraits::ensure_fixed_size(msg);
+    std::string topic_name = ec.topic_name() + ec.sub_topic_postfix();
+    auto topic = dds::topic::Topic<DataType>(participant, topic_name);
+
+    dds::sub::qos::DataReaderQos dr_qos = subscriber.default_datareader_qos();
+    apply_cylonedds_cxx_qos(dr_qos, ec);
+
+    return dds::sub::DataReader<DataType>(subscriber, topic, dr_qos);
   }
 };
 

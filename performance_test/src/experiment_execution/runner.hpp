@@ -20,29 +20,24 @@
 #include <memory>
 #include <vector>
 
-#include "../communication_abstractions/communicator.hpp"
 #include "../communication_abstractions/resource_manager.hpp"
-#include "../data_running/data_entity_factory.hpp"
 #include "../experiment_configuration/experiment_configuration.hpp"
 #include "../outputs/output.hpp"
 #include "../utilities/cpu_usage_tracker.hpp"
 #include "../utilities/rt_enabler.hpp"
-#include "analysis_result.hpp"
+#include "../experiment_metrics/analysis_result.hpp"
+#include "../experiment_metrics/publisher_stats.hpp"
+#include "../experiment_metrics/subscriber_stats.hpp"
 
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-#include "../data_running/apex_os_entity_factory.hpp"
-#include <executor/executor_factory.hpp>
-#include <executor/executor_runner.hpp>
-#endif
 namespace performance_test
 {
 
-template<typename EntityType>
 class Runner
 {
 public:
   explicit Runner(const ExperimentConfiguration & ec)
-  : m_ec(ec), m_pub_stats(ec.number_of_publishers()),
+  : m_ec(ec),
+    m_pub_stats(ec.number_of_publishers()),
     m_sub_stats(ec.number_of_subscribers())
   {
     for (const auto & output : ec.configured_outputs()) {
@@ -51,108 +46,27 @@ public:
     for (const auto & output : m_outputs) {
       output->open();
     }
-
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-    for (uint32_t i = 0; i < ec.number_of_publishers(); ++i) {
-
-      m_pubs.push_back(performance_test::ApexOsEntityFactory::get(
-          ec.msg_name(), RunType::PUBLISHER, m_pub_stats.at(i), m_ec));
-    }
-
-    for (uint32_t i = 0; i < ec.number_of_subscribers(); ++i) {
-      m_subs.push_back(performance_test::ApexOsEntityFactory::get(
-          ec.msg_name(), RunType::SUBSCRIBER, m_sub_stats.at(i), m_ec));
-    }
-#else
-    for (uint32_t i = 0; i < ec.number_of_subscribers(); ++i) {
-      m_subs.push_back(
-        DataEntityFactory::get(
-          ec.msg_name(), ec.com_mean(),
-          RunType::SUBSCRIBER,
-          m_sub_stats.at(i)));
-    }
-
-    for (uint32_t i = 0; i < ec.number_of_publishers(); ++i) {
-      m_pubs.push_back(
-        DataEntityFactory::get(
-          ec.msg_name(), ec.com_mean(), RunType::PUBLISHER, m_pub_stats.at(i)));
-    }
-#endif // PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-
-#if PERFORMANCE_TEST_RT_ENABLED
-    if (m_ec.is_rt_init_required()) {
-      post_proc_rt_init();
-    }
-#endif  // PERFORMANCE_TEST_RT_ENABLED
   }
 
-  ~Runner()
+  virtual ~Runner()
   {
-    for (auto & thread : m_thread_pool) {
-      thread.join();
-    }
     for (const auto & output : m_outputs) {
       output->close();
     }
-
     ResourceManager::shutdown();
   }
 
   void run()
   {
+#if PERFORMANCE_TEST_RT_ENABLED
+    if (m_ec.is_rt_init_required()) {
+      post_proc_rt_init();
+    }
+#endif  // PERFORMANCE_TEST_RT_ENABLED
+
     m_running = true;
 
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-    const auto executor = apex::executor::executor_factory::create();
-
-    if (m_ec.is_chain_execution()) {
-      std::vector<apex::executor::executable_item_ptr> chain_of_nodes;
-      chain_of_nodes.reserve(m_pubs.size() + m_subs.size());
-      for (auto &pub : m_pubs) {
-        chain_of_nodes.push_back(pub->get_publisher_item());
-      }
-      for (auto &sub : m_subs) {
-        chain_of_nodes.push_back(sub->get_subscriber_item());
-      }
-
-      executor->add(chain_of_nodes,
-                    std::chrono::duration_cast<std::chrono::microseconds>(
-                        std::chrono::duration<double>(1.0 / m_ec.rate())));
-    } else {
-
-      for (auto &pub : m_pubs) {
-
-        executor->add(std::move(pub->get_publisher_item()),
-                      std::chrono::duration_cast<std::chrono::microseconds>(
-                          std::chrono::duration<double>(1.0 / m_ec.rate())));
-      }
-      for (auto &sub : m_subs) {
-        executor->add(std::move(sub->get_subscriber_item()));
-      }
-    }
-    const apex::executor::executor_runner runner{*executor};
-#else
-
-    m_thread_pool.reserve(m_pubs.size() + m_subs.size());
-
-    for (auto & sub : m_subs) {
-      m_thread_pool.emplace_back(
-        [&sub, this]() {
-          while (m_running) {
-            sub->run();
-          }
-        });
-    }
-
-    for (auto & pub : m_pubs) {
-      m_thread_pool.emplace_back(
-        [&pub, this]() {
-          while (m_running) {
-            pub->run();
-          }
-        });
-    }
-#endif
+    run_pubs_and_subs();
 
     const auto experiment_start = perf_clock::now();
     perf_clock::time_point last_measurement_time{};
@@ -166,10 +80,10 @@ public:
       std::this_thread::sleep_for(std::chrono::seconds(1));
 
       for (auto & pub : m_pub_stats) {
-        pub.update_stats(RunType::PUBLISHER, time_between_two_measurements);
+        pub.update_stats(time_between_two_measurements);
       }
       for (auto & sub : m_sub_stats) {
-        sub.update_stats(RunType::SUBSCRIBER, time_between_two_measurements);
+        sub.update_stats(time_between_two_measurements);
       }
 
       if (ignore_first_seconds_of_experiment(experiment_start)) {
@@ -180,10 +94,10 @@ public:
         results->m_cpu_info = cpu_usage_tracker.get_cpu_usage();
 
         for (auto & pub : m_pub_stats) {
-          pub.populate_stats(RunType::PUBLISHER, results);
+          pub.populate_stats(results);
         }
         for (auto & sub : m_sub_stats) {
-          sub.populate_stats(RunType::SUBSCRIBER, results);
+          sub.populate_stats(results);
         }
 
         for (const auto & output : m_outputs) {
@@ -194,6 +108,13 @@ public:
     }
     m_running = false;
   }
+
+protected:
+  virtual void run_pubs_and_subs() = 0;
+  const ExperimentConfiguration & m_ec;
+  std::vector<PublisherStats> m_pub_stats;
+  std::vector<SubscriberStats> m_sub_stats;
+  std::atomic<bool> m_running{false};
 
 private:
   bool ignore_first_seconds_of_experiment(
@@ -206,9 +127,6 @@ private:
     if (time_elapsed_s > m_ec.rows_to_ignore()) {
       return true;
     } else {
-      for (auto & pub : m_pub_stats) {
-        pub.reset();
-      }
       for (auto & sub : m_sub_stats) {
         sub.reset();
       }
@@ -240,15 +158,8 @@ private:
       return false;
     }
   }
-  const ExperimentConfiguration & m_ec;
   std::vector<std::shared_ptr<Output>> m_outputs;
-  std::vector<DataStats> m_pub_stats;
-  std::vector<DataStats> m_sub_stats;
-  std::vector<std::thread> m_thread_pool;
   CPUsageTracker cpu_usage_tracker;
-  std::atomic<bool> m_running{false};
-  std::vector<std::shared_ptr<EntityType>> m_pubs;
-  std::vector<std::shared_ptr<EntityType>> m_subs;
 };
 
 }  // namespace performance_test

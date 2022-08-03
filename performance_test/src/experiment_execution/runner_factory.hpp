@@ -1,4 +1,4 @@
-// Copyright 2021 Apex.AI, Inc.
+// Copyright 2022 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,23 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DATA_RUNNING__FACTORIES__RCLCPP_STE_DATA_RUNNER_FACTORY_HPP_
-#define DATA_RUNNING__FACTORIES__RCLCPP_STE_DATA_RUNNER_FACTORY_HPP_
+#ifndef EXPERIMENT_EXECUTION__RUNNER_FACTORY_HPP_
+#define EXPERIMENT_EXECUTION__RUNNER_FACTORY_HPP_
 
 #include <memory>
-#include <string>
 
-#include "../data_entity.hpp"
+#include "../experiment_configuration/experiment_configuration.hpp"
+#include "runner.hpp"
 
 namespace performance_test
 {
-namespace RclcppSteDataRunnerFactory
+
+class RunnerFactory
 {
-std::shared_ptr<DataEntity> get(
-  const std::string & msg_name,
-  const RunType run_type,
-  DataStats & stats);
-}  // namespace RclcppSteDataRunnerFactory
+public:
+  static std::unique_ptr<Runner> get(const ExperimentConfiguration & ec);
+};
+
 }  // namespace performance_test
 
-#endif  // DATA_RUNNING__FACTORIES__RCLCPP_STE_DATA_RUNNER_FACTORY_HPP_
+#endif  // EXPERIMENT_EXECUTION__RUNNER_FACTORY_HPP_

@@ -2,6 +2,30 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Added
+- New execution strategy option:
+  - The default `-e INTER_THREAD` runs each publisher and subscriber in its
+    own separate thread, which matches the previous behavior
+  - A new `-e INTRA_THREAD`, which runs a single publisher and subscriber in the
+    same thread. The publisher writes, and the subscriber immediately takes it
+  - For Apex.OS specifically, some optimized execution strategies which use the
+    proprietary Apex.OS executor
+### Changed
+- Significantly refactored the communicator plugins:
+  - Each plugin is split into an implementation of a `Publisher` and a
+    `Subscriber`, instead of a single `Communicator`
+  - The plugin is no longer responsible for managing the metrics, such as
+    sample count, lost samples, and latency
+  - The plugin does not require any special logic to support roundtrip mode
+  - It is safe for the plugins to initialize their data writers and readers
+    at construction time, instead of delaying the initialization to the first
+    call of `publish()` or `update_subscription()`
+  - Split `publish()` into `publish_copy()` and `publish_loaned()`
+- Significantly refactored the runner framework:
+  - The runner framework is responsible for the experiment metrics
+  - It manages the roundtrip mode logic
+  - It is extensible for different execution strategies or thread configurations
+
 ## 1.2.1 (2022/06/30)
 
 ### Fixed

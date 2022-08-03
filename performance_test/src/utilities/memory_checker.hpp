@@ -1,4 +1,4 @@
-// Copyright 2021 Apex.AI, Inc.
+// Copyright 2017 Apex.AI, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,38 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef OUTPUTS__JSON_OUTPUT_HPP_
-#define OUTPUTS__JSON_OUTPUT_HPP_
+#ifndef UTILITIES__MEMORY_CHECKER_HPP_
+#define UTILITIES__MEMORY_CHECKER_HPP_
 
-#include <iostream>
 #include <string>
-#include <vector>
-#include <memory>
 
-#include "output.hpp"
 #include "../experiment_configuration/experiment_configuration.hpp"
-#include "../experiment_metrics/analysis_result.hpp"
 
 namespace performance_test
 {
-
-class JsonOutput : public Output
+class MemoryChecker
 {
 public:
-  JsonOutput();
-  virtual ~JsonOutput();
+  MemoryChecker(const MemoryChecker &) = delete;
+  MemoryChecker & operator=(const MemoryChecker &) = delete;
+  explicit MemoryChecker(const ExperimentConfiguration & ec);
+  virtual ~MemoryChecker() = default;
 
-  void open() override;
-  void update(std::shared_ptr<const AnalysisResult> result) override;
-  void close() override;
+  void enable_memory_tools_checker();
 
 private:
-  const ExperimentConfiguration & m_ec;
-  mutable std::ofstream m_os;
-  bool m_is_open = false;
-  std::vector<std::shared_ptr<const AnalysisResult>> m_results;
+  bool m_memory_tools_on;
+
+  void malloc_test_function(const std::string & str);
+
+#ifdef PERFORMANCE_TEST_MEMORYTOOLS_ENABLED
+  void assert_memory_tools_is_working();
+#endif
 };
 
 }  // namespace performance_test
-
-#endif  // OUTPUTS__JSON_OUTPUT_HPP_
+#endif  // UTILITIES__MEMORY_CHECKER_HPP_

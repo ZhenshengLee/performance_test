@@ -24,9 +24,6 @@ namespace performance_test
 class ExternalInfoStorage
 {
 public:
-  /**
- * \brief Constructor that reads values from environment variables.
- */
   ExternalInfoStorage();
 
   std::string m_to_log;

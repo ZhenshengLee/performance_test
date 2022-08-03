@@ -3,6 +3,7 @@ experiments:
 # default:
 # -
 #   com_mean: rclcpp-single-threaded-executor
+#   execution_strategy: INTER_THREAD
 #   transport: INTRA
 #   msg: Array1k
 #   pubs: 1

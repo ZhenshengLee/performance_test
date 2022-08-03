@@ -158,6 +158,22 @@ messages back. The Main machine receives the relayed message, and reports the ro
 Therefore, the reported latency will be roughly double the latency compared to the latency reported
 in non-relay mode.
 
+#### Single machine, single thread
+
+An intra-thread configuration is experimentally supported, in which a publisher and subscriber
+both operate in the same thread. The publisher writes a messages, and the subscriber immediately
+takes it.
+
+```bash
+perf_test <options> -e INTRA_THREAD
+```
+
+Notes:
+
+1. This is only available when zero copy transfer is enabled
+1. This requires exactly one publisher and one subscriber
+1. This is not compatible with roundtrip mode
+
 ## Middleware plugins
 
 The performance test tool can measure the performance of a variety of communication solutions

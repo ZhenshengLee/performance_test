@@ -19,6 +19,7 @@
 #include <dds/ddsc/dds_loan_api.h>
 
 #include <string>
+#include <vector>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
@@ -28,7 +29,7 @@ namespace performance_test
 
 /**
  * \brief Translates abstract QOS settings to specific QOS settings for Cyclone DDS
- * Micro data writers and readers.
+ * data writers and readers.
  *
  * The reason that this class is constructed like this is that one usually gets a
  * partially specified QOS from the topic or similar higher level entity and just
@@ -37,21 +38,10 @@ namespace performance_test
 class CycloneDDSQOSAdapter
 {
 public:
-  /**
-   * \brief Constructs the QOS adapter.
-   * \param qos The abstract QOS settings the adapter should use to derive the
-   * implementation specific QOS settings.
-   */
   explicit CycloneDDSQOSAdapter(const QOSAbstraction qos)
   : m_qos(qos)
   {}
-  /**
-   * \brief Applies the abstract QOS to an existing QOS leaving unsupported values as
-   * they were.
-   * \tparam CycloneDDSQos The type of the QOS setting, for example data reader or data
-   * writer QOS.
-   * \param qos The QOS settings to fill supported values in.
-   */
+
   template<class CycloneDDSQos>
   void apply(CycloneDDSQos & qos)
   {
@@ -95,21 +85,10 @@ private:
 class CycloneDDSIceoryxQOSAdapter
 {
 public:
-  /**
-   * \brief Constructs the QOS adapter.
-   * \param qos The abstract QOS settings the adapter should use to derive the
-   * implementation specific QOS settings.
-   */
   explicit CycloneDDSIceoryxQOSAdapter(const QOSAbstraction qos)
   : m_qos(qos)
   {}
-  /**
-   * \brief Applies the abstract QOS to an existing QOS leaving unsupported values as
-   * they were.
-   * \tparam CycloneDDSQos The type of the QOS setting, for example data reader or data
-   * writer QOS.
-   * \param qos The QOS settings to fill supported values in.
-   */
+
   template<class CycloneDDSQos>
   void apply(CycloneDDSQos & qos)
   {
@@ -130,145 +109,167 @@ private:
   const QOSAbstraction m_qos;
 };
 
-/**
- * \brief The plugin for Cyclone DDS.
- * \tparam Msg The msg type to use.
- */
 template<class Msg>
-class CycloneDDSCommunicator : public Communicator
+class CycloneDDSPublisher : public Publisher
 {
 public:
-  /// The data type to use.
   using DataType = typename Msg::CycloneDDSType;
 
-  /// Constructor which takes a reference \param lock to the lock to use.
-  explicit CycloneDDSCommunicator(DataStats & stats)
-  : Communicator(stats),
-    m_participant(ResourceManager::get().cyclonedds_participant()),
-    m_datawriter(0), m_datareader(0) {}
+  explicit CycloneDDSPublisher(const ExperimentConfiguration & ec)
+  : m_participant(ResourceManager::get().cyclonedds_participant()),
+    m_datawriter(create_datawriter(ec, m_participant)) {}
 
-  void publish(std::int64_t time) override
+  void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
-    if (m_datawriter == 0) {
-      dds_qos_t * dw_qos = dds_create_qos();
-      if (m_ec.is_zero_copy_transfer()) {
-        CycloneDDSIceoryxQOSAdapter qos_adapter(m_ec.qos());
-        qos_adapter.apply(dw_qos);
-      } else {
-        CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
-        qos_adapter.apply(dw_qos);
-      }
-      dds_entity_t tp = create_topic(m_ec.pub_topic_postfix());
-      m_datawriter = dds_create_writer(m_participant, tp, dw_qos, nullptr);
-      dds_delete(tp);
-      dds_delete_qos(dw_qos);
-      if (m_datawriter < 0) {
-        throw std::runtime_error("failed to create datawriter");
-      }
-    }
-    if (m_ec.is_zero_copy_transfer()) {
-      void * loaned_sample;
-      dds_return_t status = dds_loan_sample(m_datawriter, &loaned_sample);
-      if (status != DDS_RETCODE_OK) {
-        throw std::runtime_error("Failed to obtain a loaned sample " + std::to_string(status));
-      }
-      DataType * sample = static_cast<DataType *>(loaned_sample);
-      m_stats.lock();
-      init_msg(*sample, time);
-      m_stats.update_publisher_stats();
-      m_stats.unlock();
-      status = dds_write(m_datawriter, sample);
-      if (status == DDS_RETCODE_UNSUPPORTED) {
-        throw std::runtime_error("DDS write unsupported");
-      } else if (status != DDS_RETCODE_OK) {
-        throw std::runtime_error("Failed to write to sample");
-      }
-    } else {
-      m_stats.lock();
-      init_msg(m_data, time);
-      m_stats.update_publisher_stats();
-      m_stats.unlock();
-      if (dds_write(m_datawriter, static_cast<void *>(&m_data)) < 0) {
-        throw std::runtime_error("Failed to write to sample");
-      }
+    init_msg(m_data, time, sample_id);
+    if (dds_write(m_datawriter, static_cast<void *>(&m_data)) < 0) {
+      throw std::runtime_error("Failed to write to sample");
     }
   }
 
-  void update_subscription() override
+  void publish_loaned(std::int64_t time, std::uint64_t sample_id) override
   {
-    if (m_datareader == 0) {
-      dds_qos_t * dw_qos = dds_create_qos();
-      if (m_ec.is_zero_copy_transfer()) {
-        CycloneDDSIceoryxQOSAdapter qos_adapter(m_ec.qos());
-        qos_adapter.apply(dw_qos);
-      } else {
-        CycloneDDSQOSAdapter qos_adapter(m_ec.qos());
-        qos_adapter.apply(dw_qos);
-      }
-      dds_entity_t tp = create_topic(m_ec.sub_topic_postfix());
-      m_datareader = dds_create_reader(m_participant, tp, dw_qos, nullptr);
-      dds_delete(tp);
-      dds_delete_qos(dw_qos);
-      if (m_datareader < 0) {
-        throw std::runtime_error("failed to create datareader");
-      }
-      dds_set_status_mask(m_datareader, DDS_DATA_AVAILABLE_STATUS);
-      m_waitset = dds_create_waitset(m_participant);
-      if (dds_waitset_attach(m_waitset, m_datareader, 1) < 0) {
-        throw std::runtime_error("failed to attach waitset");
-      }
+    void * loaned_sample;
+    dds_return_t status = dds_loan_sample(m_datawriter, &loaned_sample);
+    if (status != DDS_RETCODE_OK) {
+      throw std::runtime_error("Failed to obtain a loaned sample " + std::to_string(status));
     }
-
-    dds_waitset_wait(m_waitset, nullptr, 0, DDS_SECS(15));
-
-    void * untyped = nullptr;
-    dds_sample_info_t si;
-    int32_t n;
-    while ((n = dds_take(m_datareader, &untyped, &si, 1, 1)) > 0) {
-      const auto received_time = m_stats.now();
-      m_stats.lock();
-      const DataType * data = static_cast<DataType *>(untyped);
-      if (si.valid_data) {
-        m_stats.check_data_consistency(data->time);
-        if (m_ec.roundtrip_mode() == ExperimentConfiguration::RoundTripMode::RELAY) {
-          m_stats.unlock();
-          publish(data->time);
-          m_stats.lock();
-        } else {
-          m_stats.update_subscriber_stats(
-            data->time, received_time, data->id,
-            sizeof(DataType));
-        }
-      }
-      m_stats.unlock();
-
-      dds_return_loan(m_datareader, &untyped, n);
+    DataType * sample = static_cast<DataType *>(loaned_sample);
+    init_msg(*sample, time, sample_id);
+    status = dds_write(m_datawriter, sample);
+    if (status == DDS_RETCODE_UNSUPPORTED) {
+      throw std::runtime_error("DDS write unsupported");
+    } else if (status != DDS_RETCODE_OK) {
+      throw std::runtime_error("Failed to write to sample");
     }
   }
 
 private:
-  /// Creates a new topic for the participant
-  dds_entity_t create_topic(const std::string & postfix)
+  dds_entity_t m_participant;
+  dds_entity_t m_datawriter;
+  DataType m_data;
+
+  static dds_entity_t create_datawriter(
+    const ExperimentConfiguration & ec,
+    dds_entity_t participant
+  )
   {
-    dds_entity_t topic;
-    topic = dds_create_topic(
-      m_participant, Msg::CycloneDDSDesc(),
-      (m_ec.topic_name() + postfix).c_str(), nullptr, nullptr);
-    if (topic < 0) {
-      throw std::runtime_error("failed to create topic");
+    dds_qos_t * dw_qos = dds_create_qos();
+    if (ec.is_zero_copy_transfer()) {
+      CycloneDDSIceoryxQOSAdapter qos_adapter(ec.qos());
+      qos_adapter.apply(dw_qos);
+    } else {
+      CycloneDDSQOSAdapter qos_adapter(ec.qos());
+      qos_adapter.apply(dw_qos);
     }
-    return topic;
+
+    dds_entity_t topic = dds_create_topic(
+      participant,
+      Msg::CycloneDDSDesc(),
+      (ec.topic_name() + ec.pub_topic_postfix()).c_str(),
+      nullptr,
+      nullptr);
+
+    dds_entity_t datawriter = dds_create_writer(participant, topic, dw_qos, nullptr);
+
+    dds_delete(topic);
+    dds_delete_qos(dw_qos);
+
+    if (datawriter < 0) {
+      throw std::runtime_error("failed to create datawriter");
+    }
+    return datawriter;
+  }
+};
+
+template<class Msg>
+class CycloneDDSSubscriber : public Subscriber
+{
+public:
+  using DataType = typename Msg::CycloneDDSType;
+
+  explicit CycloneDDSSubscriber(const ExperimentConfiguration & ec)
+  : m_participant(ResourceManager::get().cyclonedds_participant()),
+    m_datareader(create_datareader(ec, m_participant)),
+    m_waitset(create_waitset(m_participant, m_datareader)) {}
+
+  std::vector<ReceivedMsgStats> update_subscription() override
+  {
+    dds_waitset_wait(m_waitset, nullptr, 0, DDS_SECS(15));
+    return take();
   }
 
+  std::vector<ReceivedMsgStats> take() override
+  {
+    std::vector<ReceivedMsgStats> stats;
+    void * untyped = nullptr;
+    dds_sample_info_t si;
+    int32_t n;
+    while ((n = dds_take(m_datareader, &untyped, &si, 1, 1)) > 0) {
+      const auto received_time = now_int64_t();
+      const DataType * data = static_cast<DataType *>(untyped);
+      if (si.valid_data) {
+        stats.emplace_back(
+          data->time,
+          received_time,
+          data->id,
+          sizeof(DataType)
+        );
+      }
+      dds_return_loan(m_datareader, &untyped, n);
+    }
+    return stats;
+  }
+
+private:
   dds_entity_t m_participant;
-
-  dds_entity_t m_datawriter;
   dds_entity_t m_datareader;
-
   dds_entity_t m_waitset;
   dds_entity_t m_condition;
 
-  DataType m_data;
+  static dds_entity_t create_datareader(
+    const ExperimentConfiguration & ec,
+    dds_entity_t participant
+  )
+  {
+    dds_qos_t * dw_qos = dds_create_qos();
+    if (ec.is_zero_copy_transfer()) {
+      CycloneDDSIceoryxQOSAdapter qos_adapter(ec.qos());
+      qos_adapter.apply(dw_qos);
+    } else {
+      CycloneDDSQOSAdapter qos_adapter(ec.qos());
+      qos_adapter.apply(dw_qos);
+    }
+
+    dds_entity_t topic = dds_create_topic(
+      participant,
+      Msg::CycloneDDSDesc(),
+      (ec.topic_name() + ec.sub_topic_postfix()).c_str(),
+      nullptr,
+      nullptr);
+
+    dds_entity_t datareader = dds_create_reader(participant, topic, dw_qos, nullptr);
+
+    dds_delete(topic);
+    dds_delete_qos(dw_qos);
+
+    if (datareader < 0) {
+      throw std::runtime_error("failed to create datareader");
+    }
+    return datareader;
+  }
+
+  static dds_entity_t create_waitset(
+    dds_entity_t participant,
+    dds_entity_t datareader)
+  {
+    dds_set_status_mask(datareader, DDS_DATA_AVAILABLE_STATUS);
+    dds_entity_t waitset = dds_create_waitset(participant);
+    if (dds_waitset_attach(waitset, datareader, 1) < 0) {
+      throw std::runtime_error("failed to attach waitset");
+    }
+    return waitset;
+  }
 };
 
 }  // namespace performance_test
