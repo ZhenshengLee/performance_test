@@ -286,6 +286,9 @@ endif()
 
 if(PERFORMANCE_TEST_RCLCPP_ENABLED)
   list(APPEND sources src/communication_abstractions/rclcpp_publisher.hpp)
+endif()
+
+if(PERFORMANCE_TEST_RCLCPP_STE_ENABLED OR PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED)
   list(APPEND sources src/communication_abstractions/rclcpp_callback_communicator.hpp)
 endif()
 

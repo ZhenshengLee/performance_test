@@ -169,7 +169,8 @@ private:
     // Since clock resolution on QNX is 1ms or above, it is better to use
     // clock cycles to calculate latencies instead of CLOCK_REALTIME or
     // CLOCK_MONOTONIC.
-    const double ncycles = time_msg_received_ns - time_msg_sent_ns;
+    const double ncycles =
+      static_cast<double>(time_msg_received_ns) - static_cast<double>(time_msg_sent_ns);
     const double latency_s =
       static_cast<double>(ncycles) / static_cast<double>(m_cps);
 #else

@@ -23,6 +23,9 @@
 
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
 #include "rclcpp_publisher.hpp"
+#endif
+
+#if defined(PERFORMANCE_TEST_RCLCPP_STE_ENABLED) || defined(PERFORMANCE_TEST_RCLCPP_SSTE_ENABLED)
 #include "rclcpp_callback_communicator.hpp"
 #endif
 
