@@ -27,14 +27,28 @@
 
 namespace performance_test
 {
+class IceoryxCommunicator
+{
+public:
+  IceoryxCommunicator() {
+    ResourceManager::get().init_iceoryx_runtime();
+  }
+};
+
 template<class Msg>
-class IceoryxPublisher : public Publisher
+class IceoryxPublisher : public IceoryxCommunicator, public Publisher
 {
 public:
   using DataType = typename Msg::RosType;
 
   explicit IceoryxPublisher(const ExperimentConfiguration & ec)
-  : m_publisher(make_iceoryx_publisher(ec)) {}
+  : m_publisher(
+      iox::capro::ServiceDescription{
+        iox::capro::IdString_t{iox::cxx::TruncateToCapacity, Msg::msg_name()},
+        iox::capro::IdString_t{iox::cxx::TruncateToCapacity, ec.topic_name()},
+        iox::capro::IdString_t{"Object"}
+      },
+      iox::popo::PublisherOptions{}) {}
 
   void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
@@ -61,31 +75,24 @@ public:
   }
 
 private:
-  static iox::popo::Publisher<DataType> make_iceoryx_publisher(
-    const ExperimentConfiguration & ec)
-  {
-      ResourceManager::get().init_iceoryx_runtime();
-      iox::capro::IdString_t iox_pub_service{iox::cxx::TruncateToCapacity, Msg::msg_name()};
-      iox::capro::IdString_t iox_pub_instance{iox::cxx::TruncateToCapacity, ec.topic_name()};
-      iox::capro::IdString_t iox_pub_event{"Object"};
-      iox::popo::PublisherOptions publisher_options;
-      return iox::popo::Publisher<DataType>(
-        {iox_pub_service, iox_pub_instance, iox_pub_event},
-        publisher_options);
-  }
-
   iox::popo::Publisher<DataType> m_publisher;
   DataType m_data;
 };
 
 template<class Msg>
-class IceoryxSubscriber : public Subscriber
+class IceoryxSubscriber : public IceoryxCommunicator, public Subscriber
 {
 public:
   using DataType = typename Msg::RosType;
 
   explicit IceoryxSubscriber(const ExperimentConfiguration & ec)
-  : m_subscriber(make_iceoryx_subscriber(ec))
+  : m_subscriber(
+      iox::capro::ServiceDescription{
+        iox::capro::IdString_t{iox::cxx::TruncateToCapacity, Msg::msg_name()},
+        iox::capro::IdString_t{iox::cxx::TruncateToCapacity, ec.topic_name()},
+        iox::capro::IdString_t{"Object"}
+      },
+      subscriber_options(ec))
   {
     m_waitset.attachEvent(m_subscriber, iox::popo::SubscriberEvent::DATA_RECEIVED)
     .or_else(
@@ -143,17 +150,10 @@ public:
   }
 
 private:
-  static iox::popo::Subscriber<DataType> make_iceoryx_subscriber(
-    const ExperimentConfiguration & ec)
-  {
-    ResourceManager::get().init_iceoryx_runtime();
-    iox::capro::IdString_t iox_sub_service{iox::cxx::TruncateToCapacity, Msg::msg_name()};
-    iox::capro::IdString_t iox_sub_instance{iox::cxx::TruncateToCapacity, ec.topic_name()};
-    iox::capro::IdString_t iox_sub_event{"Object"};
-    iox::popo::SubscriberOptions subscriber_options;
-    subscriber_options.queueCapacity = ec.qos().history_depth;
-    return iox::popo::Subscriber<DataType>(
-        {iox_sub_service, iox_sub_instance, iox_sub_event}, subscriber_options);
+  static iox::popo::SubscriberOptions subscriber_options(const ExperimentConfiguration & ec) {
+    iox::popo::SubscriberOptions options;
+    options.queueCapacity = ec.qos().history_depth;
+    return options;
   }
 
   iox::popo::Subscriber<DataType> m_subscriber;

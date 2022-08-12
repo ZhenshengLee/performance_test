@@ -145,7 +145,7 @@ if(PERFORMANCE_TEST_CYCLONEDDS_CXX_ENABLED)
 endif()
 
 if(PERFORMANCE_TEST_ICEORYX_ENABLED)
-  if(NOT PERFORMANCE_TEST_RCLCPP_ENABLED)
+  if(NOT PERFORMANCE_TEST_RCLCPP_ENABLED AND NOT PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED)
     message(FATAL_ERROR
     "The iceoryx plugin depends on the rosidl generated messages. "
     "ROS2 must be installed in your environment, and "

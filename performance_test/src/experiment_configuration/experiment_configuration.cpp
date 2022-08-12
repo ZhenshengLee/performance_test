@@ -416,11 +416,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
 #ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
     if (comm_str == "ApexOSPollingSubscription") {
       m_com_mean = CommunicationMean::ApexOSPollingSubscription;
-    } else {
-      throw std::invalid_argument(
-              "Only Apex.OS communication mean can be used when the "
-              "performance_test tool has been built with the "
-              "PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED flag!");
     }
 #endif
 
