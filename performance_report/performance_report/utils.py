@@ -19,7 +19,6 @@ import yaml
 import xml.etree.ElementTree as et
 
 from .qos import DURABILITY, HISTORY, RELIABILITY
-from .transport import TRANSPORT
 
 try:
     from rclpy.utilities import get_rmw_implementation_identifier
@@ -31,8 +30,9 @@ class ExperimentConfig:
     def __init__(
         self,
         com_mean: str = "rclcpp-single-threaded-executor",
+        process_configuration: str = "INTRA_PROCESS",
         execution_strategy: str = "INTER_THREAD",
-        transport: TRANSPORT = TRANSPORT.INTRA,
+        sample_transport: str = "BY_COPY",
         msg: str = "Array1k",
         pubs: int = 1,
         subs: int = 1,
@@ -47,8 +47,9 @@ class ExperimentConfig:
         ignore_seconds: int = 5,
     ) -> None:
         self.com_mean = str(com_mean)
+        self.process_configuration = str(process_configuration)
         self.execution_strategy = str(execution_strategy)
-        self.transport = TRANSPORT(transport)
+        self.sample_transport = str(sample_transport)
         self.msg = str(msg)
         self.pubs = int(pubs)
         self.subs = int(subs)
@@ -65,8 +66,9 @@ class ExperimentConfig:
     def __eq__(self, o: object) -> bool:
         same = True
         same = same and self.com_mean == o.com_mean
+        same = same and self.process_configuration == o.process_configuration
         same = same and self.execution_strategy == o.execution_strategy
-        same = same and self.transport == o.transport
+        same = same and self.sample_transport == o.sample_transport
         same = same and self.msg == o.msg
         same = same and self.pubs == o.pubs
         same = same and self.subs == o.subs
@@ -82,7 +84,7 @@ class ExperimentConfig:
         return same
 
     def log_file_name(self) -> str:
-        if self.transport == TRANSPORT.INTRA:
+        if self.process_configuration == "INTRA_PROCESS":
             return self.log_file_name_intra()
         else:
             return self.log_file_name_sub()
@@ -90,8 +92,9 @@ class ExperimentConfig:
     def write_log_file_name(self, com_mean_suffix: str) -> str:
         params = [
             self.com_mean,
-            str(self.transport) + com_mean_suffix,
+            str(self.process_configuration) + com_mean_suffix,
             self.execution_strategy,
+            self.sample_transport,
             self.msg,
             self.pubs,
             self.subs,
@@ -118,8 +121,9 @@ class ExperimentConfig:
     def as_dataframe(self) -> pd.DataFrame:
         return pd.DataFrame({
             'com_mean': self.com_mean,
+            'process_configuration': self.process_configuration,
             'execution_strategy': self.execution_strategy,
-            'transport': self.transport,
+            'sample_transport': self.sample_transport,
             'msg': self.msg,
             'pubs': self.pubs,
             'subs': self.subs,
@@ -147,7 +151,7 @@ class ExperimentConfig:
         commands = []
         cleanup_commands = []
 
-        if self.transport == TRANSPORT.ZERO_COPY or self.transport == TRANSPORT.SHMEM:
+        if self.sample_transport == "SHARED_MEMORY" or self.sample_transport == "LOANED_SAMPLES":
             if is_ros2_plugin(self.com_mean):
                 if get_rmw_implementation_identifier() == "rmw_apex_middleware":
                     commands.extend(generate_commands_yml(output_dir))
@@ -160,6 +164,8 @@ class ExperimentConfig:
             elif self.com_mean == "CycloneDDS" or self.com_mean == "CycloneDDS-CXX":
                 commands.extend(generate_commands_xml(output_dir))
                 cleanup_commands.append('unset CYCLONEDDS_URI')
+            elif self.com_mean == "iceoryx":
+                pass
             else:
                 print("Unsupported com_mean: ", self.com_mean)
 
@@ -181,6 +187,8 @@ class ExperimentConfig:
         args = ""
         args += f" -c {self.com_mean}"
         args += f" -e {self.execution_strategy}"
+        if self.sample_transport == "LOANED_SAMPLES":
+            args += " --zero-copy"
         args += f" -m {self.msg}"
         args += f" -r {self.rate}"
         if self.reliability == RELIABILITY.RELIABLE:
@@ -200,7 +208,7 @@ class ExperimentConfig:
         args += f" --use-rt-cpus {self.rt_cpus}"
         args += f" --max-runtime {self.max_runtime}"
         args += f" --ignore {self.ignore_seconds}"
-        if self.transport == TRANSPORT.INTRA:
+        if self.process_configuration == "INTRA_PROCESS":
             args += f" -p {self.pubs} -s {self.subs}"
             args += f" --logfile {os.path.join(output_dir, self.log_file_name_intra())}"
             return [args]
@@ -209,9 +217,6 @@ class ExperimentConfig:
             args_sub += f" --logfile {os.path.join(output_dir, self.log_file_name_sub())}"
             args_pub = args + f" -s 0 -p {self.pubs} --expected-num-subs {self.subs}"
             args_pub += f" --logfile {os.path.join(output_dir, self.log_file_name_pub())}"
-            if self.transport == TRANSPORT.ZERO_COPY:
-                args_sub += " --zero-copy"
-                args_pub += " --zero-copy"
             return [args_sub, args_pub]
 
 

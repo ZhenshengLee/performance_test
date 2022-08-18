@@ -25,13 +25,11 @@ from .utils import (cliColors,
                     generate_shmem_file_yml,
                     is_ros2_plugin,
                     PerfArgParser)
-from .transport import TRANSPORT
 from rclpy.utilities import get_rmw_implementation_identifier
 
 
 def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
-    # TODO(flynneva): check cfg.com_mean if these are applicable
-    if cfg.transport == TRANSPORT.ZERO_COPY or cfg.transport == TRANSPORT.SHMEM:
+    if cfg.sample_transport == "SHARED_MEMORY" or cfg.sample_transport == "LOANED_SAMPLES":
 
         colorPrint("[Warning] RouDi is expected to already be running", cliColors.WARN)
 
@@ -47,12 +45,14 @@ def prepare_for_shmem(cfg: ExperimentConfig, output_dir):
         elif cfg.com_mean == "CycloneDDS" or cfg.com_mean == "CycloneDDS-CXX":
             shmem_config_file = generate_shmem_file_xml(output_dir)
             os.environ["CYCLONEDDS_URI"] = shmem_config_file
+        elif cfg.com_mean == "iceoryx":
+            pass
         else:
             print("Unsupported com_mean: ", cfg.com_mean)
 
 
 def teardown_from_shmem(cfg: ExperimentConfig):
-    if cfg.transport == TRANSPORT.ZERO_COPY or cfg.transport == TRANSPORT.SHMEM:
+    if cfg.sample_transport == "SHARED_MEMORY" or cfg.sample_transport == "LOANED_SAMPLES":
         os.unsetenv("APEX_MIDDLEWARE_SETTINGS")
         os.unsetenv("CYCLONEDDS_URI")
 
@@ -67,16 +67,16 @@ def run_experiment(cfg: ExperimentConfig, perf_test_exe_cmd, output_dir, overwri
     else:
         colorPrint(f"Running experiment {cfg.log_file_name()}", cliColors.GREEN)
 
-    if cfg.transport == TRANSPORT.INTRA:
+    prepare_for_shmem(cfg, output_dir)
+    if cfg.process_configuration == "INTRA_PROCESS":
         cli_args = cfg.cli_args(output_dir)[0]
         os.system(perf_test_exe_cmd + cli_args)
     else:
         cli_args_sub, cli_args_pub = cfg.cli_args(output_dir)
-        prepare_for_shmem(cfg, output_dir)
         os.system(perf_test_exe_cmd + cli_args_sub + ' &')
         time.sleep(1)
         os.system(perf_test_exe_cmd + cli_args_pub)
-        teardown_from_shmem(cfg)
+    teardown_from_shmem(cfg)
 
 
 def run_experiments(files: "list[str]", perf_test_exe_cmd, output_dir, overwrite: bool):

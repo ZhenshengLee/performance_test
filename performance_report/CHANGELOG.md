@@ -2,6 +2,16 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Changed
+- Expanded the `transport` setting into the following two settings:
+   - `process_configuration`:
+      - `INTRA_PROCESS`
+      - `INTER_PROCESS`
+   - `sample_transport`:
+      - `BY_COPY`
+      - `SHARED_MEMORY`
+      - `LOANED_SAMPLES`
+
 ## 1.2.1 (2022/06/30)
 
 ## 1.2.0 (2022/06/28)

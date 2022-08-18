@@ -3,8 +3,9 @@ experiments:
 # default:
 # -
 #   com_mean: rclcpp-single-threaded-executor
+#   process_configuration: INTRA_PROCESS
 #   execution_strategy: INTER_THREAD
-#   transport: INTRA
+#   sample_transport: BY_COPY
 #   msg: Array1k
 #   pubs: 1
 #   subs: 1
@@ -19,10 +20,9 @@ experiments:
 #   ignore_seconds: 5
   -
     com_mean: rclcpp-single-threaded-executor
-    transport:
-      - INTRA
-      - SHMEM
-      - ZERO_COPY
+    process_configuration: INTRA_PROCESS
+    execution_strategy: INTER_THREAD
+    sample_transport: BY_COPY
     msg:
       - Array1k
       - Array4k
@@ -42,7 +42,33 @@ experiments:
     ignore_seconds: 5
   -
     com_mean: rclcpp-single-threaded-executor
-    transport: ZERO_COPY
+    process_configuration: INTER_PROCESS
+    execution_strategy: INTER_THREAD
+    sample_transport:
+      - SHARED_MEMORY
+      - LOANED_SAMPLES
+    msg:
+      - Array1k
+      - Array4k
+      - Array16k
+      - Array64k
+      - Array256k
+      - Array1m
+      - Array4m
+    pubs: 1
+    subs: 1
+    rate: 100
+    reliability: RELIABLE
+    durability: VOLATILE
+    history: KEEP_LAST
+    history_depth: 16
+    max_runtime: 30
+    ignore_seconds: 5
+  -
+    com_mean: rclcpp-single-threaded-executor
+    process_configuration: INTER_PROCESS
+    execution_strategy: INTER_THREAD
+    sample_transport: LOANED_SAMPLES
     msg:
       - Array1k
       - Array4k

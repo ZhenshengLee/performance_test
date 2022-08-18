@@ -15,8 +15,9 @@ datasets:
   #    test_name: experiments
   #    experiments:
   #      - com_mean: rclcpp-single-threaded-executor
+  #        process_configuration: INTRA_PROCESS
   #        execution_strategy: INTER_THREAD
-  #        transport: INTRA
+  #        sample_transport: BY_COPY
   #        msg: Array1k
   #        pubs: 1
   #        subs: 1
