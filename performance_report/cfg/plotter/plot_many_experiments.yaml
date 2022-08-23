@@ -142,8 +142,8 @@ datasets:
         subs: 1
         rate: 100
 plots:
-  - name: compare_apexos_transport
-    title: Comparing different Apex.OS Transports
+  - name: compare_transport
+    title: Comparing different Transports
     x_axis_label: Time (seconds)
     y_axis_label: Latency (ms)
     x_range: T_experiment
@@ -156,8 +156,8 @@ plots:
       - intra_array1m_100_1_1
       - shmem_array1m_100_1_1
       - zc_array1m_100_1_1
-  - name: compare_apexos_transport_cpu_usage
-    title: Comparing different Apex.OS Transports CPU Usage (%)
+  - name: compare_transport_cpu_usage
+    title: Comparing different Transports CPU Usage (%)
     x_axis_label: Time (seconds)
     y_axis_label: CPU Usage (%)
     x_range: T_experiment
@@ -170,7 +170,7 @@ plots:
       - intra_array1m_100_1_1
       - shmem_array1m_100_1_1
       - zc_array1m_100_1_1
-  - name: compare_apexos_msg_size
+  - name: compare_msg_size
     title: Comparing Latency over Message Size
     x_axis_label: Message Size
     y_axis_label: Latency (ms)
@@ -184,7 +184,7 @@ plots:
       - intra_1_subs
       - shmem_1_subs
       - zc_1_subs
-  - name: compare_apexos_num_subs
+  - name: compare_num_subs
     title: Comparing Latency over Number of Subscribers with Zero Copy
     x_axis_label: Number of Subscribers
     y_axis_label: Latency (ms)

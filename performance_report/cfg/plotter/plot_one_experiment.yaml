@@ -33,8 +33,8 @@ datasets:
     experiments:
       - msg: Array16k
 plots:
-  - name: compare_apexos_transport
-    title: Comparing different Apex.OS Transports
+  - name: compare_transport
+    title: Comparing different Transports
     x_axis_label: Time (seconds)
     y_axis_label: Latency (ms)
     x_range: T_experiment

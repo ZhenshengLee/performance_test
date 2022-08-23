@@ -2,6 +2,12 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Added
+- The `reporter` configuration supports box-and-whisker latency plots:
+   - set the `x_range` to `Experiment`
+   - set the `y_range` to `latency_mean`
+   - set `datasets` to one or more datasets, each containing a single experiment
+   - an example can be found in `cfg/reporter/report_many_experiments.yaml`
 ### Changed
 - Expanded the `transport` setting into the following two settings:
    - `process_configuration`:

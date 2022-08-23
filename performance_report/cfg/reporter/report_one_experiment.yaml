@@ -40,7 +40,7 @@ reports:
       - ./single.md
     figures:
       - name: figure_single
-        title: Comparing different Apex.OS Transports
+        title: Comparing different Transports
         x_axis_label: Time (seconds)
         y_axis_label: Latency (ms)
         x_range: T_experiment

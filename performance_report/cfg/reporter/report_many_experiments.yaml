@@ -149,7 +149,7 @@ reports:
       - ./many.md
     figures:
       - name: compare_transport
-        title: Comparing different Apex.OS Transports
+        title: Comparing different Transports
         x_axis_label: Time (seconds)
         y_axis_label: Latency (ms)
         x_range: T_experiment
@@ -162,8 +162,22 @@ reports:
           - intra_array1m_100_1_1
           - shmem_array1m_100_1_1
           - zc_array1m_100_1_1
+      - name: compare_transport_box_and_whisker
+        title: Comparing different Transports
+        x_axis_label: Time (seconds)
+        y_axis_label: Latency (ms)
+        x_range: Experiment
+        y_range: latency_mean
+        size:
+          width: 1000
+          height: 600
+        # dataset names must be listed above under the top-level `datasets`
+        datasets:
+          - intra_array1m_100_1_1
+          - shmem_array1m_100_1_1
+          - zc_array1m_100_1_1
       - name: compare_transport_cpu_usage
-        title: Comparing different Apex.OS Transports CPU Usage (%)
+        title: Comparing different Transports CPU Usage (%)
         x_axis_label: Time (seconds)
         y_axis_label: CPU Usage (%)
         x_range: T_experiment

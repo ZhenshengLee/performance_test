@@ -11,6 +11,8 @@
         <h1>{{ title }}</h1>
         <p>Compare latency for different transports</p>
         {{ compare_transport|safe }}
+        <p>Compare latency for different transports</p>
+        {{ compare_transport_box_and_whisker|safe }}
         <p>Compare CPU usage for different transports</p>
         {{ compare_transport_cpu_usage|safe }}
         <p>Compare latency vs msg size for different transports</p>

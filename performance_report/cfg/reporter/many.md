@@ -9,6 +9,10 @@ This is an example performance report generated to markdown.
 
 {{ compare_transport|safe }}
 
+#### Compare latency for different transports
+
+{{ compare_transport_box_and_whisker|safe }}
+
 #### Compare CPU usage for different transports
 
 {{ compare_transport_cpu_usage|safe }}
