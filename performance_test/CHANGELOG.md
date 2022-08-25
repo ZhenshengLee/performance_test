@@ -25,6 +25,7 @@
   - The runner framework is responsible for the experiment metrics
   - It manages the roundtrip mode logic
   - It is extensible for different execution strategies or thread configurations
+- The iceoryx plugin now uses the untyped API, for improved performance
 
 ## 1.2.1 (2022/06/30)
 

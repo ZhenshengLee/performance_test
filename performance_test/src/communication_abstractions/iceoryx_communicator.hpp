@@ -19,8 +19,8 @@
 #include <memory>
 #include <vector>
 
-#include <iceoryx_posh/popo/publisher.hpp>
-#include <iceoryx_posh/popo/subscriber.hpp>
+#include <iceoryx_posh/popo/untyped_publisher.hpp>
+#include <iceoryx_posh/popo/untyped_subscriber.hpp>
 
 #include "communicator.hpp"
 #include "resource_manager.hpp"
@@ -52,21 +52,17 @@ public:
 
   void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
-    init_msg(m_data, time, sample_id);
-    m_publisher.publishCopyOf(m_data)
-    .or_else(
-      [](auto &) {
-        throw std::runtime_error("Failed to write to sample");
-      });
+    publish_loaned(time, sample_id);
   }
 
   void publish_loaned(std::int64_t time, std::uint64_t sample_id) override
   {
-    m_publisher.loan()
+    m_publisher.loan(sizeof(DataType))
     .and_then(
-      [&](auto & sample) {
+      [&](auto & userPayload) {
+        auto sample = static_cast<DataType *>(userPayload);
         init_msg(*sample, time, sample_id);
-        sample.publish();
+        m_publisher.publish(userPayload);
       })
     .or_else(
       [](auto &) {
@@ -75,7 +71,7 @@ public:
   }
 
 private:
-  iox::popo::Publisher<DataType> m_publisher;
+  iox::popo::UntypedPublisher m_publisher;
   DataType m_data;
 };
 
@@ -128,17 +124,20 @@ public:
     std::vector<ReceivedMsgStats> stats;
     m_subscriber.take()
     .and_then(
-      [this, &stats](auto & data) {
+      [this, &stats](const void * data) {
         const auto received_time = now_int64_t();
+        auto receivedSample = static_cast<const DataType *>(data);
         stats.emplace_back(
-          data->time,
+          receivedSample->time,
           received_time,
-          data->id,
+          receivedSample->id,
           sizeof(DataType)
         );
+        m_subscriber.release(data);
       })
     .or_else(
       [](auto & result) {
+        std::cerr << result << std::endl;
         if (result !=
         iox::popo::ChunkReceiveResult::NO_CHUNK_AVAILABLE)
         {
@@ -156,7 +155,7 @@ private:
     return options;
   }
 
-  iox::popo::Subscriber<DataType> m_subscriber;
+  iox::popo::UntypedSubscriber m_subscriber;
   iox::popo::WaitSet<> m_waitset;
 };
 

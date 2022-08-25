@@ -242,7 +242,7 @@ their own thread.
 - Available transports:
   | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-----------|---------------------|-----------------------------------|
-  | SHMEM (default), LoanedSamples (`--zero-copy`) | SHMEM (default), LoanedSamples (`--zero-copy`) | Not supported by performance_test |
+  | LoanedSamples | LoanedSamples | Not supported by performance_test |
 
 ### eProsima Fast DDS
 
