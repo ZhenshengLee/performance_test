@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.3.0 (2022/08/25)
+
 ### Added
 - The `reporter` configuration supports box-and-whisker latency plots:
    - set the `x_range` to `Experiment`

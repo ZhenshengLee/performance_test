@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.3.0 (2022/08/25)
+
 ### Added
 - New execution strategy option:
   - The default `-e INTER_THREAD` runs each publisher and subscriber in its
