@@ -26,6 +26,7 @@
 #include <cyclone_dds_vendor/dds.hpp>
 #endif
 
+#include <csignal>
 #include <iostream>
 #include <iomanip>
 #include <exception>
@@ -46,6 +47,12 @@
 #include "../outputs/json_output.hpp"
 
 #include "performance_test/version.h"
+
+static void handle_sigint(int sig)
+{
+  std::signal(sig, SIG_DFL);
+  performance_test::ExperimentConfiguration::get().request_exit();
+}
 
 namespace performance_test
 {
@@ -110,8 +117,10 @@ ExperimentConfiguration::ExperimentConfiguration()
   m_check_memory(false),
   m_is_rt_init_required(false),
   m_is_zero_copy_transfer(false),
+  m_exit_requested(false),
   m_roundtrip_mode(RoundTripMode::NONE)
-{}
+{
+}
 
 void ExperimentConfiguration::setup(int argc, char ** argv)
 {
@@ -509,6 +518,10 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     std::cerr << e.what() << std::endl;
     exit(1);
   }
+
+  if (!use_ros2_layers()) {
+    std::signal(SIGINT, handle_sigint);
+  }
 }
 
 bool ExperimentConfiguration::is_setup() const
@@ -734,11 +747,16 @@ void ExperimentConfiguration::check_setup() const
 
 bool ExperimentConfiguration::exit_requested() const
 {
+  bool ret_val = m_exit_requested;
 #ifdef PERFORMANCE_TEST_RCLCPP_ENABLED
-  return use_ros2_layers() && !rclcpp::ok();
-#else
-  return false;
+  ret_val |= use_ros2_layers() && !rclcpp::ok();
 #endif
+  return ret_val;
+}
+
+void ExperimentConfiguration::request_exit()
+{
+  m_exit_requested = true;
 }
 
 }  // namespace performance_test

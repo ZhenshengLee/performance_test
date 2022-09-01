@@ -15,6 +15,7 @@
 #ifndef EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_
 #define EXPERIMENT_CONFIGURATION__EXPERIMENT_CONFIGURATION_HPP_
 
+#include <atomic>
 #include <string>
 #include <fstream>
 #include <vector>
@@ -121,6 +122,9 @@ public:
   const std::vector<std::shared_ptr<Output>> & configured_outputs() const;
   /// \return Returns true if the user requested the application to exit.
   bool exit_requested() const;
+  /// Request the application to exit.
+  void request_exit();
+
   ExternalInfoStorage get_external_info() const
   {
     return m_external_info;
@@ -157,6 +161,7 @@ private:
   bool m_is_rt_init_required;
   bool m_with_security;
   bool m_is_zero_copy_transfer;
+  std::atomic_bool m_exit_requested;
 
   RoundTripMode m_roundtrip_mode;
 
