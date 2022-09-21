@@ -246,14 +246,14 @@ their own thread.
 
 ### eProsima Fast DDS
 
-- [FastDDS 2.6.0](https://github.com/eProsima/Fast-DDS/tree/v2.6.0)
+- [FastDDS 2.6.2](https://github.com/eProsima/Fast-DDS/tree/v2.6.2)
 - CMake build flag: `-DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON`
 - Communication plugin: `-c FastRTPS`
 - Docker file: [Dockerfile.FastDDS](dockerfiles/Dockerfile.FastDDS)
 - Available transports:
   | Pub/sub in same process | Pub/sub in different processes on same machine | Pub/sub in different machines |
   |-------|---------------------|--------------------|
-  | UDP   | UDP                 | UDP                |
+  | INTRA (default), LoanedSamples (`--zero-copy`) | SHMEM (default), LoanedSamples (`--zero-copy`) | UDP |
 
 ### OCI OpenDDS
 

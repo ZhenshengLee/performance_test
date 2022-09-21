@@ -16,10 +16,8 @@
 #define COMMUNICATION_ABSTRACTIONS__RESOURCE_MANAGER_HPP_
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  #include <fastrtps/participant/Participant.h>
-  #include <fastrtps/attributes/ParticipantAttributes.h>
-  #include <fastrtps/xmlparser/XMLProfileManager.h>
-  #include <fastrtps/Domain.h>
+  #include <fastdds/dds/domain/DomainParticipant.hpp>
+  #include <fastdds/dds/topic/Topic.hpp>
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
@@ -90,7 +88,16 @@ public:
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  eprosima::fastrtps::Participant * fastrtps_participant() const;
+  struct FastDDSGlobalResources
+  {
+    eprosima::fastdds::dds::DomainParticipant * participant;
+    eprosima::fastdds::dds::Publisher * publisher;
+    eprosima::fastdds::dds::Subscriber * subscriber;
+    eprosima::fastdds::dds::Topic * topic;
+  };
+
+  /// Returns FastDDS resources.
+  const FastDDSGlobalResources & fastdds_resources(eprosima::fastdds::dds::TypeSupport type) const;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
@@ -166,7 +173,7 @@ private:
     , m_node(nullptr)
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-    , m_fastrtps_participant(nullptr)
+    , m_fastdds_resources{nullptr, nullptr, nullptr, nullptr}
 #endif
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED
     , m_connext_dds_micro_participant(nullptr)
@@ -191,7 +198,7 @@ private:
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  mutable eprosima::fastrtps::Participant * m_fastrtps_participant;
+  mutable FastDDSGlobalResources m_fastdds_resources;
 #endif
 
 #ifdef PERFORMANCE_TEST_CONNEXTDDSMICRO_ENABLED

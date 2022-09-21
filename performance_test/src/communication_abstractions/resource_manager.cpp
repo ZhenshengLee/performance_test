@@ -15,7 +15,13 @@
 #include "resource_manager.hpp"
 
 #if defined(PERFORMANCE_TEST_FASTRTPS_ENABLED)
-  #include <fastrtps/rtps/attributes/RTPSParticipantAttributes.h>
+  #include <fastdds/dds/domain/DomainParticipantFactory.hpp>
+  #include <fastdds/dds/domain/DomainParticipant.hpp>
+  #include <fastdds/dds/domain/qos/DomainParticipantQos.hpp>
+  #include <fastdds/dds/publisher/qos/PublisherQos.hpp>
+  #include <fastdds/dds/subscriber/qos/SubscriberQos.hpp>
+  #include <fastdds/rtps/transport/shared_mem/SharedMemTransportDescriptor.h>
+  #include <fastdds/rtps/transport/UDPv4TransportDescriptor.h>
 #endif
 
 #ifdef PERFORMANCE_TEST_ICEORYX_ENABLED
@@ -32,7 +38,10 @@ namespace performance_test
 void ResourceManager::shutdown()
 {
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-  eprosima::fastrtps::Domain::stopAll();
+  auto part = get().m_fastdds_resources.participant;
+  if (part) {
+    part->delete_contained_entities();
+  }
 #endif
 }
 
@@ -74,34 +83,70 @@ std::shared_ptr<rclcpp::Node> ResourceManager::rclcpp_node() const
 #endif
 
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED
-eprosima::fastrtps::Participant * ResourceManager::fastrtps_participant() const
+const ResourceManager::FastDDSGlobalResources & ResourceManager::fastdds_resources(
+  eprosima::fastdds::dds::TypeSupport type) const
 {
   std::lock_guard<std::mutex> lock(m_global_mutex);
 
-  if (!m_fastrtps_participant) {
-    eprosima::fastrtps::Participant * result = nullptr;
-    eprosima::fastrtps::ParticipantAttributes PParam;
+  if (!m_fastdds_resources.participant) {
+    eprosima::fastdds::dds::DomainParticipantQos pqos;
 
-    eprosima::fastrtps::xmlparser::XMLProfileManager::loadDefaultXMLFile();
-    eprosima::fastrtps::xmlparser::XMLProfileManager::getDefaultParticipantAttributes(PParam);
-    PParam.rtps.sendSocketBufferSize = 1048576;
-    PParam.rtps.listenSocketBufferSize = 4194304;
-    eprosima::fastrtps::rtps::DiscoverySettings & disc_config =
-      PParam.rtps.builtin.discovery_config;
-    disc_config.use_SIMPLE_EndpointDiscoveryProtocol = true;
-    disc_config.m_simpleEDP.use_PublicationReaderANDSubscriptionWriter = true;
-    disc_config.m_simpleEDP.use_PublicationWriterANDSubscriptionReader = true;
-    disc_config.leaseDuration = eprosima::fastrtps::c_TimeInfinite;
-  #if FASTRTPS_VERSION_MAJOR < 2
-    PParam.rtps.builtin.domainId = m_ec.dds_domain_id();
-  #else
-    PParam.domainId = m_ec.dds_domain_id();
-  #endif
-    PParam.rtps.setName("performance_test_fastRTPS");
+    auto factory = eprosima::fastdds::dds::DomainParticipantFactory::get_instance();
 
-    m_fastrtps_participant = eprosima::fastrtps::Domain::createParticipant(PParam);
+    // Load XML profiles and get default participant QoS
+    factory->load_profiles();
+    factory->get_default_participant_qos(pqos);
+
+    // Participant is always considered alive
+    pqos.wire_protocol().builtin.discovery_config.leaseDuration =
+      eprosima::fastrtps::c_TimeInfinite;
+
+    // Only tune transports if not tuned on the XML
+    if (!(pqos.transport() == eprosima::fastdds::dds::PARTICIPANT_QOS_DEFAULT.transport())) {
+      // tuning system network stack
+      pqos.transport().send_socket_buffer_size = 1048576;
+      pqos.transport().listen_socket_buffer_size = 4194304;
+      // set shm transport
+      pqos.transport().use_builtin_transports = false;
+      auto shm_transport =
+        std::make_shared<eprosima::fastdds::rtps::SharedMemTransportDescriptor>();
+      // changes to 6MB, default is 0.5MB, 512 * 1024 B
+      shm_transport->segment_size(6 * 1024 * 1024);
+      pqos.transport().user_transports.push_back(shm_transport);
+      // set udp as fallback transport
+      auto udp_transport = std::make_shared<eprosima::fastdds::rtps::UDPv4TransportDescriptor>();
+      pqos.transport().user_transports.push_back(udp_transport);
+    }
+
+    pqos.name("performance_test_fastDDS");
+
+    m_fastdds_resources.participant = factory->create_participant(m_ec.dds_domain_id(), pqos);
+    if (m_fastdds_resources.participant == nullptr) {
+      throw std::runtime_error("failed to create participant");
+    }
+
+    m_fastdds_resources.publisher = m_fastdds_resources.participant->create_publisher(
+      eprosima::fastdds::dds::PUBLISHER_QOS_DEFAULT);
+    if (m_fastdds_resources.publisher == nullptr) {
+      throw std::runtime_error("failed to create publisher");
+    }
+
+    m_fastdds_resources.subscriber = m_fastdds_resources.participant->create_subscriber(
+      eprosima::fastdds::dds::SUBSCRIBER_QOS_DEFAULT);
+    if (m_fastdds_resources.subscriber == nullptr) {
+      throw std::runtime_error("failed to create subscriber");
+    }
+
+    type.register_type(m_fastdds_resources.participant);
+
+    auto topic_name = m_ec.topic_name() + m_ec.pub_topic_postfix();
+    m_fastdds_resources.topic = m_fastdds_resources.participant->create_topic(
+      topic_name, type->getName(), eprosima::fastdds::dds::TOPIC_QOS_DEFAULT);
+    if (m_fastdds_resources.topic == nullptr) {
+      throw std::runtime_error("failed to create topic");
+    }
   }
-  return m_fastrtps_participant;
+  return m_fastdds_resources;
 }
 #endif
 

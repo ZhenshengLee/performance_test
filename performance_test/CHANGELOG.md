@@ -2,6 +2,13 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Changed
+- Refactored FastRTPS communicator plugin:
+  - Uses DDS compliant API
+  - Code generator updated
+  - Implementation for `publish_loaned()`
+  - Dockerfile improvements
+
 ## 1.3.0 (2022/08/25)
 
 ### Added

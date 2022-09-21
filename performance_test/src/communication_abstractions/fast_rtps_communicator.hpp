@@ -15,17 +15,17 @@
 #ifndef COMMUNICATION_ABSTRACTIONS__FAST_RTPS_COMMUNICATOR_HPP_
 #define COMMUNICATION_ABSTRACTIONS__FAST_RTPS_COMMUNICATOR_HPP_
 
-#include <fastcdr/Cdr.h>
-#include <fastcdr/FastBuffer.h>
-#include <fastrtps/attributes/PublisherAttributes.h>
-#include <fastrtps/publisher/PublisherListener.h>
-#include <fastrtps/participant/Participant.h>
-#include <fastrtps/attributes/ParticipantAttributes.h>
-#include <fastrtps/attributes/SubscriberAttributes.h>
-#include <fastrtps/subscriber/Subscriber.h>
-#include <fastrtps/publisher/Publisher.h>
-#include <fastrtps/subscriber/SampleInfo.h>
-#include <fastrtps/Domain.h>
+#include <fastdds/dds/domain/DomainParticipant.hpp>
+#include <fastdds/dds/publisher/Publisher.hpp>
+#include <fastdds/dds/publisher/DataWriter.hpp>
+#include <fastdds/dds/publisher/DataWriterListener.hpp>
+#include <fastdds/dds/topic/Topic.hpp>
+#include <fastdds/dds/topic/TypeSupport.hpp>
+#include <fastdds/dds/subscriber/DataReader.hpp>
+#include <fastdds/dds/subscriber/DataReaderListener.hpp>
+#include <fastdds/dds/subscriber/Subscriber.hpp>
+#include <fastdds/dds/subscriber/qos/DataReaderQos.hpp>
+#include <fastdds/dds/core/LoanableSequence.hpp>
 
 #include <vector>
 
@@ -41,9 +41,41 @@ namespace performance_test
 class FastRTPSQOSAdapter
 {
 public:
-  explicit FastRTPSQOSAdapter(const QOSAbstraction qos)
+  explicit FastRTPSQOSAdapter(const QOSAbstraction qos, bool interprocess)
   : m_qos(qos)
+  , m_interprocess(interprocess)
   {}
+
+  void apply(eprosima::fastdds::dds::DataWriterQos & wqos) const
+  {
+    apply_common(wqos);
+
+    wqos.reliable_writer_qos().times.heartbeatPeriod.seconds = 2;
+    wqos.reliable_writer_qos().times.heartbeatPeriod.fraction((200 * 1000 * 1000));
+    wqos.publish_mode().kind = publish_mode();
+  }
+
+  void apply(eprosima::fastdds::dds::DataReaderQos & rqos) const
+  {
+    apply_common(rqos);
+  }
+
+private:
+  const QOSAbstraction m_qos;
+  const bool m_interprocess;
+
+  template<typename EntityQos>
+  void apply_common(EntityQos & eqos) const
+  {
+    eqos.history().kind = history_kind();
+    eqos.history().depth = history_depth();
+    eqos.resource_limits().max_samples = resource_limits_samples();
+    eqos.resource_limits().allocated_samples = resource_limits_samples();
+    eqos.reliability().kind = reliability();
+    eqos.durability().kind = durability();
+    eqos.data_sharing().automatic();
+    if (!m_interprocess) eqos.data_sharing().off();
+  }
 
   inline eprosima::fastrtps::ReliabilityQosPolicyKind reliability() const
   {
@@ -103,9 +135,6 @@ public:
       return eprosima::fastrtps::PublishModeQosPolicyKind::ASYNCHRONOUS_PUBLISH_MODE;
     }
   }
-
-private:
-  const QOSAbstraction m_qos;
 };
 
 template<class Topic>
@@ -116,57 +145,58 @@ public:
   using DataType = typename Topic::EprosimaType;
 
   explicit FastRTPSPublisher(const ExperimentConfiguration & ec)
-  : m_topic_type(new TopicType()),
-    m_participant(ResourceManager::get().fastrtps_participant()),
-    m_publisher(make_fastrtps_publisher(m_topic_type, m_participant, ec))
+  : m_resources(ResourceManager::get().fastdds_resources(
+      eprosima::fastdds::dds::TypeSupport(new TopicType()))),
+    m_datawriter(create_datawriter(m_resources, ec))
   {
   }
 
   void publish_copy(std::int64_t time, std::uint64_t sample_id) override
   {
     init_msg(m_data, time, sample_id);
-    m_publisher->write(static_cast<void *>(&m_data));
+    if (!m_datawriter->write(static_cast<void *>(&m_data))) {
+      throw std::runtime_error("Failed to write sample");
+    }
   }
 
-  void publish_loaned(std::int64_t, std::uint64_t) override
+  void publish_loaned(std::int64_t time, std::uint64_t sample_id) override
   {
-    throw std::runtime_error("This plugin does not support zero copy transfer");
+    void * loaned_sample = nullptr;
+    eprosima::fastrtps::types::ReturnCode_t ret = m_datawriter->loan_sample(loaned_sample);
+    if (!ret) {
+      throw std::runtime_error(
+        "Failed to obtain a loaned sample, ERRORCODE is " + std::to_string(ret()));
+    }
+    DataType * sample = static_cast<DataType *>(loaned_sample);
+    init_msg(*sample, time, sample_id);
+    if (!m_datawriter->write(static_cast<void *>(sample))) {
+      throw std::runtime_error("Failed to write sample");
+    }
   }
 
 private:
-  TopicType * m_topic_type;
-  eprosima::fastrtps::Participant * m_participant;
-  eprosima::fastrtps::Publisher * m_publisher;
+  ResourceManager::FastDDSGlobalResources m_resources;
+  eprosima::fastdds::dds::DataWriter * m_datawriter;
   DataType m_data;
 
-  static eprosima::fastrtps::Publisher * make_fastrtps_publisher(
-    TopicType * topic_type,
-    eprosima::fastrtps::Participant * participant,
+  static eprosima::fastdds::dds::DataWriter * create_datawriter(
+    const ResourceManager::FastDDSGlobalResources & resources,
     const ExperimentConfiguration & ec
   )
   {
-    eprosima::fastrtps::Domain::registerType(participant, topic_type);
+    const bool interprocess = ec.number_of_publishers() == 0 || ec.number_of_subscribers() == 0;
+    const FastRTPSQOSAdapter qos(ec.qos(), interprocess);
 
-    const FastRTPSQOSAdapter qos(ec.qos());
+    eprosima::fastdds::dds::DataWriterQos wqos;
+    resources.publisher->get_default_datawriter_qos(wqos);
+    qos.apply(wqos);
 
-    eprosima::fastrtps::PublisherAttributes wparam;
+    auto writer = resources.publisher->create_datawriter(resources.topic, wqos);
+    if (!writer) {
+      throw std::runtime_error("failed to create datawriter");
+    }
 
-    wparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-    wparam.topic.topicDataType = topic_type->getName();
-    wparam.topic.topicName = ec.topic_name() + ec.pub_topic_postfix();
-    wparam.topic.historyQos.kind = qos.history_kind();
-    wparam.topic.historyQos.depth = qos.history_depth();
-    wparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
-    wparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
-
-    wparam.times.heartbeatPeriod.seconds = 2;
-    wparam.times.heartbeatPeriod.fraction(200 * 1000 * 1000);
-
-    wparam.qos.m_reliability.kind = qos.reliability();
-    wparam.qos.m_durability.kind = qos.durability();
-    wparam.qos.m_publishMode.kind = qos.publish_mode();
-
-    return eprosima::fastrtps::Domain::createPublisher(participant, wparam);
+    return writer;
   }
 
   void init_msg(DataType & msg, std::int64_t time, std::uint64_t sample_id)
@@ -185,67 +215,65 @@ public:
   using DataType = typename Topic::EprosimaType;
 
   explicit FastRTPSSubscriber(const ExperimentConfiguration & ec)
-  : m_topic_type(new TopicType()),
-    m_participant(ResourceManager::get().fastrtps_participant()),
-    m_subscriber(make_fastrtps_subscriber(m_topic_type, m_participant, ec))
+  : m_resources(ResourceManager::get().fastdds_resources(
+      eprosima::fastdds::dds::TypeSupport(new TopicType()))),
+    m_datareader(create_datareader(m_resources, ec))
   {
   }
 
   std::vector<ReceivedMsgStats> update_subscription() override
   {
-    m_subscriber->waitForUnreadMessage();
+    const eprosima::fastrtps::Duration_t secs_15{15, 0};
+    m_datareader->wait_for_unread_message(secs_15);
     return take();
   }
 
   std::vector<ReceivedMsgStats> take() override
   {
     std::vector<ReceivedMsgStats> stats;
-    while (m_subscriber->takeNextData(static_cast<void *>(&m_data), &m_info)) {
+
+    FASTDDS_SEQUENCE(DataSeq, DataType);
+    DataSeq data_seq;
+    eprosima::fastdds::dds::SampleInfoSeq info_seq;
+
+    const auto ok_ret_code = eprosima::fastrtps::types::ReturnCode_t::RETCODE_OK;
+    while (ok_ret_code == m_datareader->take(data_seq, info_seq, 1)) {
       const auto received_time = now_int64_t();
-      if (m_info.sampleKind == eprosima::fastrtps::rtps::ChangeKind_t::ALIVE) {
+      if (info_seq[0].valid_data) {
         stats.emplace_back(
-          m_data.time(),
+          data_seq[0].time(),
           received_time,
-          m_data.id(),
+          data_seq[0].id(),
           sizeof(DataType)
         );
       }
+      m_datareader->return_loan(data_seq, info_seq);
     }
     return stats;
   }
 
 private:
-  TopicType * m_topic_type;
-  eprosima::fastrtps::Participant * m_participant;
-  eprosima::fastrtps::Subscriber * m_subscriber;
+  ResourceManager::FastDDSGlobalResources m_resources;
+  eprosima::fastdds::dds::DataReader * m_datareader;
 
-  DataType m_data;
-  eprosima::fastrtps::SampleInfo_t m_info;
-
-  static eprosima::fastrtps::Subscriber * make_fastrtps_subscriber(
-    TopicType * topic_type,
-    eprosima::fastrtps::Participant * participant,
+  static eprosima::fastdds::dds::DataReader * create_datareader(
+    const ResourceManager::FastDDSGlobalResources & resources,
     const ExperimentConfiguration & ec
   )
   {
-    eprosima::fastrtps::Domain::registerType(participant, topic_type);
+    const bool interprocess = ec.number_of_publishers() == 0 || ec.number_of_subscribers() == 0;
+    const FastRTPSQOSAdapter qos(ec.qos(), interprocess);
 
-    const FastRTPSQOSAdapter qos(ec.qos());
+    eprosima::fastdds::dds::DataReaderQos rqos;
+    resources.subscriber->get_default_datareader_qos(rqos);
+    qos.apply(rqos);
 
-    eprosima::fastrtps::SubscriberAttributes rparam;
+    auto reader = resources.subscriber->create_datareader(resources.topic, rqos);
+    if (!reader) {
+      throw std::runtime_error("failed to create datareader");
+    }
 
-    rparam.topic.topicKind = eprosima::fastrtps::rtps::TopicKind_t::NO_KEY;
-    rparam.topic.topicDataType = topic_type->getName();
-    rparam.topic.topicName = ec.topic_name() + ec.sub_topic_postfix();
-    rparam.topic.historyQos.kind = qos.history_kind();
-    rparam.topic.historyQos.depth = qos.history_depth();
-    rparam.topic.resourceLimitsQos.max_samples = qos.resource_limits_samples();
-    rparam.topic.resourceLimitsQos.allocated_samples = qos.resource_limits_samples();
-
-    rparam.qos.m_reliability.kind = qos.reliability();
-    rparam.qos.m_durability.kind = qos.durability();
-
-    return eprosima::fastrtps::Domain::createSubscriber(participant, rparam);
+    return reader;
   }
 };
 
