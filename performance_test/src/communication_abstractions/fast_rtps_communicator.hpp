@@ -52,7 +52,6 @@ public:
 
     wqos.reliable_writer_qos().times.heartbeatPeriod.seconds = 2;
     wqos.reliable_writer_qos().times.heartbeatPeriod.fraction((200 * 1000 * 1000));
-    wqos.publish_mode().kind = publish_mode();
   }
 
   void apply(eprosima::fastdds::dds::DataReaderQos & rqos) const
@@ -125,15 +124,6 @@ private:
   int32_t resource_limits_samples() const
   {
     return static_cast<int32_t>(m_qos.history_depth);
-  }
-
-  inline eprosima::fastrtps::PublishModeQosPolicyKind publish_mode() const
-  {
-    if (m_qos.sync_pubsub) {
-      return eprosima::fastrtps::PublishModeQosPolicyKind::SYNCHRONOUS_PUBLISH_MODE;
-    } else {
-      return eprosima::fastrtps::PublishModeQosPolicyKind::ASYNCHRONOUS_PUBLISH_MODE;
-    }
   }
 };
 

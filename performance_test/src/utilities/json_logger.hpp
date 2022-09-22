@@ -55,7 +55,6 @@ public:
     write(writer, "qos_durability", to_string(ec.qos().durability));
     write(writer, "qos_history_kind", to_string(ec.qos().history_kind));
     write(writer, "qos_history_depth", ec.qos().history_depth);
-    write(writer, "qos_sync_pubsub", ec.qos().sync_pubsub);
     write(writer, "rate", ec.rate());
     write(writer, "topic_name", ec.topic_name());
     write(writer, "msg_name", ec.msg_name());

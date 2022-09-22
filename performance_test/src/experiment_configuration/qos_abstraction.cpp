@@ -73,8 +73,7 @@ std::ostream & operator<<(std::ostream & stream, const QOSAbstraction e)
          "Reliability: " << e.reliability <<
          " Durability: " << e.durability <<
          " History kind: " << e.history_kind <<
-         " History depth: " << e.history_depth <<
-         " Sync. pub/sub: " << e.sync_pubsub;
+         " History depth: " << e.history_depth;
 }
 
 }  // namespace performance_test

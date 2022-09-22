@@ -27,8 +27,7 @@ struct QOSAbstraction
   : reliability(),
     durability(),
     history_kind(),
-    history_depth(),
-    sync_pubsub(false) {}
+    history_depth() {}
 
   enum class Reliability
   {
@@ -50,7 +49,6 @@ struct QOSAbstraction
   Durability durability;
   HistoryKind history_kind;
   uint32_t history_depth;
-  bool sync_pubsub;
 };
 
 std::string to_string(const QOSAbstraction::Reliability e);

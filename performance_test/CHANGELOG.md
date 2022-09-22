@@ -8,6 +8,9 @@
   - Code generator updated
   - Implementation for `publish_loaned()`
   - Dockerfile improvements
+### Removed
+- CLI arg `--disable-async`. Synchronous / asynchronous publishing should be
+  configured externally depending on the communication mean used.
 
 ## 1.3.0 (2022/08/25)
 

@@ -133,7 +133,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
   bool transient_qos = false;
   bool keep_last_qos = false;
   uint32_t history_depth = 0;
-  bool disable_async = false;
   int32_t prio = 0;
   uint32_t cpus = 0;
   std::string roundtrip_mode_str;
@@ -244,9 +243,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     TCLAP::ValueArg<uint32_t> historyDepthArg("", "history-depth",
       "The history depth QOS. Default is 1000.", false, 1000, "N", cmd);
 
-    TCLAP::SwitchArg disableAsyncArg("", "disable-async",
-      "Disable asynchronous pub/sub.", cmd, false);
-
     TCLAP::ValueArg<uint64_t> maxRuntimeArg("", "max-runtime",
       "Run N seconds, then exit. 0 means run forever. Default is 0.", false, 0, "N", cmd);
 
@@ -319,7 +315,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     transient_qos = transientArg.getValue();
     keep_last_qos = keepLastArg.getValue();
     history_depth = historyDepthArg.getValue();
-    disable_async = disableAsyncArg.getValue();
     m_max_runtime = maxRuntimeArg.getValue();
     m_number_of_publishers = numPubsArg.getValue();
     m_number_of_subscribers = numSubsArg.getValue();
@@ -465,12 +460,6 @@ void ExperimentConfiguration::setup(int argc, char ** argv)
     }
 
     m_qos.history_depth = history_depth;
-    if (disable_async) {
-      if (use_ros2_layers()) {
-        throw std::invalid_argument("ROS 2 does not support disabling async. publishing.");
-      }
-      m_qos.sync_pubsub = true;
-    }
 
     if (m_number_of_publishers > 1) {
       throw std::invalid_argument("More than one publisher is not supported at the moment");
