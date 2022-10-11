@@ -44,7 +44,6 @@ function(set_compile_options target)
                     -Wlogical-op
                     #-Wuseless-cast
                     $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,6>:
-                        -Wnull-dereference
                         -Wduplicated-cond
                     >
                     $<$<VERSION_GREATER_EQUAL:$<CXX_COMPILER_VERSION>,7>:
