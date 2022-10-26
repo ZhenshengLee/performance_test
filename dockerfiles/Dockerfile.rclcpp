@@ -4,13 +4,16 @@
 # /opt/performance_test/lib/performance_test/perf_test -c rclcpp-static-single-threaded-executor --msg Array1k --print-to-console
 # /opt/performance_test/lib/performance_test/perf_test -c rclcpp-waitset --msg Array1k --print-to-console
 
-FROM osrf/ros:rolling-desktop
+ARG BASE_IMAGE=osrf/ros:rolling-desktop
+FROM $BASE_IMAGE
+
+ARG ROS_DISTRO=rolling
 
 SHELL ["/bin/bash", "-c"]
 
 ADD . /perf_test_ws/src/performance_test
 
-RUN source /opt/ros/rolling/setup.bash && \
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
       --install-base /opt/performance_test \
@@ -20,5 +23,14 @@ RUN source /opt/ros/rolling/setup.bash && \
         -DCMAKE_BUILD_TYPE=Release \
         -DPERFORMANCE_TEST_RCLCPP_ENABLED=ON
 
-RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
-RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
+ADD dockerfiles/roudi_config.toml /etc/iceoryx/roudi_config.toml
+
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/setup.bash
+RUN echo "source /opt/performance_test/setup.bash" >> /root/setup.bash
+
+RUN echo "source /root/setup.bash" >> /root/.bashrc
+
+# Install dependencies for running performance_report
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    python3 -m pip install -U bokeh selenium pandas 

@@ -20,7 +20,12 @@ RUN source /opt/ros/melodic/setup.bash && \
       --install-base /opt/performance_test \
       --merge-install
 
-RUN echo "source /opt/ros/melodic/setup.bash" >> /root/.bashrc
-RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/melodic/setup.bash" >> /root/setup.bash
+RUN echo "source /opt/performance_test/setup.bash" >> /root/setup.bash
 
+RUN echo "source /root/setup.bash" >> /root/.bashrc
 
+# Install dependencies for running performance_report
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    python3 -m pip install -U bokeh selenium pandas 

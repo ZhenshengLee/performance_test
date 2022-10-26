@@ -2,17 +2,19 @@
 # docker run -it performance_test_fast_dds bash
 # /opt/performance_test/lib/performance_test/perf_test -c FastRTPS --msg Array1k --print-to-console
 
-FROM osrf/ros:rolling-desktop
+ARG BASE_IMAGE=osrf/ros:rolling-desktop
+FROM $BASE_IMAGE
+
+ARG ROS_DISTRO=rolling
+ARG FAST_DDS_VERSION=v2.6.2
 
 SHELL ["/bin/bash", "-c"]
 
 RUN apt-get update && \
-    apt remove -y ros-rolling-fastrtps && \
+    apt remove -y ros-$ROS_DISTRO-fastrtps && \
     apt-get install -y default-jdk cmake g++ python3-pip wget git libasio-dev libtinyxml2-dev libssl-dev libp11-dev libengine-pkcs11-openssl
 
-ARG FAST_DDS_VERSION=v2.6.2
-
-RUN source /opt/ros/rolling/setup.bash && \
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
     mkdir -p Fast-DDS_ws/src && \
     cd Fast-DDS_ws && \
     vcs import --input https://raw.githubusercontent.com/eProsima/Fast-DDS/$FAST_DDS_VERSION/fastrtps.repos src && \
@@ -29,7 +31,7 @@ RUN source /opt/ros/rolling/setup.bash && \
 ADD . /perf_test_ws/src/performance_test
 
 RUN chmod +x /perf_test_ws/src/performance_test/performance_test/bin/fastrtpsgen
-RUN source /opt/ros/rolling/setup.bash && \
+RUN source /opt/ros/$ROS_DISTRO/setup.bash && \
     source /opt/Fast-DDS/setup.bash && \
     cd /perf_test_ws && \
     colcon build \
@@ -41,6 +43,13 @@ RUN source /opt/ros/rolling/setup.bash && \
         -DPERFORMANCE_TEST_FASTRTPS_ENABLED=ON \
         -DPERFORMANCE_TEST_RCLCPP_ENABLED=OFF
 
-RUN echo "source /opt/ros/rolling/setup.bash" >> /root/.bashrc
-RUN echo "source /opt/Fast-DDS/setup.bash" >> ~/.bashrc
-RUN echo "source /opt/performance_test/setup.bash" >> /root/.bashrc
+RUN echo "source /opt/ros/$ROS_DISTRO/setup.bash" >> /root/setup.bash
+RUN echo "source /opt/Fast-DDS/setup.bash" >> /root/setup.bash
+RUN echo "source /opt/performance_test/setup.bash" >> /root/setup.bash
+
+RUN echo "source /root/setup.bash" >> /root/.bashrc
+
+# Install dependencies for running performance_report
+RUN apt-get update && \
+    apt-get install -y python3-pip && \
+    python3 -m pip install -U bokeh selenium pandas 
