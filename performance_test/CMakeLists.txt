@@ -298,6 +298,7 @@ endif()
 
 if(PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED)
   list(APPEND sources src/communication_abstractions/apex_os_communicator.hpp)
+  list(APPEND sources src/communication_abstractions/apex_os_polling_subscription_communicator.hpp)
 endif()
 
 if(PERFORMANCE_TEST_FASTRTPS_ENABLED)

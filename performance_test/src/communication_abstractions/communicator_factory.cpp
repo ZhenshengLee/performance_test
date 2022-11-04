@@ -29,6 +29,10 @@
 #include "rclcpp_callback_communicator.hpp"
 #endif
 
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+#include "apex_os_polling_subscription_communicator.hpp"
+#endif
+
 #ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
 #include "rclcpp_waitset_communicator.hpp"
 #endif
@@ -88,6 +92,11 @@ std::shared_ptr<Publisher> CommunicatorFactory::get_publisher(
 #endif
 #ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
         if (ec.com_mean() == CommunicationMean::RCLCPP_WAITSET) {
+          ptr = std::make_shared<RclcppPublisher<T>>(ec);
+        }
+#endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+        if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
           ptr = std::make_shared<RclcppPublisher<T>>(ec);
         }
 #endif
@@ -162,6 +171,11 @@ std::shared_ptr<Subscriber> CommunicatorFactory::get_subscriber(
 #ifdef PERFORMANCE_TEST_RCLCPP_WAITSET_ENABLED
         if (ec.com_mean() == CommunicationMean::RCLCPP_WAITSET) {
           ptr = std::make_shared<RclcppWaitsetSubscriber<T>>(ec);
+        }
+#endif
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+        if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
+          ptr = std::make_shared<ApexOSPollingSubscriptionSubscriber<T>>(ec);
         }
 #endif
 #ifdef PERFORMANCE_TEST_FASTRTPS_ENABLED

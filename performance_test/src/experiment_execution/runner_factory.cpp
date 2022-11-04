@@ -28,11 +28,6 @@ namespace performance_test
 std::unique_ptr<Runner> RunnerFactory::get(const ExperimentConfiguration & ec)
 {
   if (ec.execution_strategy() == ExecutionStrategy::INTER_THREAD) {
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-    if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
-      return std::make_unique<ApexOsExecutorRunner>(ec);
-    }
-#endif
     switch (ec.roundtrip_mode()) {
       case ExperimentConfiguration::RoundTripMode::NONE:
         return std::make_unique<InterThreadRunner>(ec);
@@ -43,13 +38,25 @@ std::unique_ptr<Runner> RunnerFactory::get(const ExperimentConfiguration & ec)
     }
   }
   if (ec.execution_strategy() == ExecutionStrategy::INTRA_THREAD) {
-#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
-    if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
-      return std::make_unique<ApexOsExecutorChainRunner>(ec);
-    }
-#endif
     return std::make_unique<IntraThreadRunner>(ec);
   }
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  if (ec.execution_strategy() == ExecutionStrategy::APEX_SINGLE_EXECUTOR) {
+    if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
+      return std::make_unique<ApexOsSingleExecutorRunner>(ec);
+    }
+  }
+  if (ec.execution_strategy() == ExecutionStrategy::APEX_EXECUTOR_PER_COMMUNICATOR) {
+    if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
+      return std::make_unique<ApexOsExecutorPerCommunicatorRunner>(ec);
+    }
+  }
+  if (ec.execution_strategy() == ExecutionStrategy::APEX_CHAIN) {
+    if (ec.com_mean() == CommunicationMean::ApexOSPollingSubscription) {
+      return std::make_unique<ApexOsSingleExecutorChainRunner>(ec);
+    }
+  }
+#endif
   throw std::invalid_argument("Invalid execution strategy!");
 }
 

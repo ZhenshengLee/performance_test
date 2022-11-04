@@ -2,6 +2,16 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Added
+- New Apex.OS plugin, compatible with the `ThreadedRunner`s
+  - The `INTER_THREAD` and `INTRA_THREAD` execution strategies, combined with
+    `-c ApexOSPollingSubscription`, will use the `ThreadedRunner` instances
+  - The new `APEX_SINGLE_EXECUTOR` execution strategy will add all publishers
+    and subscribers to a single Apex.OS Executor
+  - The new `APEX_EXECUTOR_PER_COMMUNICATOR` execution strategy will add each
+    publisher and each subscriber to its own Apex.OS Executor instance
+  - The new `APEX_CHAIN` execution strategy will add a publisher and subscriber
+    as a chain of nodes to an Apex.OS Executor
 ### Changed
 - Refactored FastRTPS communicator plugin:
   - Uses DDS compliant API

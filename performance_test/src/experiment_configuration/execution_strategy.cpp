@@ -27,6 +27,17 @@ std::string to_string(const ExecutionStrategy x)
   if (x == ExecutionStrategy::INTRA_THREAD) {
     return "INTRA_THREAD";
   }
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  if (x == ExecutionStrategy::APEX_SINGLE_EXECUTOR) {
+    return "APEX_SINGLE_EXECUTOR";
+  }
+  if (x == ExecutionStrategy::APEX_EXECUTOR_PER_COMMUNICATOR) {
+    return "APEX_EXECUTOR_PER_COMMUNICATOR";
+  }
+  if (x == ExecutionStrategy::APEX_CHAIN) {
+    return "APEX_CHAIN";
+  }
+#endif
   throw std::invalid_argument("Enum value not supported!");
 }
 
@@ -38,6 +49,17 @@ ExecutionStrategy execution_strategy_from_string(const std::string & s)
   if (s == "INTRA_THREAD") {
     return ExecutionStrategy::INTRA_THREAD;
   }
+#ifdef PERFORMANCE_TEST_APEX_OS_POLLING_SUBSCRIPTION_ENABLED
+  if (s == "APEX_SINGLE_EXECUTOR") {
+    return ExecutionStrategy::APEX_SINGLE_EXECUTOR;
+  }
+  if (s == "APEX_EXECUTOR_PER_COMMUNICATOR") {
+    return ExecutionStrategy::APEX_EXECUTOR_PER_COMMUNICATOR;
+  }
+  if (s == "APEX_CHAIN") {
+    return ExecutionStrategy::APEX_CHAIN;
+  }
+#endif
   throw std::invalid_argument("Invalid execution strategy string!");
 }
 

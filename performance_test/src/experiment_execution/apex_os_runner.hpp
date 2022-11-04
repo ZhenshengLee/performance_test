@@ -34,9 +34,7 @@ class ApexOsRunner : public Runner
 {
 public:
   explicit ApexOsRunner(const ExperimentConfiguration & ec)
-  : Runner(ec),
-    m_executor(apex::executor::executor_factory::create()),
-    m_runner(apex::executor::executor_runner::deferred_tag(), *m_executor)
+  : Runner(ec)
   {
     for (uint32_t i = 0; i < m_ec.number_of_publishers(); ++i) {
       m_pubs.push_back(performance_test::ApexOsEntityFactory::get_publisher(
@@ -52,14 +50,14 @@ public:
 protected:
   std::vector<std::shared_ptr<ApexOsPublisherEntity>> m_pubs;
   std::vector<std::shared_ptr<ApexOsSubscriberEntity>> m_subs;
-  const apex::executor::executor_ptr m_executor;
-  const apex::executor::executor_runner m_runner;
 };
 
-class ApexOsExecutorRunner : public ApexOsRunner {
+class ApexOsSingleExecutorRunner : public ApexOsRunner {
 public:
-  explicit ApexOsExecutorRunner(const ExperimentConfiguration & ec)
-  : ApexOsRunner(ec) {}
+  explicit ApexOsSingleExecutorRunner(const ExperimentConfiguration & ec)
+  : ApexOsRunner(ec),
+    m_executor(apex::executor::executor_factory::create()),
+    m_runner(apex::executor::executor_runner::deferred_tag(), *m_executor) {}
 
 protected:
   virtual void run_pubs_and_subs()
@@ -72,12 +70,43 @@ protected:
     }
     m_runner.issue();
   }
+
+private:
+  const apex::executor::executor_ptr m_executor;
+  const apex::executor::executor_runner m_runner;
 };
 
-class ApexOsExecutorChainRunner : public ApexOsRunner {
+class ApexOsExecutorPerCommunicatorRunner : public ApexOsRunner {
 public:
-  explicit ApexOsExecutorChainRunner(const ExperimentConfiguration & ec)
-  : ApexOsRunner(ec)
+  explicit ApexOsExecutorPerCommunicatorRunner(const ExperimentConfiguration & ec)
+  : ApexOsRunner(ec) {}
+
+protected:
+  virtual void run_pubs_and_subs()
+  {
+    for (auto &sub : m_subs) {
+      m_executors.emplace_back(apex::executor::executor_factory::create());
+      m_executors.back()->add(std::move(sub->get_subscriber_item()), m_ec.period_ns());
+      m_runners.emplace_back(*(m_executors.back()));
+    }
+    for (auto &pub : m_pubs) {
+      m_executors.emplace_back(apex::executor::executor_factory::create());
+      m_executors.back()->add(std::move(pub->get_publisher_item()), m_ec.period_ns());
+      m_runners.emplace_back(*(m_executors.back()));
+    }
+  }
+
+private:
+  std::vector<apex::executor::executor_ptr> m_executors;
+  std::vector<apex::executor::executor_runner> m_runners;
+};
+
+class ApexOsSingleExecutorChainRunner : public ApexOsRunner {
+public:
+  explicit ApexOsSingleExecutorChainRunner(const ExperimentConfiguration & ec)
+  : ApexOsRunner(ec),
+    m_executor(apex::executor::executor_factory::create()),
+    m_runner(apex::executor::executor_runner::deferred_tag(), *m_executor)
   {
     if (ec.number_of_publishers() != 1) {
       throw std::invalid_argument(
@@ -111,6 +140,10 @@ protected:
     m_executor->add(chain_of_nodes, m_ec.period_ns());
     m_runner.issue();
   }
+
+private:
+  const apex::executor::executor_ptr m_executor;
+  const apex::executor::executor_runner m_runner;
 };
 
 }  // namespace performance_test
