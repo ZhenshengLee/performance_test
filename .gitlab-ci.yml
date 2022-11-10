@@ -546,7 +546,7 @@ test_performance_report:
   script:
     - apt-get update
     - sudo apt-get install -y python3-pip 
-    - python3 -m pip install bokeh selenium pandas
+    - python3 -m pip install bokeh==2.4.3 selenium pandas
     - rosdep update --include-eol-distros
     - rosdep install --from-paths performance_test --ignore-src -y
     - tar -xzf opt.tar.gz -C /
