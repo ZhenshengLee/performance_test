@@ -2,6 +2,9 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Changed
+- Updated Apex.OS plugins to use the unified `LoanedSample::data()`
+
 ## 1.3.3 (2022/11/28)
 
 ### Fixed

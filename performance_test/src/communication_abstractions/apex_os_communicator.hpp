@@ -166,23 +166,9 @@ private:
     const auto received_time = now_int64_t();
     for (const auto msg : loaned_msg) {
       if (msg.info().valid()) {
-        handle_message(msg, received_time);
+        callback(msg.data(), received_time);
       }
     }
-  }
-
-  // Use data_copy() with unbounded message types
-  template <typename T>
-  auto handle_message(T &msg, const std::int64_t received_time)
-      -> decltype(msg.data_copy(), void()) {
-    this->template callback(msg.data_copy(), received_time);
-  }
-
-  // Use data() by default
-  template <typename T>
-  auto handle_message(T &msg, const std::int64_t received_time)
-      -> decltype(msg.data(), void()) {
-    this->template callback(msg.data(), received_time);
   }
 
   template <class T>
