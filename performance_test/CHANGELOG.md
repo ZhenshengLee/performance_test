@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.3.1 (2022/11/21)
+
 ### Added
 - New Apex.OS plugin, compatible with the `ThreadedRunner`s
   - The `INTER_THREAD` and `INTRA_THREAD` execution strategies, combined with
