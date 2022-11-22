@@ -2,6 +2,9 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Fixed
+- Capture the `this` pointer in the lambda in the iceoryx publisher
+
 ## 1.3.1 (2022/11/21)
 
 ### Added

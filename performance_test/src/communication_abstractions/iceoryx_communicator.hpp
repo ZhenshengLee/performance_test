@@ -59,9 +59,9 @@ public:
   {
     m_publisher.loan(sizeof(DataType))
     .and_then(
-      [&](auto & userPayload) {
+      [&, this](auto & userPayload) {
         auto sample = static_cast<DataType *>(userPayload);
-        init_msg(*sample, time, sample_id);
+        this->init_msg(*sample, time, sample_id);
         m_publisher.publish(userPayload);
       })
     .or_else(
