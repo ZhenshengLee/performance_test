@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.3.2 (2022/11/21)
+
 ### Fixed
 - Capture the `this` pointer in the lambda in the iceoryx publisher
 
