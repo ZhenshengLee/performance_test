@@ -59,14 +59,21 @@ public:
 
   std::vector<ReceivedMsgStats> update_subscription() override
   {
-    m_subscriber_stats.clear();
     const auto wait_ret = m_waitset->wait(std::chrono::milliseconds(100), false);
     if (wait_ret.any()) {
-      const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
-      for (const auto msg : loaned_msg) {
-        if (msg.info().valid()) {
-          handle_message(msg);
-        }
+      return take();
+    } else {
+      throw std::runtime_error("waitset timeout exceeded");
+    }
+  }
+
+  std::vector<ReceivedMsgStats> take() override
+  {
+    m_subscriber_stats.clear();
+    const auto loaned_msg = m_polling_subscription->take(RCLCPP_LENGTH_UNLIMITED);
+    for (const auto msg : loaned_msg) {
+      if (msg.info().valid()) {
+        handle_message(msg);
       }
     }
     return m_subscriber_stats;
