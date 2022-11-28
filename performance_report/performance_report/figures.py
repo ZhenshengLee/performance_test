@@ -150,6 +150,9 @@ def _generate_box_and_whiskers(figConfig, datasets: "list[DatasetConfig]"):
             continue
         dataset = datasets[dataset_name]
         df = dataset.dataframe
+        if df.empty:
+            print(f"dataset {dataset_name} is empty, skipping for {figConfig['name']}")
+            continue
         df_dict['name'].append(dataset.name)
         df_dict['fill_color'].append(dataset.theme.color)
         df_dict['whisker_bottom'].append(df['latency_min'].min())

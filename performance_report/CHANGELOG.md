@@ -2,6 +2,9 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Fixed
+- Do not try to create a box-and-whisker for a file that contains no measurements
+
 ## 1.3.2 (2022/11/21)
 
 ## 1.3.1 (2022/11/21)
