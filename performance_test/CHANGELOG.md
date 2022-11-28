@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.3.3 (2022/11/28)
+
 ### Fixed
 - Implement the missing `take()` method in `ApexOSPollingSubscriptionSubscriber`
 
