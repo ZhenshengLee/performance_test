@@ -2,6 +2,8 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+## 1.3.5 (2022/12/05)
+
 ### Fixed
 - Exit cleanly when a publisher process terminates before a subscriber process
 
