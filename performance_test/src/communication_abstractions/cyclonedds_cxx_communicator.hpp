@@ -162,8 +162,7 @@ public:
       m_waitset.wait(dds::core::Duration(15, 0));
       return take();
     } catch (dds::core::TimeoutError &) {
-      // The timeout probably comes from reaching the maximum runtime
-      throw std::runtime_error("CycloneDDS-CXX waitset timeout exceeded");
+      return {};
     }
   }
 

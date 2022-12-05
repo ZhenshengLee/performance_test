@@ -63,8 +63,9 @@ public:
     const auto wait_ret = m_waitset.wait(m_timeout);
     if (wait_ret.kind() == rclcpp::Ready) {
       return take();
+    } else {
+      return {};
     }
-    throw std::runtime_error("Waitset timed out");
   }
 
   std::vector<ReceivedMsgStats> take() override

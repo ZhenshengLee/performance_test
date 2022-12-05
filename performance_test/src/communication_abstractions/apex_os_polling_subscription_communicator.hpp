@@ -63,7 +63,7 @@ public:
     if (wait_ret.any()) {
       return take();
     } else {
-      throw std::runtime_error("waitset timeout exceeded");
+      return {};
     }
   }
 
