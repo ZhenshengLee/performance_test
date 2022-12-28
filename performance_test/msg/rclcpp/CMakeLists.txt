@@ -1,4 +1,4 @@
-set(IDL_GEN_ROOT ${CMAKE_BINARY_DIR}/gen/rosidl)
+set(IDL_GEN_ROOT ${CMAKE_BINARY_DIR}/gen/rosidl/performance_test)
 file(MAKE_DIRECTORY "${IDL_GEN_ROOT}/msg")
 foreach(idl ${IDL_FILES})
   get_filename_component(filename ${idl} NAME)

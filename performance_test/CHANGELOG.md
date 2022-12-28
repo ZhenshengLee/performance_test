@@ -2,6 +2,9 @@
 
 ## X.Y.Z (YYYY/MM/DD)
 
+### Fixed
+- Set the correct `IDL_GEN_ROOT` for rclcpp plugins
+
 ## 1.3.5 (2022/12/05)
 
 ### Fixed
